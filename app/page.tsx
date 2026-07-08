@@ -70,6 +70,15 @@ const SHOWCASE: { label: string; href: string; img: string }[] = [
   },
 ];
 
+function randomizeProducts(products: BlsProduct[], limit: number) {
+  const shuffled = [...products];
+  for (let i = shuffled.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, limit);
+}
+
 export default async function HomePage() {
   // Fetch all editorial sections in parallel
   const perSection = await Promise.all(
@@ -92,9 +101,9 @@ export default async function HomePage() {
     ),
   );
 
-  // Latest Arrivals — most recently added products (max 8 for the carousel)
-  const latestProducts = await listProducts({ sort: 'newest', pageSize: 10 })
-    .then((r) => r.data)
+  // Latest Arrivals — random products from a larger eligible pool.
+  const latestProducts = await listProducts({ sort: 'newest', pageSize: 60 })
+    .then((r) => randomizeProducts(r.data, 10))
     .catch(() => [] as BlsProduct[]);
 
   // Facial Serums section — products in the bls-product-category 'facial-serums'
