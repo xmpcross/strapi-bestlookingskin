@@ -66,9 +66,30 @@ other properties, so importing now would mint links on the way out.
 
 ## Deployment
 
-Server-rendered: it reads Strapi at request time and uses `next/image` with
-remote patterns, so it needs a Next.js runtime — not a static host. **Vercel**
-is the fit, alongside nxtsmart.homes, which is the same stack.
+Hosted on **Vercel**, built from `main` on push. Repository:
+`FXNHoldings/strapi-bestlookingskin`.
 
-The CMS must be publicly reachable from wherever this runs; the site has no
-content without it.
+Server-rendered: it reads Strapi at request time and uses `next/image` with
+remote patterns, so it needs a Next.js runtime rather than a static host. The
+retired HTML mirror made this look like a static site; it never was.
+
+### Environment variables
+
+Set in the Vercel project, not committed:
+
+```text
+NEXT_PUBLIC_STRAPI_URL           CMS read at request time
+STRAPI_API_TOKEN                 optional; /api/bls-* reads are public
+NEXT_PUBLIC_SITE_URL             canonicals, sitemap, RSS, OpenGraph
+NEXT_PUBLIC_GA_MEASUREMENT_ID    analytics, loaded only after consent
+NEXT_PUBLIC_AMAZON_AFFILIATE_TAG back-fills a tag onto untagged Amazon links
+```
+
+### The CMS is a runtime dependency
+
+Content is fetched per request, so **the site has no content if Strapi is
+unreachable**. That server is a separate machine from the one Vercel runs on.
+
+Product routes currently render empty — no product in the shared
+`commerce-products` pool carries the `bestlooking-skin` tag. See the content
+table above; that is a data gap, not a deployment fault.
