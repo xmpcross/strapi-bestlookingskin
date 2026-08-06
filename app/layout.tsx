@@ -26,6 +26,14 @@ export const metadata: Metadata = {
       'application/rss+xml': [{ url: '/feed.xml', title: `${SITE.name} RSS` }],
     },
   },
+  verification: {
+    other: {
+      // Mitgo (Takeads' parent) site verification. Lives here rather than in
+      // hand-edited HTML so it survives every rebuild — the previous copy was
+      // written into the exported artifact and would have been lost.
+      'mitgo-verification': '0bd5a870-e07e-4d99-bd70-2897813fd88b',
+    },
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
