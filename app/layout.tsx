@@ -3,6 +3,7 @@ import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CookieConsent from '@/components/CookieConsent';
+import GoogleAnalytics from '@/components/GoogleAnalytics';
 import { SITE } from '@/lib/site';
 
 // Fonts are self-hosted via @font-face in globals.css (public/fonts/InterVariable*.woff2).
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="flex-1">{children}</main>
         <Footer />
         <CookieConsent />
+        <GoogleAnalytics />
       </body>
     </html>
   );
