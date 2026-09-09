@@ -5,6 +5,36 @@ const BASE = (process.env.NEXT_PUBLIC_STRAPI_URL || 'https://cms.fxnstudio.com')
 // This storefront only shows products tagged for it (filtered via $containsi —
 // the JSON-array op Strapi serves reliably; $contains 500s).
 const SITE_PRODUCT_TAG = process.env.NEXT_PUBLIC_SITE_PRODUCT_TAG || 'bestlooking-skin';
+
+/**
+ * The product categories this storefront is allowed to show.
+ *
+ * commerce-categories is shared the same way commerce-products is, and it is
+ * NOT filtered by the site tag — a category row carries no ownership at all. So
+ * an unfiltered read returns all 31 categories in the pool and this skincare
+ * site offers to browse Smart Plugs, Raspberry Pi and Robot Vacuums AU.
+ *
+ * Excluded on purpose:
+ *   - smart-*, video-doorbells, raspberry-pi        → nxtsmart.homes
+ *   - the "… AU" categories (lighting, energy-solar,
+ *     climate-comfort, robot-vacuums, hubs-platforms,
+ *     security-cameras, entertainment-audio)        → nxtsmarthome.com.au
+ *   - smart-phones, laptops, tablets, smartwatches,
+ *     headphones                                    → nxt.bargains
+ *
+ * Kept in code rather than read from the commerce-site row because that row
+ * (id 23) carries `enabledCategories: ["skincare", "beauty"]`, and neither of
+ * those is a real category slug — nothing would match and every listing would
+ * fail closed. Move this to the CMS once that row holds the slugs below.
+ */
+export const CATEGORY_SLUGS = [
+  'facial-cleansers',
+  'facial-serums',
+  'anti-aging',
+  'toners-and-astringents',
+  'moisturisers',
+  'exfoliators-and-scrubs',
+] as const;
 // Reads on /api/bls-* are configured as public in Strapi. Skip the
 // Authorization header when the env token is missing OR a known stale
 // value, so a rotated token doesn't 401 every fetch and silently empty
@@ -522,9 +552,10 @@ export async function listProductReviews(productDocumentId: string): Promise<Pro
 
 export async function listProductCategories(): Promise<BlsProductCategory[]> {
   const res = await strapiFetch<ListResponse<BlsProductCategory>>('commerce-categories', {
+    filters: { slug: { $in: [...CATEGORY_SLUGS] } },
     sort: ['order:asc', 'name:asc'],
     populate: ['parent', 'children', 'image'],
-    pagination: { pageSize: 100 },
+    pagination: { pageSize: CATEGORY_SLUGS.length },
   });
   return res.data;
 }
@@ -548,6 +579,10 @@ async function listLegacyProductBrands(): Promise<BlsProductBrand[]> {
 
   while (true) {
     const res = await strapiFetch<ListResponse<Pick<BlsProduct, 'brand'>>>('commerce-products', {
+      // Same shared pool as everywhere else: without the tag filter this
+      // fallback builds the brand list from every site's products, so a
+      // commerce-brands outage would put Samsung and Garmin on a skincare site.
+      filters: { tags: { $containsi: SITE_PRODUCT_TAG } },
       fields: ['brand'],
       sort: ['brand:asc'],
       pagination: { page, pageSize: 100 },
@@ -573,6 +608,10 @@ async function listLegacyProductBrands(): Promise<BlsProductBrand[]> {
 }
 
 export async function getProductCategory(slug: string): Promise<BlsProductCategory | null> {
+  // A category outside this site's scope must 404 rather than render. The row
+  // exists in the shared pool, so without this check /categories/smart-plugs
+  // resolves and this skincare site serves a Smart Plugs page.
+  if (!(CATEGORY_SLUGS as readonly string[]).includes(slug.toLowerCase())) return null;
   const res = await strapiFetch<ListResponse<BlsProductCategory>>('commerce-categories', {
     filters: { slug: { $eqi: slug } },
     populate: ['parent', 'children', 'image'],
