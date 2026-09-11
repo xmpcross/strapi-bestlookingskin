@@ -695,17 +695,24 @@ span[class*="uppercase"][class*="tracking"] {
   color: #cacaca !important;
 }
 
-/* Footer menu links: Urbanist 500 at 14px, no tracking.
+/* Footer menu links: Urbanist 500 at 15px, no tracking.
    Urbanist is self-hosted (public/fonts/Urbanist-Variable-*.woff2, @font-face
    above), so this costs no extra request. The family needs !important to get
    past `[data-testid="site-footer"] * { font-family: Inter !important }` a few
    rules up -- that rule dressed the whole footer in Inter deliberately, and
-   this is the one element now exempted from it. */
+   the headings and links are now the exceptions to it. */
 [data-testid="site-footer"] ul li a {
   font-family: 'Urbanist', system-ui, sans-serif !important;
-  font-size: 1rem !important;
+  font-size: 15px !important;
   font-weight: 500 !important;
   letter-spacing: 0 !important;
+}
+
+/* Footer column headings. Same escape from the Inter rule above; the size
+   stays on the component (!text-[17px]). */
+[data-testid="site-footer"] h3 {
+  font-family: 'Urbanist', system-ui, sans-serif !important;
+  font-weight: 700 !important;
 }
 
 [data-testid="site-footer"] ul li a:hover {

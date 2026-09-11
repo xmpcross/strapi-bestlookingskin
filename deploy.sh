@@ -39,10 +39,18 @@ if [ -n "$(git status --porcelain)" ] && [ "$ALLOW_DIRTY" = 0 ]; then
   exit 1
 fi
 
-# A successful build does NOT guarantee new HTML: .next/cache holds prerendered
-# ISR pages and will happily keep serving the previous render. Clearing it costs
-# a few seconds of rebuild and saves a confusing debugging round.
-rm -rf .next/cache
+# Remove the whole build directory, not just .next/cache.
+#
+# Clearing only the cache was not enough and failed silently in production on
+# 12 Sep 2026: the build emitted a new stylesheet hash but did NOT regenerate
+# .next/server/app/index.html, which kept linking the PREVIOUS build's CSS. That
+# file was gone, so every page served a 404 stylesheet and the live site
+# rendered unstyled -- while the build reported success and the service came up
+# 200, so nothing in this script noticed.
+#
+# A full clean costs some seconds of rebuild. That is cheap next to shipping an
+# unstyled site that looks healthy to every check we have.
+rm -rf .next
 
 yarn build
 sudo systemctl restart bestlooking-skin.service
@@ -50,7 +58,23 @@ sudo systemctl restart bestlooking-skin.service
 for _ in $(seq 1 20); do
   sleep 2
   code=$(curl -s -o /dev/null -w '%{http_code}' -m 20 http://127.0.0.1:3002/ || true)
-  [ "$code" = "200" ] && { echo "deployed: $(git log --oneline -1)"; exit 0; }
+  if [ "$code" = "200" ]; then
+    # Every stylesheet the homepage asks for must actually exist. This is the
+    # exact check that would have caught the 12 Sep 2026 unstyled-site incident:
+    # the page returned 200 while its CSS returned 404.
+    missing=0
+    for href in $(curl -s -m 20 http://127.0.0.1:3002/ \
+                  | grep -o '/_next/static/css/[a-z0-9]*\.css' | sort -u); do
+      css=$(curl -s -o /dev/null -w '%{http_code}' -m 20 "http://127.0.0.1:3002$href" || true)
+      [ "$css" = "200" ] || { echo "MISSING stylesheet: $href -> $css" >&2; missing=1; }
+    done
+    if [ "$missing" = "1" ]; then
+      echo "build served a stylesheet that does not exist -- site would render unstyled" >&2
+      exit 1
+    fi
+    echo "deployed: $(git log --oneline -1)"
+    exit 0
+  fi
 done
 
 echo "site did not return 200 after restart -- check: journalctl -u bestlooking-skin -n 50" >&2
