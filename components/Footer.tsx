@@ -48,8 +48,11 @@ export default async function Footer() {
 
   return (
     <footer className="mt-16 text-white" style={{ backgroundColor: 'var(--sb-footer-bg)' }} data-testid="site-footer">
-      <div className="mx-auto max-w-7xl px-6 py-16">
-        <div className="grid items-start gap-12 lg:grid-cols-[minmax(0,1.6fr)_1fr_1fr_1.1fr]">
+      <div className="mx-auto max-w-7xl py-16">
+        <div className="grid items-start gap-12 lg:grid-cols-[55fr_20fr_20fr_15fr]">{/* Widths as RATIOS, not literal percents: 55/20/20/15 sums to 110%, and
+            percentage tracks over 100% push the last column out of the
+            container. As fr the proportions are exactly 55:20:20:15 and the row
+            still fits, gap included. */}
 
           {/* Lead block */}
           <div className="max-w-md">

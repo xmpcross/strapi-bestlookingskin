@@ -1,6 +1,7 @@
 import PopularCarousel from '@/components/PopularCarousel';
 import BrowseByTopic from '@/components/BrowseByTopic';
 import WeeklyTrending from '@/components/WeeklyTrending';
+import IherbBeautyDeals from '@/components/IherbBeautyDeals';
 
 export type SidebarCategoryTile = { href: string; name: string; count: number; image: string | null };
 export type SidebarRow = { href: string; title: string; date: string; img: string | null; category?: string };
@@ -43,6 +44,13 @@ export default function ArticleSidebar({
           }))}
         />
       )}
+
+      {/* ---- Beauty deals (iHerb, refreshed daily) ---- */}
+      {/* Below the editorial panels deliberately: the trending and category
+          lists are what a reader came for, and a commercial panel above them
+          would read as the page leading with an ad. Renders nothing when the
+          scrape cache is missing. */}
+      <IherbBeautyDeals limit={4} />
 
       {/* ---- Popular (carousel) ---- */}
       <PopularCarousel rows={popular} />

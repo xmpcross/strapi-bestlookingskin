@@ -50,10 +50,22 @@ fi
 #
 # A full clean costs some seconds of rebuild. That is cheap next to shipping an
 # unstyled site that looks healthy to every check we have.
+#
+# The service is STOPPED first, not just restarted afterwards. A running
+# `next start` regenerates ISR pages into .next while the build is writing it,
+# using the manifest the old process loaded at ITS startup. The page it writes
+# therefore links the PREVIOUS build's asset hashes, and it overwrites the HTML
+# the new build just produced. That is what actually caused the unstyled site:
+# clearing .next was not enough, because the old process refilled it.
+#
+# The cost is a few seconds of downtime instead of zero. A short 502 is a much
+# smaller problem than serving a stale, broken page that looks fine to every
+# health check.
+sudo systemctl stop bestlooking-skin.service
 rm -rf .next
 
 yarn build
-sudo systemctl restart bestlooking-skin.service
+sudo systemctl start bestlooking-skin.service
 
 for _ in $(seq 1 20); do
   sleep 2
