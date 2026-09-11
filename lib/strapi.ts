@@ -139,7 +139,22 @@ function scopeFor(collection: CommerceCollection): Record<string, unknown> {
        the pool were backfilled from their tag, and the relation reproduces the
        tag counts exactly (219 / 271 / 147). */
     case 'commerce-products':
-      return { site: { slug: { $eq: SITE_SLUG } } };
+      /*
+       * `productStatus` decides whether a product is listable, and it is
+       * enforced here rather than per-call so no listing can forget it.
+       *
+       * It is what keeps single-offer products out of the grids. A product with
+       * one offer is not a price comparison -- it is one merchant's price with
+       * nothing to check it against -- but it is still worth keeping to write
+       * about, so those rows sit at productStatus 'draft' rather than being
+       * deleted. sync-product-listability.mjs in nxt-sourcing maintains the
+       * flag from the live offer count.
+       *
+       * Doing it in the query rather than after the fetch keeps
+       * meta.pagination honest; filtering in JS silently broke the page counts
+       * on /products.
+       */
+      return { site: { slug: { $eq: SITE_SLUG } }, productStatus: { $eq: 'active' } };
     /*
      * Categories are NOT scoped by their `sites` relation, deliberately.
      *

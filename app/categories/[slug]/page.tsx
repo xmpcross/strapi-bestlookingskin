@@ -39,7 +39,11 @@ export default async function CategoryPage({ params }: { params: Promise<Params>
   const category = await getCategory(slug);
   if (!category) notFound();
 
-  const products = (await listProducts({ category: slug, pageSize: 48 }).catch(() => null))?.data ?? [];
+  /* 100, not 48: the >=2-offer rule is applied after the fetch (offer count is a
+     relation count the API cannot filter on), so the page must see the whole
+     category or it drops qualifying products purely by position. Hyaluronic Acid
+     holds 72, of which 5 qualify. */
+  const products = (await listProducts({ category: slug, pageSize: 100 }).catch(() => null))?.data ?? [];
   const image = mediaUrl(category.image ?? null);
 
   return (
