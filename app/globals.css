@@ -688,13 +688,24 @@ span[class*="uppercase"][class*="tracking"] {
 }
 [data-testid="site-footer"] ul li,
 [data-testid="site-footer"] ul li a {
-  font-weight: 400 !important;
-  font-size: 15px !important;
   /* Demo 14's footer link colour. Set here as well as on the component because
      the site-wide `ul li, ul li a { color:#50657f !important }` rule higher up
      this file targets exactly this selector shape and would otherwise decide
      it -- #50657f on the #343f52 ground is 1.4:1, effectively unreadable. */
   color: #cacaca !important;
+}
+
+/* Footer menu links: Urbanist 500 at 14px, no tracking.
+   Urbanist is self-hosted (public/fonts/Urbanist-Variable-*.woff2, @font-face
+   above), so this costs no extra request. The family needs !important to get
+   past `[data-testid="site-footer"] * { font-family: Inter !important }` a few
+   rules up -- that rule dressed the whole footer in Inter deliberately, and
+   this is the one element now exempted from it. */
+[data-testid="site-footer"] ul li a {
+  font-family: 'Urbanist', system-ui, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
 }
 
 [data-testid="site-footer"] ul li a:hover {

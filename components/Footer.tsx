@@ -2,8 +2,6 @@ import Link from 'next/link';
 import { SITE, SECTIONS } from '@/lib/site';
 import { listCategories, type BlsCategory } from '@/lib/strapi';
 
-const CONTACT_EMAIL = 'hello@bestlooking.skin';
-
 /**
  * Footer in the Sandbox template's layout: a lead block on the left, three link
  * columns, then a rule with the copyright and socials beneath.
@@ -70,51 +68,51 @@ export default async function Footer() {
             </Link>
           </div>
 
-          {/* Need Help? */}
+          {/* About Us */}
           <div>
-            <h3 className="font-display !text-[17px] font-bold text-white">Need Help?</h3>
-            <ul className="mt-5 space-y-3 text-[15px]">
-              <li><Link href="/contact" className={linkClass}>Contact Us</Link></li>
-              <li><Link href="/sitemap" className={linkClass}>Site Map</Link></li>
-              <li><Link href="/legal/terms" className={linkClass}>Terms of Use</Link></li>
-              <li><Link href="/legal/privacy" className={linkClass}>Privacy Policy</Link></li>
-              <li><Link href="/legal/cookies" className={linkClass}>Cookie Policy</Link></li>
-            </ul>
-
-            <h3 className="mt-8 font-display !text-[17px] font-bold text-white">Skin-Concern Hubs</h3>
-            <ul className="mt-5 space-y-3 text-[15px]">
-              {hubsIn('skin-concern-hubs').map((c) => (
-                <li key={c.slug}><Link href={`/${c.slug}`} className={linkClass}>{c.name}</Link></li>
-              ))}
+            <h3 className="font-display !text-[17px] font-bold text-white">About Us</h3>
+            <ul className="mt-5 space-y-2 text-[15px]">
+              <li><Link href="/" className={linkClass}>Home</Link></li>
+              <li><Link href="/about" className={linkClass}>About</Link></li>
+              {/* The articles index. /blog and /articles are not routes -- they
+                  fall through to the catch-all category page, which renders an
+                  empty "No posts here yet" with a 200. */}
+              <li><Link href="/informative-articles" className={linkClass}>All Blog</Link></li>
+              <li><Link href="/faqs" className={linkClass}>FAQs</Link></li>
+              <li><Link href="/sitemap" className={linkClass}>Sitemap</Link></li>
+              <li><Link href="/contact" className={linkClass}>Contact</Link></li>
             </ul>
           </div>
 
           {/* Product-Type Hubs, with Cross-Cutting beneath it */}
           <div>
             <h3 className="font-display !text-[17px] font-bold text-white">Product-Type Hubs</h3>
-            <ul className="mt-5 space-y-3 text-[15px]">
+            <ul className="mt-5 space-y-2 text-[15px]">
               {hubsIn('product-type-hubs').map((c) => (
                 <li key={c.slug}><Link href={`/${c.slug}`} className={linkClass}>{c.name}</Link></li>
               ))}
             </ul>
 
-            <h3 className="mt-8 font-display !text-[17px] font-bold text-white">Cross-Cutting Hubs</h3>
-            <ul className="mt-5 space-y-3 text-[15px]">
+          </div>
+
+          {/* Cross-Cutting Hubs, with Skin-Concern beneath it. Cross-Cutting is
+              the shorter of the two lists, so stacking it on top keeps this
+              column's heading level with the others rather than starting the
+              second heading below the fold of the neighbouring column. */}
+          <div>
+            <h3 className="font-display !text-[17px] font-bold text-white">Cross-Cutting Hubs</h3>
+            <ul className="mt-5 space-y-2 text-[15px]">
               {hubsIn('cross-cutting-hubs').map((c) => (
                 <li key={c.slug}><Link href={`/${c.slug}`} className={linkClass}>{c.name}</Link></li>
               ))}
             </ul>
-          </div>
 
-          {/* Get in Touch — email only. No invented address or phone. */}
-          <div>
-            <h3 className="font-display !text-[17px] font-bold text-white">Get in Touch</h3>
-            <p className="mt-5 text-[15px] leading-7 text-[#cacaca]">
-              Questions, corrections or a product we should look at — we read everything.
-            </p>
-            <a href={`mailto:${CONTACT_EMAIL}`} className="mt-3 inline-block text-[15px] text-white underline-offset-4 hover:underline">
-              {CONTACT_EMAIL}
-            </a>
+            <h3 className="mt-8 font-display !text-[17px] font-bold text-white">Skin-Concern Hubs</h3>
+            <ul className="mt-5 space-y-2 text-[15px]">
+              {hubsIn('skin-concern-hubs').map((c) => (
+                <li key={c.slug}><Link href={`/${c.slug}`} className={linkClass}>{c.name}</Link></li>
+              ))}
+            </ul>
           </div>
         </div>
 
