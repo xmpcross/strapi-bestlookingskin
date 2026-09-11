@@ -19,12 +19,16 @@ export default function PostFooterNav({
   tags,
   prev,
   next,
+  children,
 }: {
   title: string;
   url: string;
   tags: Tag[];
   prev: BlsPost | null;
   next: BlsPost | null;
+  /** Rendered between the tags row and prev/next -- the author card sits here,
+   *  so the reader meets who wrote it before being offered the next article. */
+  children?: React.ReactNode;
 }) {
   const enc = encodeURIComponent;
   const share = [
@@ -100,8 +104,10 @@ export default function PostFooterNav({
         </div>
       </div>
 
+      {children}
+
       {(prev || next) && (
-        <div className="mt-8 grid gap-8 sm:grid-cols-2">
+        <div className="mt-10 grid gap-8 border-t border-ink/10 pt-8 sm:grid-cols-2">
           <div>{prev && <Card post={prev} side="prev" />}</div>
           <div>{next && <Card post={next} side="next" />}</div>
         </div>
