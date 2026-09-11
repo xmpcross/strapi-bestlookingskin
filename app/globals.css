@@ -848,15 +848,12 @@ h6, .post-content h6 { font-size: 17px !important; line-height: 1.55 !important;
 /* Single post body heading sizes. !important because imported WordPress and
    Elementor bodies carry inline font-size on their headings, which would
    otherwise win over a class rule. */
-.post-content h2,
-.post-content h2 * {
-  font-size: 1.6rem !important;
-}
-
-.post-content h3,
-.post-content h3 * {
-  font-size: 1.2rem !important;
-}
+/* Removed: this pair sat below the article-body sizes and silently overrode
+   them, so .post-content h2 rendered at 1.6rem while the rule above declared
+   1.4rem, and h3 at 1.2rem while the rule above declared 17px. Same specificity,
+   later in the file, so this one decided. Fourth duplicate-selector bug in this
+   stylesheet -- the list-item margins, the h2/h3 margins and the site-wide sizes
+   were the others. Worth a de-duplication pass. */
 
 /* Post body text follows the site Urbanist body setting. */
 .post-content {

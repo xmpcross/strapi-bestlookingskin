@@ -15,6 +15,7 @@ import PullQuote from '@/components/PullQuote';
 import ReadAlso from '@/components/ReadAlso';
 import InlineProducts from '@/components/InlineProducts';
 import PostFooterNav from '@/components/PostFooterNav';
+import CommentForm from '@/components/CommentForm';
 import RelatedCarousel from '@/components/RelatedCarousel';
 import ArticleSidebar from '@/components/ArticleSidebar';
 
@@ -501,6 +502,11 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
               </div>
             )}
           </PostFooterNav>
+
+          <CommentForm
+            postTitle={post.title}
+            postUrl={`${SITE.url}/${category}/${post.slug}`}
+          />
 
 
 

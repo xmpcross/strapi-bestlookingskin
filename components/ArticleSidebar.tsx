@@ -20,8 +20,8 @@ export default function ArticleSidebar({
 
   return (
     <aside className="space-y-10" aria-label="Sidebar" data-testid="article-sidebar">
-      {/* ---- Popular (carousel, sits above Categories) ---- */}
-      <PopularCarousel rows={popular} />
+      {/* ---- Weekly trending (above Categories) ---- */}
+      <WeeklyTrending rows={rows} />
 
       {/* ---- Categories ---- */}
       {/* Same card as the product page's Browse by topic, so a reader moving
@@ -44,8 +44,8 @@ export default function ArticleSidebar({
         />
       )}
 
-      {/* ---- Weekly trending ---- */}
-      <WeeklyTrending rows={rows} />
+      {/* ---- Popular (carousel) ---- */}
+      <PopularCarousel rows={popular} />
     </aside>
   );
 }

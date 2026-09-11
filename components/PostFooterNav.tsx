@@ -65,7 +65,7 @@ export default function PostFooterNav({
 
   return (
     <div data-testid="post-footer-nav">
-      <div className="mt-12 border-y border-ink/10 py-5">
+      <div className="mt-6 border-y border-ink/10 py-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <ul className="flex flex-wrap gap-3">
             {tags.map((t) => (
