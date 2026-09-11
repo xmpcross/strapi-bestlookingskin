@@ -1742,3 +1742,34 @@ article[data-testid^="post-"] {
 @media (prefers-reduced-motion: reduce) {
   .faq-icon::before, .faq-icon::after, .faq-question { transition: none; }
 }
+
+
+/* ---- Single post body: Outfit 300 -------------------------------------
+   Scoped to .post-content, so it covers the article body on post pages and
+   nothing else. Outfit is self-hosted as a variable face at 100-900, so 300 is
+   a real weight here rather than a synthesised light.
+
+   'Outfit' is named directly rather than through --font-outfit: that variable
+   is an alias pointing at Inter, kept so the font-outfit utility classes
+   scattered through the markup all resolve to the one site font. Repointing it
+   would have moved those too.
+
+   !important because `body * { font-family: Inter !important }` sits above and
+   would otherwise win on every descendant. */
+.post-content,
+.post-content p,
+.post-content li,
+.post-content blockquote,
+.post-content figcaption {
+  font-family: 'Outfit', system-ui, sans-serif !important;
+  font-weight: 300 !important;
+}
+
+/* Headings keep their own weight -- 300 headings on a 300 body would flatten
+   the hierarchy the sizes were just tuned for. */
+.post-content h1, .post-content h2, .post-content h3,
+.post-content h4, .post-content h5, .post-content h6,
+.post-content strong, .post-content b {
+  font-family: 'Outfit', system-ui, sans-serif !important;
+  font-weight: 700 !important;
+}
