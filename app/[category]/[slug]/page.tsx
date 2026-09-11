@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 // Single post stylesheet, loaded on all article single pages (App Router
 // code-splits this CSS to the post route).
 import '../../custom.css';
-import { getPost, listPosts, listCategories, listProductsForHub, mediaUrl, type BlsPost } from '@/lib/strapi';
+import { getPost, listPosts, listCategories, listProductsForHub, getAdjacentPosts, mediaUrl, type BlsPost } from '@/lib/strapi';
 import { SECTIONS, SITE } from '@/lib/site';
 import { fmtDate, firstImageUrl, primaryCategorySlug, postPath } from '@/lib/format';
 import { withHeadingIds } from '@/lib/toc';
@@ -14,6 +14,7 @@ import AuthorAvatar from '@/components/AuthorAvatar';
 import PullQuote from '@/components/PullQuote';
 import ReadAlso from '@/components/ReadAlso';
 import InlineProducts from '@/components/InlineProducts';
+import PostFooterNav from '@/components/PostFooterNav';
 import RelatedCarousel from '@/components/RelatedCarousel';
 import ArticleSidebar from '@/components/ArticleSidebar';
 
@@ -212,6 +213,8 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
   const inlineProducts = await listProductsForHub(category, 3).catch(() => []);
   const readAlsoRows = recentRows.filter((r) => r.href !== postPath(post)).slice(0, 2);
 
+  const { prev: prevPost, next: nextPost } = await getAdjacentPosts(category, slug);
+
   const articleJsonLd = {
     '@context': 'https://schema.org',
     '@type': post.postType === 'product-review' ? 'Review' : 'Article',
@@ -347,7 +350,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
             </Link>.
           </div>
 
-          <div id="article-body">
+          <div id="article-body" className="after:clear-both after:block after:content-['']">
             <PostContent html={bodyFirst} />
             {/*
               Gallery images are rendered here rather than embedded in the body.
@@ -362,28 +365,57 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
 
             {inlineProducts.length >= 2 && <InlineProducts products={inlineProducts} />}
 
+            {/* Floated so the text wraps alongside, as in the reference. Full
+                width on small screens -- a 45% float in a 360px column leaves
+                two words a line. Captions use alternativeText where the image
+                actually has one; nothing is written to fill the space. */}
             {galleryImages[0] && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={galleryImages[0]}
-                alt={post.gallery?.[0]?.alternativeText || post.title}
-                className="my-10 aspect-[16/9] w-full rounded-2xl object-cover"
-                loading="lazy"
-              />
+              <figure className="mb-6 sm:float-left sm:mr-7 sm:mb-4 sm:w-[45%]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={galleryImages[0]}
+                  alt={post.gallery?.[0]?.alternativeText || post.title}
+                  className="aspect-[4/5] w-full rounded-lg object-cover"
+                  loading="lazy"
+                />
+                {post.gallery?.[0]?.alternativeText && (
+                  <figcaption className="mt-3 text-[13px] leading-5 text-ink/50">
+                    {post.gallery[0].alternativeText}
+                  </figcaption>
+                )}
+              </figure>
             )}
             {bodySecond ? <PostContent html={bodySecond} /> : null}
             {readAlsoRows.length === 2 && <ReadAlso rows={readAlsoRows} />}
 
             {galleryImages[1] && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={galleryImages[1]}
-                alt={post.gallery?.[1]?.alternativeText || post.title}
-                className="mt-10 aspect-[16/9] w-full rounded-2xl object-cover"
-                loading="lazy"
-              />
+              <figure className="mb-6 sm:float-right sm:ml-7 sm:mb-4 sm:w-[45%]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={galleryImages[1]}
+                  alt={post.gallery?.[1]?.alternativeText || post.title}
+                  className="aspect-[4/3] w-full rounded-lg object-cover"
+                  loading="lazy"
+                />
+                {post.gallery?.[1]?.alternativeText && (
+                  <figcaption className="mt-3 text-[13px] leading-5 text-ink/50">
+                    {post.gallery[1].alternativeText}
+                  </figcaption>
+                )}
+              </figure>
             )}
           </div>
+
+          <PostFooterNav
+            title={post.title}
+            url={`${SITE.url}/${category}/${post.slug}`}
+            tags={[
+              { label: cat?.name ?? categoryName(category), href: `/${category}` },
+              ...(post.postType ? [{ label: post.postType.replace(/-/g, ' ') }] : []),
+            ]}
+            prev={prevPost}
+            next={nextPost}
+          />
 
           {post.author?.bio && (
             <div

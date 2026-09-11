@@ -306,6 +306,35 @@ export async function listAuthors(): Promise<BlsAuthor[]> {
   return res.data;
 }
 
+/**
+ * The posts either side of this one, by publish date within its category.
+ *
+ * Fetched as one ordered page and walked, rather than two $lt/$gt queries: the
+ * category holds a handful of posts, and one request that cannot disagree with
+ * itself beats two that can when several share a timestamp -- which they do
+ * here, since a batch was published together.
+ */
+export async function getAdjacentPosts(
+  category: string,
+  slug: string,
+): Promise<{ prev: BlsPost | null; next: BlsPost | null }> {
+  try {
+    const res = await strapiFetch<ListResponse<BlsPost>>('bls-posts', {
+      filters: { categories: { slug: { $eqi: category } } },
+      fields: ['title', 'slug', 'publishedAt'],
+      populate: ['coverImage', 'categories'],
+      sort: ['publishedAt:desc', 'slug:asc'],
+      pagination: { pageSize: 100 },
+    });
+    const rows = res.data ?? [];
+    const i = rows.findIndex((p) => p.slug === slug);
+    if (i === -1) return { prev: null, next: null };
+    return { prev: rows[i + 1] ?? null, next: rows[i - 1] ?? null };
+  } catch {
+    return { prev: null, next: null };
+  }
+}
+
 export async function listCategories(): Promise<BlsCategory[]> {
   const res = await strapiFetch<ListResponse<BlsCategory>>('bls-categories', {
     sort: ['order:asc', 'name:asc'],
