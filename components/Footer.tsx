@@ -72,14 +72,14 @@ export default async function Footer() {
           <div>
             <h3 className="font-display !text-[17px] font-bold text-white">About Us</h3>
             <ul className="mt-5 space-y-2 text-[15px]">
-              <li><Link href="/" className={linkClass}>Home</Link></li>
+              <li><Link href="/" className={linkClass}>{SITE.name}</Link></li>
               <li><Link href="/about" className={linkClass}>Our Story</Link></li>
               {/* The articles index. /blog and /articles are not routes -- they
                   fall through to the catch-all category page, which renders an
                   empty "No posts here yet" with a 200. */}
-              <li><Link href="/informative-articles" className={linkClass}>All Blog</Link></li>
-              <li><Link href="/faqs" className={linkClass}>FAQs</Link></li>
-              <li><Link href="/sitemap" className={linkClass}>Sitemap</Link></li>
+              <li><Link href="/informative-articles" className={linkClass}>All Articles</Link></li>
+              <li><Link href="/faqs" className={linkClass}>Help &amp; Support</Link></li>
+              <li><Link href="/sitemap" className={linkClass}>Site Map</Link></li>
               <li><Link href="/contact" className={linkClass}>Get in Touch</Link></li>
             </ul>
           </div>
