@@ -5,10 +5,15 @@ import StickyHeaderShadow from '@/components/StickyHeaderShadow';
 
 type NavChild = { label: string; href: string; heading?: false } | { label: string; heading: true };
 
+/** One column of the Topics mega menu: a group heading and its hubs. */
+type NavGroup = { label: string; items: { label: string; href: string }[] };
+
 type NavItem = {
   label: string;
   href?: string;
   children?: NavChild[];
+  /** Present instead of `children` when the item opens a mega menu. */
+  groups?: NavGroup[];
 };
 
 export default async function Header() {
@@ -47,23 +52,27 @@ export default async function Header() {
   const groupLabel = new Map(
     allCategories.filter((c) => isGroupRow(c.slug)).map((c) => [c.slug, c.name]),
   );
-  const topicChildren: NavChild[] = [];
+  const topicGroups: NavGroup[] = [];
   for (const groupSlug of groupOrder) {
     const members = hubs.filter((h) => h.parent?.slug === groupSlug);
     if (!members.length) continue;
-    topicChildren.push({ label: groupLabel.get(groupSlug) ?? groupSlug, heading: true });
-    for (const m of members) topicChildren.push({ label: m.name, href: `/${m.slug}` });
+    topicGroups.push({
+      label: groupLabel.get(groupSlug) ?? groupSlug,
+      items: members.map((m) => ({ label: m.name, href: `/${m.slug}` })),
+    });
   }
   const ungrouped = hubs.filter((h) => !h.parent || !isGroupRow(h.parent.slug));
   if (ungrouped.length) {
-    topicChildren.push({ label: 'More', heading: true });
-    for (const m of ungrouped) topicChildren.push({ label: m.name, href: `/${m.slug}` });
+    topicGroups.push({
+      label: 'More',
+      items: ungrouped.map((m) => ({ label: m.name, href: `/${m.slug}` })),
+    });
   }
 
   const nav: NavItem[] = [
     { label: 'Products', href: '/products' },
     { label: 'Brands', href: '/brands' },
-    ...(topicChildren.length ? [{ label: 'Topics', children: topicChildren }] : []),
+    ...(topicGroups.length ? [{ label: 'Topics', groups: topicGroups }] : []),
     {
       label: 'Articles',
       href: '/informative-articles',
@@ -148,7 +157,7 @@ export default async function Header() {
               const testId = `nav-${item.label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
               const linkClass =
                 'inline-flex items-center gap-1 whitespace-nowrap rounded-md px-0 py-2 font-semibold tracking-[0.2px] text-ink/85 transition-colors hover:text-primary';
-              if (!item.children) {
+              if (!item.children && !item.groups) {
                 return (
                   <li key={item.label}>
                     <Link href={item.href!} className={linkClass} data-testid={testId}>
@@ -185,12 +194,54 @@ export default async function Header() {
                     </svg>
                   </button>
                   <span className="absolute left-0 right-0 top-full hidden h-2 lg:block" aria-hidden />
+                  {item.groups ? (
+                    /*
+                     * Mega menu. Fifteen hubs in a single scrolling dropdown
+                     * meant the last group sat below the fold; side-by-side
+                     * columns show every group at once, and the reader can see
+                     * the shape of the taxonomy rather than one long list.
+                     *
+                     * flex-wrap rather than a fixed column count: the groups are
+                     * built from the CMS, so the number of them is not known
+                     * here, and a narrow window wraps a column instead of
+                     * pushing the panel off-screen. Right-anchored and capped at
+                     * the viewport width for the same reason -- Topics sits near
+                     * the right end of the nav.
+                     */
+                    <div
+                      role="menu"
+                      className="invisible absolute right-0 top-[calc(100%+0.5rem)] z-20 flex max-w-[calc(100vw-3rem)] flex-wrap gap-x-10 gap-y-6 rounded-md border border-ink/10 bg-paper px-6 py-5 opacity-0 shadow-lg transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
+                      data-testid={`${testId}-megamenu`}
+                    >
+                      {item.groups.map((group) => (
+                        <div key={group.label} className="min-w-[11rem]">
+                          <p className="pb-2 text-xs font-bold uppercase tracking-wider text-ink/45">
+                            {group.label}
+                          </p>
+                          <ul role="none" className="space-y-1">
+                            {group.items.map((child) => (
+                              <li key={child.href} role="none">
+                                <Link
+                                  href={child.href}
+                                  role="menuitem"
+                                  className="block whitespace-nowrap rounded px-2 py-1.5 text-base !font-medium text-ink/85 transition-colors hover:bg-muted hover:text-primary"
+                                  data-testid={`nav-${child.label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`}
+                                >
+                                  {child.label}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
                   <ul
                     role="menu"
                     className="invisible absolute right-0 top-[calc(100%+0.5rem)] z-20 min-w-[14rem] rounded-md border border-ink/10 bg-paper py-2 opacity-0 shadow-lg transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
                     data-testid={`${testId}-dropdown`}
                   >
-                    {item.children.map((child) => (
+                    {item.children!.map((child) => (
                       child.heading ? (
                         <li key={`h-${child.label}`} role="presentation">
                           <span className="block px-4 pb-1 pt-3 text-xs font-bold uppercase tracking-wider text-ink/45">
@@ -211,6 +262,7 @@ export default async function Header() {
                       )
                     ))}
                   </ul>
+                  )}
                 </li>
               );
             })}
