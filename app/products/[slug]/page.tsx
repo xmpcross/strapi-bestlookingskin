@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getProduct, listProducts, listPosts, getPriceHistory, listProductReviews, mediaUrl, type BlsProduct, type BlsPost } from '@/lib/strapi';
+import { getProduct, listProducts, listPosts, getPriceHistory, listProductReviews, mediaUrl, type BlsProduct, type BlsPost, listProductCategoryCounts } from '@/lib/strapi';
 import { SITE } from '@/lib/site';
 import { fmtDate, firstImageUrl, postPath } from '@/lib/format';
 import ProductCard from '@/components/ProductCard';
@@ -12,6 +12,7 @@ import ReviewForm from '@/components/ReviewForm';
 import ReviewList from '@/components/ReviewList';
 import PriceBadges from '@/components/PriceBadges';
 import ProductSpecs from '@/components/ProductSpecs';
+import BrowseByTopic from '@/components/BrowseByTopic';
 import CollapsibleDescription from '@/components/CollapsibleDescription';
 
 export const revalidate = 60;
@@ -59,6 +60,9 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
     : null;
   const related = (relatedRes?.data ?? []).filter((p) => p.id !== product.id).slice(0, 5);
 
+  // Sidebar topic list: this site's categories with live product counts.
+  const topicRows = await listProductCategoryCounts().catch(() => []);
+
   // Price-history points (from commerce-price-snapshots) for the Price History tab.
   const priceHistory = await getPriceHistory(product.documentId ?? '');
   const productReviews = await listProductReviews(product.documentId ?? '');
@@ -83,7 +87,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
  * nothing on all 219 products. Worth fixing separately -- the spec data is
  * there and paid for -- at which point flip this back to true.
  */
-const SHOW_PRODUCT_SIDEBAR = false;
+const SHOW_PRODUCT_SIDEBAR = true;
 
 const SPEC_LABEL_OVERRIDES: Record<string, string> = {
     'recommended uses for product': 'Recommended Uses',
@@ -564,13 +568,15 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
             {/* Offset spacer column (~5%). */}
             <div aria-hidden className="hidden lg:block" />
 
-            {/* Right column — specifications (falls back to recent posts when a
-                product has no specs). */}
-            {specRows.length > 0 || (product.keyFeatures?.length ?? 0) > 0 ? (
-              <ProductSpecs specs={specRows} pros={product.keyFeatures ?? []} />
-            ) : (
-              <ArticleSidebar popular={recentRows} recent={recentRows} />
-            )}
+            {/* Right column. Topic browsing first -- it is useful on every
+                product, where the specs panel is only useful when a product has
+                spec rows, and the old recent-articles fallback was filler. */}
+            <div className="space-y-6">
+              <BrowseByTopic rows={topicRows} />
+              {(specRows.length > 0 || (product.keyFeatures?.length ?? 0) > 0) && (
+                <ProductSpecs specs={specRows} pros={product.keyFeatures ?? []} />
+              )}
+            </div>
           </>
         )}
       </div>

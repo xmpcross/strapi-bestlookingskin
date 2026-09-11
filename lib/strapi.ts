@@ -663,6 +663,35 @@ export async function listProductCategories(): Promise<BlsProductCategory[]> {
   return res.data;
 }
 
+/**
+ * Product categories with how many of this site's products sit in each.
+ *
+ * One count query per category rather than a groupBy, because Strapi's REST
+ * layer has no aggregate -- six cheap requests, cached by the same revalidate as
+ * everything else. Goes through commerceFetch, so the site scope is applied and
+ * the counts match what the category pages actually list.
+ */
+export async function listProductCategoryCounts(): Promise<
+  { slug: string; name: string; count: number }[]
+> {
+  const cats = await listProductCategories();
+  const counted = await Promise.all(
+    cats.map(async (c) => {
+      try {
+        const res = await commerceFetch<ListResponse<{ id: number }>>('commerce-products', {
+          filters: { categories: { slug: { $eqi: c.slug } } },
+          fields: ['id'],
+          pagination: { page: 1, pageSize: 1 },
+        });
+        return { slug: c.slug, name: c.name, count: res.meta?.pagination?.total ?? 0 };
+      } catch {
+        return { slug: c.slug, name: c.name, count: 0 };
+      }
+    }),
+  );
+  return counted.filter((c) => c.count > 0);
+}
+
 export async function listProductBrands(): Promise<BlsProductBrand[]> {
   /*
    * commerce-brands is shared across every storefront on this CMS and, like

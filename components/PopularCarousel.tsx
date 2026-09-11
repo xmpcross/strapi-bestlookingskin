@@ -41,7 +41,10 @@ export default function PopularCarousel({ rows }: { rows: SidebarRow[] }) {
               className="aspect-[4/3] w-full object-cover"
               loading="lazy"
             />
-            <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/25 to-transparent" />
+            {/* Light dark tint across the whole image, plus a stronger foot so the
+                title stays readable over a busy photograph. */}
+            <span aria-hidden className="absolute inset-0 bg-ink/35" />
+            <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent" />
 
             {current.category && (
               <span className="absolute left-3 top-3 rounded bg-white/85 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-ink backdrop-blur-sm">
@@ -57,7 +60,7 @@ export default function PopularCarousel({ rows }: { rows: SidebarRow[] }) {
             */}
             <span className="absolute inset-x-3 bottom-3 block">
               <span
-                className="font-display text-[17px] font-bold leading-[1.35] text-white"
+                className="pc-title font-display text-[17px] font-bold leading-[1.35] text-white"
                 style={{ textShadow: '0 1px 3px rgba(0,0,0,.55), 0 0 14px rgba(0,0,0,.35)' }}
               >
                 {current.title}
