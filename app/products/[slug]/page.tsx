@@ -81,11 +81,14 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
  * Right sidebar on the product page, hidden for now at the site owner's request.
  *
  * It shows ProductSpecs when a product has spec rows, and falls back to a
- * recent-articles rail when it does not. Right now every product takes the
- * fallback: specRows is built from `product.specs.technicalSpecs`, but the
- * sourcing pipeline writes specs flat at the top level, so the lookup finds
- * nothing on all 219 products. Worth fixing separately -- the spec data is
- * there and paid for -- at which point flip this back to true.
+ * recent-articles rail when it does not.
+ *
+ * For a long time every product took the fallback: specRows reads
+ * `product.specs.technicalSpecs` while the sourcing pipeline wrote specs flat
+ * at the top level, so the lookup found nothing on all 219 products. The iHerb
+ * enricher writes the nested shape, so the 72 products it has been run over are
+ * the first to render a specs table. The older 219 still need a migration into
+ * the same shape -- the data is there and paid for.
  */
 const SHOW_PRODUCT_SIDEBAR = true;
 
