@@ -105,7 +105,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
   // Strip <em> / </em> tags from the post body — text content is kept, only
   // the wrapping element is removed (so italic emphasis no longer renders).
   // \b avoids matching <embed>; [^>]* handles any attributes.
-  const postBodyHtml = (post.content ?? '')
+  const postBodyRaw = (post.content ?? '')
     // Collapse "<wbr>/<wbr>" sequences to a single "<wbr>" (drops the slash).
     .replace(/<wbr\s*\/?>\s*\/\s*<wbr\s*\/?>/gi, '<wbr>')
     .replace(/<\/?em\b[^>]*>/gi, '')
@@ -119,13 +119,27 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
     // This also removes the empty <p></p> immediately above and below the
     // removed marker.
     .replace(/<p\b[^>]*>(?:\s|&nbsp;|&#160;|<br\s*\/?>)*<\/p>/gi, '')
-    // Promote body heading levels (h3→h2, h4→h3, h5→h4). Single-pass map so an
-    // already-shifted tag isn't shifted again. Attributes/classes (incl. GSPB
-    // ids) are preserved, so class/id-based styling still applies.
-    .replace(/<(\/?)(h3|h4|h5)(\b[^>]*)>/gi, (_m, slash, tag, rest) => {
-      const map: Record<string, string> = { h3: 'h2', h4: 'h3', h5: 'h4' };
-      return `<${slash}${map[tag.toLowerCase()]}${rest}>`;
-    });
+    ;
+
+  /*
+   * Promote heading levels only for bodies that start at h3.
+   *
+   * The imported WordPress posts open their sections at h3, because the old
+   * theme used h2 for the article title -- so those need shifting up to read as
+   * a sensible outline. Generated posts already use h2 for sections and h3 for
+   * subsections. Running the shift over those flattened every h3 into an h2:
+   * best-oil-free-moisturizer went from 8 h2 + 20 h3 to 28 h2 and no
+   * subheadings at all, on every one of the 75 planned posts.
+   *
+   * So the shift is now conditional on the body containing no h2 of its own.
+   */
+  const bodyStartsAtH3 = !/<h2\b/i.test(postBodyRaw);
+  const postBodyHtml = bodyStartsAtH3
+    ? postBodyRaw.replace(/<(\/?)(h3|h4|h5)(\b[^>]*)>/gi, (_m, slash, tag, rest) => {
+        const map: Record<string, string> = { h3: 'h2', h4: 'h3', h5: 'h4' };
+        return `<${slash}${map[tag.toLowerCase()]}${rest}>`;
+      })
+    : postBodyRaw;
 
   // Split the body near its mid-point so the in-article ad lands in the middle
   // of the blog. Prefer a heading boundary (clean section break); fall back to
