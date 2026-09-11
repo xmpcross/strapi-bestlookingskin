@@ -1803,3 +1803,27 @@ article[data-testid^="post-"] {
   font-family: 'Outfit', system-ui, sans-serif !important;
   font-weight: 700 !important;
 }
+
+/* ---- Site-wide body copy: Outfit 300 ----------------------------------
+   Body and paragraphs across every page, not just the article body.
+
+   This has to out-specify `body, body * { font-family: Inter !important }`
+   further up, which is why `body p` (0,0,2) rather than a bare `p` (0,0,1) --
+   at equal specificity the earlier rule would keep winning on every descendant.
+
+   What deliberately keeps its own face and weight, because each is more
+   specific than this and already carries !important:
+     - the footer, dressed in Inter by `[data-testid="site-footer"] *`, with its
+       menu links in Urbanist 500;
+     - `.post-content` headings and bold runs at 700 -- 300 headings over a 300
+       body would flatten the hierarchy the sizes were tuned for;
+     - anything with a Tailwind weight utility, which sets font-weight itself.
+
+   Outfit is self-hosted as a variable face at 100-900, so 300 is a real weight
+   here rather than a browser-synthesised light. It is named directly rather
+   than through --font-outfit, which is an alias pointing at Inter. */
+body,
+body p {
+  font-family: 'Outfit', system-ui, sans-serif !important;
+  font-weight: 300 !important;
+}
