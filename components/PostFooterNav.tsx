@@ -67,11 +67,11 @@ export default function PostFooterNav({
             {tags.map((t) => (
               <li key={t.label}>
                 {t.href ? (
-                  <Link href={t.href} className="block rounded border border-ink/15 px-4 py-2 text-[13px] text-ink/70 transition hover:border-ink/30 hover:text-primary">
+                  <Link href={t.href} className="inline-flex min-h-[38px] items-center justify-center rounded border border-ink/15 px-4 text-[13px] leading-none text-ink/70 transition hover:border-ink/30 hover:text-primary">
                     {t.label}
                   </Link>
                 ) : (
-                  <span className="block rounded border border-ink/15 px-4 py-2 text-[13px] text-ink/70">{t.label}</span>
+                  <span className="inline-flex min-h-[38px] items-center justify-center rounded border border-ink/15 px-4 text-[13px] leading-none text-ink/70">{t.label}</span>
                 )}
               </li>
             ))}

@@ -234,6 +234,17 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
     return [bodySecond.slice(0, m.index), bodySecond.slice(m.index)] as const;
   })();
 
+  /* Two paragraphs held back so the products block is never flush against the
+     right-floated image: text sits above it and below it. Asked for as "move it
+     up 2 paragraphs", and the split is on a paragraph close so the cut lands
+     between elements. */
+  const [bodyMid, bodyBeforeImage] = (() => {
+    const closes = [...bodyAfterIntro.matchAll(/<\/p>/gi)].map((m) => (m.index ?? 0) + m[0].length);
+    if (closes.length < 3) return [bodyAfterIntro, ''] as const;
+    const cut = closes[closes.length - 3];
+    return [bodyAfterIntro.slice(0, cut), bodyAfterIntro.slice(cut)] as const;
+  })();
+
   const { prev: prevPost, next: nextPost } = await getAdjacentPosts(category, slug);
 
   const articleJsonLd = {
@@ -320,15 +331,20 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
 
           {/* Category and format, as the tags in the reference. Both are real
               fields, so neither is decoration. */}
+          {/* inline-flex, not inline: vertical padding on an inline element does
+              not grow its line box, which left the label sitting off-centre in
+              the border. text-indent offsets the trailing letter-space that
+              tracking-wider adds after the last character, which otherwise
+              pushes the text visibly left of centre. */}
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
               href={`/${category}`}
-              className="rounded border border-ink/15 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-ink/70 transition hover:border-ink/30 hover:text-primary"
+              className="inline-flex min-h-[34px] items-center justify-center rounded border border-ink/15 px-4 text-[11px] font-bold uppercase leading-none tracking-wider text-ink/70 transition [text-indent:0.09em] hover:border-ink/30 hover:text-primary"
             >
               {cat?.name ?? categoryName(category)}
             </Link>
             {post.postType && (
-              <span className="rounded border border-ink/15 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-ink/70">
+              <span className="inline-flex min-h-[34px] items-center justify-center rounded border border-ink/15 px-4 text-[11px] font-bold uppercase leading-none tracking-wider text-ink/70 [text-indent:0.09em]">
                 {post.postType.replace(/-/g, ' ')}
               </span>
             )}
@@ -399,7 +415,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
 
             {readAlsoRows.length === 2 && <ReadAlso rows={readAlsoRows} />}
 
-            {bodyAfterIntro && <PostContent html={bodyAfterIntro} />}
+            {bodyMid && <PostContent html={bodyMid} />}
             {/*
               Gallery images are rendered here rather than embedded in the body.
               The generator reports "embedded N contextual image(s)" for every
@@ -409,6 +425,12 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
               Rendering from the relation keeps the stored content clean and
               means the placement can change without rewriting every post.
             */}
+
+            {/* Products, then two paragraphs, then the image. Previously they
+                rendered flush against the float and the pair read as one advert. */}
+            {inlineProducts.length >= 2 && <InlineProducts products={inlineProducts} />}
+
+            {bodyBeforeImage && <PostContent html={bodyBeforeImage} />}
 
             {galleryImages[1] && (
               <figure className="mb-6 sm:float-right sm:ml-7 sm:mb-4 sm:w-[45%]">
@@ -427,12 +449,6 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
               </figure>
             )}
 
-            {/* Products sit here, not next to the floated gallery images. In the
-                previous order they rendered immediately above the first one, so
-                a product grid and a photograph stacked directly on top of each
-                other and the section read as one large advert. The pull quote
-                between them keeps text on both sides of the block. */}
-            {inlineProducts.length >= 2 && <InlineProducts products={inlineProducts} />}
 
             {pullQuote && <PullQuote text={pullQuote} />}
 

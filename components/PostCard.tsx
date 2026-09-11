@@ -8,12 +8,19 @@ export default function PostCard({
   post,
   variant = 'tile',
   thumbBg = 'bg-muted',
+  fit = 'contain',
+  thumbRadius = 'rounded-3xl',
 }: {
   post: BlsPost;
   variant?: Variant;
   /** Tailwind class for the thumbnail's surface (background behind the
    *  product photo). Default `bg-muted`; pass `bg-white` to remove the gray. */
   thumbBg?: string;
+  /** Product tiles are cut-outs on white and want object-contain plus the
+   *  multiply blend. Editorial covers are photographs: contain letterboxes them,
+   *  which reads as padding inside the card, so those pass 'cover'. */
+  fit?: 'cover' | 'contain';
+  thumbRadius?: string;
 }) {
   // Cover image: prefer Strapi coverImage; fall back to the first <img> in the
   // post body (typically the first product image in a comparison/roundup).
@@ -24,13 +31,13 @@ export default function PostCard({
   if (variant === 'feature') {
     return (
       <article className="group" data-testid={`feature-${post.slug}`}>
-        <Link href={href} className={`block overflow-hidden rounded-3xl ${thumbBg}`}>
+        <Link href={href} className={`block overflow-hidden ${thumbRadius} ${thumbBg}`}>
           {img ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={img}
               alt={post.coverImage?.alternativeText || post.title}
-              className="aspect-[16/10] w-full object-contain mix-blend-multiply transition duration-500 group-hover:scale-[1.02]"
+              className={`aspect-[16/10] w-full transition duration-500 group-hover:scale-[1.02] ${fit === 'cover' ? 'object-cover' : 'object-contain mix-blend-multiply'}`}
             />
           ) : (
             <div className="aspect-[16/10] w-full bg-gradient-to-br from-primary-hover to-primary" />
@@ -93,13 +100,19 @@ export default function PostCard({
   // tile (default)
   return (
     <article className="group flex flex-col" data-testid={`tile-${post.slug}`}>
-      <Link href={href} className={`block overflow-hidden rounded-3xl p-5 ${thumbBg}`}>
+      {/* p-5 only when the thumbnail is a product cut-out that needs breathing
+          room on its panel. A cover photograph gets none -- padding plus
+          object-contain letterboxes it twice over. */}
+      <Link
+        href={href}
+        className={`block overflow-hidden ${thumbRadius} ${fit === 'cover' ? '' : 'p-5'} ${thumbBg}`}
+      >
         {img ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={img}
             alt={post.coverImage?.alternativeText || post.title}
-            className="aspect-[4/3] w-full object-contain mix-blend-multiply transition duration-500 group-hover:scale-[1.02]"
+            className={`aspect-[4/3] w-full transition duration-500 group-hover:scale-[1.02] ${fit === 'cover' ? 'object-cover' : 'object-contain mix-blend-multiply'}`}
           />
         ) : (
           <div className="aspect-[4/3] w-full bg-gradient-to-br from-primary-hover to-primary" />

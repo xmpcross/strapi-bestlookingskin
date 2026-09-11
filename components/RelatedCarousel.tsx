@@ -46,7 +46,16 @@ export default function RelatedCarousel({ posts }: { posts: BlsPost[] }) {
                 aria-hidden={i !== page}
               >
                 {slice.map((p) => (
-                  <PostCard key={p.id} post={p} variant="tile" />
+                  <PostCard
+                    key={p.id}
+                    post={p}
+                    variant="tile"
+                    /* Editorial covers: fill the frame at 8px, with no
+                       letterboxing masquerading as padding. */
+                    fit="cover"
+                    thumbRadius="rounded-lg"
+                    thumbBg="bg-transparent"
+                  />
                 ))}
               </div>
             );
