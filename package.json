@@ -2,12 +2,14 @@
   "name": "bestlooking-skin",
   "version": "1.0.0",
   "private": true,
-  "description": "BestLooking.Skin — Next.js frontend for the FXN Strapi CMS (skincare reviews, comparisons, roundups)",
+  "description": "BestLooking.Skin \u2014 Next.js frontend for the FXN Strapi CMS (skincare reviews, comparisons, roundups)",
   "scripts": {
     "dev": "next dev -p 3002",
     "build": "next build",
     "start": "next start -p 3002",
-    "lint": "next lint"
+    "lint": "next lint",
+    "check:scope": "node scripts/check-commerce-scope.mjs",
+    "prebuild": "node scripts/check-commerce-scope.mjs"
   },
   "dependencies": {
     "date-fns": "^4.1.0",

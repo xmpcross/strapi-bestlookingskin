@@ -94,6 +94,65 @@ type ListResponse<T> = {
   meta: { pagination: { page: number; pageSize: number; pageCount: number; total: number } };
 };
 
+/* ------------------------------------------- scoped commerce access point */
+
+/**
+ * The commerce collections are a pool SHARED with every other storefront on
+ * this CMS, and they carry uneven ownership: a product has a site tag, a
+ * category has none, a brand has neither tag nor relation. Three separate leaks
+ * came from the same mistake -- a query written without the scope its
+ * collection happens to need, in a file where every neighbouring query had one.
+ *
+ * So scope stops being something each caller remembers. `commerceFetch` is the
+ * only way into these collections, and it applies the rule for the collection
+ * being read. A caller cannot express an unscoped commerce query through it,
+ * and `scripts/check-commerce-scope.mjs` fails the build if anyone reaches past
+ * it to `strapiFetch` with a commerce path.
+ */
+type CommerceCollection =
+  | 'commerce-products'
+  | 'commerce-categories'
+  | 'commerce-offers'
+  | 'commerce-reviews';
+
+function scopeFor(collection: CommerceCollection): Record<string, unknown> {
+  switch (collection) {
+    /* Products carry the site tag. $containsi rather than $contains: it is the
+       JSON-array op Strapi serves reliably; $contains 500s. */
+    case 'commerce-products':
+      return { tags: { $containsi: SITE_PRODUCT_TAG } };
+    /* Categories carry no ownership at all, so the scope is this storefront's
+       own allowlist rather than anything stored on the row. */
+    case 'commerce-categories':
+      return { slug: { $in: [...CATEGORY_SLUGS] } };
+    /* Offers and reviews are scoped through the product they hang off. */
+    case 'commerce-offers':
+    case 'commerce-reviews':
+      return { product: { tags: { $containsi: SITE_PRODUCT_TAG } } };
+  }
+}
+
+/** Merge the collection's scope into caller filters without letting the caller drop it. */
+function withScope(collection: CommerceCollection, params?: Record<string, unknown>) {
+  const callerFilters = (params?.filters ?? {}) as Record<string, unknown>;
+  const scope = scopeFor(collection);
+  const overlap = Object.keys(scope).filter((k) => k in callerFilters);
+  /* An overlapping key would silently replace the scope with the caller's own
+     condition, which is exactly the failure this module exists to prevent. */
+  const filters = overlap.length
+    ? { $and: [scope, callerFilters] }
+    : { ...scope, ...callerFilters };
+  return { ...params, filters };
+}
+
+async function commerceFetch<T>(
+  collection: CommerceCollection,
+  params?: Record<string, unknown>,
+  revalidate = 60,
+): Promise<T> {
+  return strapiFetch<T>(collection, withScope(collection, params), revalidate);
+}
+
 async function strapiFetch<T>(path: string, params?: Record<string, unknown>, revalidate = 60): Promise<T> {
   const query = params ? '?' + qs.stringify(params, { encodeValuesOnly: true }) : '';
   const url = `${BASE}/api/${path}${query}`;
@@ -434,7 +493,7 @@ export async function listProducts(
     sort?: 'newest' | 'price-asc' | 'price-desc' | 'rating-desc';
   } = {},
 ) {
-  const filters: Record<string, unknown> = { tags: { $containsi: SITE_PRODUCT_TAG } };
+  const filters: Record<string, unknown> = {};
   if (opts.category) filters.categories = { slug: { $eqi: opts.category } };
   const andFilters: Record<string, unknown>[] = [];
   if (opts.brand) {
@@ -464,7 +523,7 @@ export async function listProducts(
     'rating-desc': ['rating:desc', 'ratingCount:desc'],
   };
 
-  const res = await strapiFetch<ListResponse<CommerceProduct>>('commerce-products', {
+  const res = await commerceFetch<ListResponse<CommerceProduct>>('commerce-products', {
     sort: sortMap[opts.sort ?? 'newest'],
     populate: PRODUCT_POPULATE,
     pagination: { page: opts.page ?? 1, pageSize: opts.pageSize ?? 24 },
@@ -484,8 +543,8 @@ export async function listProducts(
 }
 
 export async function getProduct(slug: string): Promise<BlsProduct | null> {
-  const res = await strapiFetch<ListResponse<CommerceProduct>>('commerce-products', {
-    filters: { slug: { $eq: slug }, tags: { $containsi: SITE_PRODUCT_TAG } },
+  const res = await commerceFetch<ListResponse<CommerceProduct>>('commerce-products', {
+    filters: { slug: { $eq: slug } },
     populate: PRODUCT_POPULATE,
     pagination: { pageSize: 1 },
   });
@@ -551,8 +610,7 @@ export async function listProductReviews(productDocumentId: string): Promise<Pro
 }
 
 export async function listProductCategories(): Promise<BlsProductCategory[]> {
-  const res = await strapiFetch<ListResponse<BlsProductCategory>>('commerce-categories', {
-    filters: { slug: { $in: [...CATEGORY_SLUGS] } },
+  const res = await commerceFetch<ListResponse<BlsProductCategory>>('commerce-categories', {
     sort: ['order:asc', 'name:asc'],
     populate: ['parent', 'children', 'image'],
     pagination: { pageSize: CATEGORY_SLUGS.length },
@@ -579,6 +637,10 @@ export async function listProductBrands(): Promise<BlsProductBrand[]> {
   if (stocked.size === 0) return [];
 
   try {
+    // commerce-scope-exempt: commerce-brands carries no tag and no relation,
+    // so there is no server-side scope to apply. It is scoped instead by
+    // intersecting with the brands this site's own products actually use,
+    // immediately below. Do not copy this exemption to another collection.
     const res = await strapiFetch<ListResponse<BlsProductBrand>>('commerce-brands', {
       sort: ['order:asc', 'name:asc'],
       populate: ['logo'],
@@ -600,11 +662,7 @@ async function listLegacyProductBrands(): Promise<BlsProductBrand[]> {
   let page = 1;
 
   while (true) {
-    const res = await strapiFetch<ListResponse<Pick<BlsProduct, 'brand'>>>('commerce-products', {
-      // Same shared pool as everywhere else: without the tag filter this
-      // fallback builds the brand list from every site's products, so a
-      // commerce-brands outage would put Samsung and Garmin on a skincare site.
-      filters: { tags: { $containsi: SITE_PRODUCT_TAG } },
+    const res = await commerceFetch<ListResponse<Pick<BlsProduct, 'brand'>>>('commerce-products', {
       fields: ['brand'],
       sort: ['brand:asc'],
       pagination: { page, pageSize: 100 },
@@ -634,7 +692,7 @@ export async function getProductCategory(slug: string): Promise<BlsProductCatego
   // exists in the shared pool, so without this check /categories/smart-plugs
   // resolves and this skincare site serves a Smart Plugs page.
   if (!(CATEGORY_SLUGS as readonly string[]).includes(slug.toLowerCase())) return null;
-  const res = await strapiFetch<ListResponse<BlsProductCategory>>('commerce-categories', {
+  const res = await commerceFetch<ListResponse<BlsProductCategory>>('commerce-categories', {
     filters: { slug: { $eqi: slug } },
     populate: ['parent', 'children', 'image'],
     pagination: { pageSize: 1 },
@@ -671,12 +729,7 @@ export async function listAllProductSlugs(): Promise<{ slug: string; updatedAt: 
   const all: { slug: string; updatedAt: string }[] = [];
   let page = 1;
   while (true) {
-    const res = await strapiFetch<ListResponse<BlsProduct>>('commerce-products', {
-      // Every sibling query filters by the site tag; this one did not, so the
-      // sitemap advertised all 418 products in the shared pool -- every one of
-      // them belonging to nxt.bargains or nxt.deals. getProduct() IS filtered,
-      // so all of them 404'd: a sitemap of dead URLs handed to search engines.
-      filters: { tags: { $containsi: SITE_PRODUCT_TAG } },
+    const res = await commerceFetch<ListResponse<BlsProduct>>('commerce-products', {
       fields: ['slug', 'updatedAt'],
       sort: ['publishedAt:desc'],
       pagination: { page, pageSize: 100 },
