@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 // Single post stylesheet, loaded on all article single pages (App Router
 // code-splits this CSS to the post route).
 import '../../custom.css';
-import { getPost, listPosts, mediaUrl, type BlsPost } from '@/lib/strapi';
+import { getPost, listPosts, listCategories, mediaUrl, type BlsPost } from '@/lib/strapi';
 import { SECTIONS, SITE } from '@/lib/site';
 import { fmtDate, firstImageUrl, primaryCategorySlug, postPath } from '@/lib/format';
 import { withHeadingIds } from '@/lib/toc';
@@ -77,19 +77,34 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
       .catch(() => [] as BlsPost[]),
   ]);
 
-  // Sidebar category tiles: count + representative (newest-post) image per section.
-  const categoryTiles = await Promise.all(
-    SECTIONS.map(async (s) => {
-      const r = await listPosts({ category: s.slug, pageSize: 1 }).catch(() => null);
-      const first = r?.data?.[0];
-      return {
-        href: `/${s.slug}`,
-        name: s.short,
-        count: r?.meta?.pagination?.total ?? 0,
-        image: first ? mediaUrl(first.coverImage ?? null) ?? firstImageUrl(first.content) : null,
-      };
-    }),
-  );
+  /*
+   * Sidebar categories: every category that has posts, not just the five format
+   * buckets in SECTIONS. The topic hubs are what a reader browses by, and they
+   * were only reachable from the header menu and the footer.
+   *
+   * Counted one query each -- Strapi's REST layer has no aggregate -- and
+   * anything empty is dropped, which also removes the three grouping parents
+   * (product-type-hubs and friends). Those exist to organise the nav and hold
+   * no posts of their own, so a row reading "Skin-Concern Hubs 0" would be
+   * noise.
+   *
+   * No image is fetched any more: the card that renders these shows emoji and a
+   * count, so pulling a representative cover per category was 23 wasted reads.
+   */
+  const allCategories = await listCategories().catch(() => []);
+  const categoryTiles = (
+    await Promise.all(
+      allCategories.map(async (c) => {
+        const r = await listPosts({ category: c.slug, pageSize: 1 }).catch(() => null);
+        return {
+          href: `/${c.slug}`,
+          name: c.name,
+          count: r?.meta?.pagination?.total ?? 0,
+          image: null as string | null,
+        };
+      }),
+    )
+  ).filter((t) => t.count > 0);
 
   const toRow = (p: BlsPost) => ({
     href: postPath(p),

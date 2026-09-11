@@ -45,10 +45,13 @@ export default function BrowseByTopic({
   rows,
   title = 'Browse by topic',
   basePath = '/categories',
+  maxHeight,
 }: {
   rows: TopicRow[];
   title?: string;
   basePath?: string;
+  /** Cap the list and scroll past it. The heading stays put. */
+  maxHeight?: number;
 }) {
   if (!rows.length) return null;
   /* Unique per instance: a post page can show this twice (topics and formats)
@@ -71,7 +74,10 @@ export default function BrowseByTopic({
 
       <div aria-hidden className="mb-2 h-px w-full bg-ink/10" />
 
-      <ul className="flex flex-col gap-1">
+      <ul
+        className={`flex flex-col gap-1${maxHeight ? ' overflow-y-auto pr-1' : ''}`}
+        style={maxHeight ? { maxHeight } : undefined}
+      >
         {rows.map((row) => (
           <li key={row.slug}>
             <Link

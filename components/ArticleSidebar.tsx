@@ -32,6 +32,9 @@ export default function ArticleSidebar({
       {categoryTiles.length > 0 && (
         <BrowseByTopic
           title="Browse by category"
+          /* Every non-empty category now, which is ~20 rows -- enough to push
+             the trending list far below the fold. Capped and scrolled. */
+          maxHeight={340}
           rows={categoryTiles.map((t) => ({
             slug: t.href.replace(/^\//, ''),
             name: t.name,
