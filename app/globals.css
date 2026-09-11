@@ -1782,37 +1782,3 @@ article[data-testid^="post-"] {
   font-family: 'Outfit', system-ui, sans-serif !important;
   font-weight: 700 !important;
 }
-
-
-/* ---- Two-column lists in the article body -----------------------------
-   Bulleted lists in these posts run four to six items of a line or two each,
-   which leaves a long ragged column down the left of a wide measure. CSS
-   columns keep the markup a single <ul>, so the list stays one list for a
-   screen reader and for the outline -- splitting it into two <ul>s in the
-   content would have read as two separate lists.
-
-   Only from 768px up: two columns in a phone-width measure gives about three
-   words a line. break-inside keeps a bullet from splitting across the gap. */
-@media (min-width: 768px) {
-  .post-content > ul,
-  .post-content > ol {
-    columns: 2;
-    column-gap: 2.5rem;
-  }
-
-  .post-content > ul > li,
-  .post-content > ol > li {
-    break-inside: avoid;
-    -webkit-column-break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
-  /* Nested lists stay single-column: a sub-list flowing across two columns
-     loses the relationship to its parent bullet. */
-  .post-content > ul ul,
-  .post-content > ul ol,
-  .post-content > ol ul,
-  .post-content > ol ol {
-    columns: 1;
-  }
-}
