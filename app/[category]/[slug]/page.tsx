@@ -222,7 +222,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
             <h1 className="font-display text-[2rem] font-bold leading-tight tracking-tight text-ink">
               {post.title}
             </h1>
-            <p className="text-[14px] text-ink/55">
+            <p className="mb-[15px] text-[14px] text-ink/55">
               {post.author && (
                 <>
                   By{' '}

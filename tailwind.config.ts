@@ -96,16 +96,17 @@ export default {
         },
       },
       fontFamily: {
-        // Headings = Figtree (700), body = Plus Jakarta Sans (300). `sans` is
-        // the site-wide body default; `display` is the heading token.
-        sans:     ['var(--font-jakarta)', 'system-ui', 'sans-serif'],
-        display:  ['var(--font-figtree)', 'system-ui', 'sans-serif'],
-        jakarta:  ['var(--font-jakarta)', 'system-ui', 'sans-serif'],
-        inter:    ['var(--font-inter)', 'system-ui', 'sans-serif'],
-        outfit:   ['var(--font-outfit)', 'system-ui', 'sans-serif'],
-        urbanist: ['var(--font-urbanist)', 'system-ui', 'sans-serif'],
-        figtree:  ['var(--font-figtree)', 'system-ui', 'sans-serif'],
-        fraunces: ['var(--font-fraunces)', 'Iowan Old Style', 'Georgia', 'serif'],
+        // Inter everywhere. Every token resolves through --font-sans, so the
+        // existing font-display / font-outfit / font-urbanist classes in the
+        // markup all render Inter and the typeface changes in one place.
+        sans:     ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        display:  ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        jakarta:  ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        inter:    ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        outfit:   ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        urbanist: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        figtree:  ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        fraunces: ['var(--font-sans)', 'system-ui', 'sans-serif'],
       },
       maxWidth: {
         prose: '70ch',
