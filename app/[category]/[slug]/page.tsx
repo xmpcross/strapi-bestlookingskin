@@ -374,31 +374,12 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
           <div id="article-body" className="after:clear-both after:block after:content-['']">
             <PostContent html={bodyIntro} />
 
-            {readAlsoRows.length === 2 && <ReadAlso rows={readAlsoRows} />}
+            {/* Both images sit in the article's opening half. They used to run
+                lower, with the second one immediately above the FAQ, which put a
+                photograph alongside a list of questions where it had nothing to
+                illustrate. Left float first, right float after the next block,
+                so two floats never share a line. */}
 
-            {bodyAfterIntro && <PostContent html={bodyAfterIntro} />}
-            {/*
-              Gallery images are rendered here rather than embedded in the body.
-              The generator reports "embedded N contextual image(s)" for every
-              site, but the function behind that message returns early unless the
-              site is flightfares.one -- so 67 posts carry gallery images that
-              were never placed in their HTML, and only the cover ever showed.
-              Rendering from the relation keeps the stored content clean and
-              means the placement can change without rewriting every post.
-            */}
-            {/* Products sit here, not next to the floated gallery images. In the
-                previous order they rendered immediately above the first one, so
-                a product grid and a photograph stacked directly on top of each
-                other and the section read as one large advert. The pull quote
-                between them keeps text on both sides of the block. */}
-            {inlineProducts.length >= 2 && <InlineProducts products={inlineProducts} />}
-
-            {pullQuote && <PullQuote text={pullQuote} />}
-
-            {/* Floated so the text wraps alongside, as in the reference. Full
-                width on small screens -- a 45% float in a 360px column leaves
-                two words a line. Captions use alternativeText where the image
-                actually has one; nothing is written to fill the space. */}
             {galleryImages[0] && (
               <figure className="mb-6 sm:float-left sm:mr-7 sm:mb-4 sm:w-[45%]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -415,9 +396,20 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
                 )}
               </figure>
             )}
-            {bodyBeforeFaq ? <PostContent html={bodyBeforeFaq} /> : null}
 
-            {/* Above the FAQ, never below it. */}
+            {readAlsoRows.length === 2 && <ReadAlso rows={readAlsoRows} />}
+
+            {bodyAfterIntro && <PostContent html={bodyAfterIntro} />}
+            {/*
+              Gallery images are rendered here rather than embedded in the body.
+              The generator reports "embedded N contextual image(s)" for every
+              site, but the function behind that message returns early unless the
+              site is flightfares.one -- so 67 posts carry gallery images that
+              were never placed in their HTML, and only the cover ever showed.
+              Rendering from the relation keeps the stored content clean and
+              means the placement can change without rewriting every post.
+            */}
+
             {galleryImages[1] && (
               <figure className="mb-6 sm:float-right sm:ml-7 sm:mb-4 sm:w-[45%]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -434,6 +426,18 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
                 )}
               </figure>
             )}
+
+            {/* Products sit here, not next to the floated gallery images. In the
+                previous order they rendered immediately above the first one, so
+                a product grid and a photograph stacked directly on top of each
+                other and the section read as one large advert. The pull quote
+                between them keeps text on both sides of the block. */}
+            {inlineProducts.length >= 2 && <InlineProducts products={inlineProducts} />}
+
+            {pullQuote && <PullQuote text={pullQuote} />}
+
+            {bodyBeforeFaq ? <PostContent html={bodyBeforeFaq} /> : null}
+
 
             {faqSection && <PostContent html={faqSection} />}
           </div>
