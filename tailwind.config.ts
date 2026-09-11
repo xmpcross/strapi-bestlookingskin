@@ -9,7 +9,10 @@ export default {
         // Sandbox demo 25 accent. Kept as a literal here (Tailwind needs a real
         // value at build time) and mirrored by --sb-primary in globals.css.
         primary: {
-          DEFAULT: '#d16b86',
+          /* The text-safe shade of demo 14's leaf green. Tailwind's `primary`
+             is used for links and labels, so it carries the 4.58:1 variant;
+             the raw accent (#7cb798) lives in --sb-primary for fills. */
+          DEFAULT: '#478162',
           emphasis: '#014fd3',
           emphasisHover: '#0072de',
           emphasisPressed: '#0046be',
