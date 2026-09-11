@@ -26,6 +26,9 @@
   --sb-accent: #a07cc5;
   --sb-accent-soft: #f0eaf6;
   --sb-primary-soft: #e7f2ec;
+  /* Footer Home 14: #343F52 ground, white headings, #cacaca links, violet CTA. */
+  --sb-footer-bg: #343f52;
+  --sb-footer-link: #cacaca;
   --sb-heading: #343f52;
   --sb-body: #60697b;
   --sb-muted: #818a91;

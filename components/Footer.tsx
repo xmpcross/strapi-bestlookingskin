@@ -27,10 +27,14 @@ export default async function Footer() {
   const sectionSlugs = new Set<string>(SECTIONS.map((s) => s.slug));
   const topics = postCategories.filter((c) => !sectionSlugs.has(c.slug)).slice(0, 5);
 
-  const linkClass = 'text-white/65 transition hover:text-white';
+  /* #cacaca on #343f52 is 6.47:1 -- the demo's own link colour and comfortably
+     readable. The demo also uses #818a91 for muted copy, which lands at 3.02:1
+     there, so body text here stays lighter than the demo rather than shipping
+     something that fails on a dark ground. */
+  const linkClass = 'text-[#cacaca] transition hover:text-white';
 
   return (
-    <footer className="mt-16 bg-ink text-white" data-testid="site-footer">
+    <footer className="mt-16 text-white" style={{ backgroundColor: 'var(--sb-footer-bg)' }} data-testid="site-footer">
       <div className="mx-auto max-w-7xl px-6 py-16">
         <div className="grid gap-12 lg:grid-cols-[minmax(0,2fr)_1fr_1fr_1.1fr]">
 
@@ -39,13 +43,13 @@ export default async function Footer() {
             <h2 className="font-display font-bold !text-[28px] leading-tight text-white">
               Skincare worth your money
             </h2>
-            <p className="mt-5 text-[15px] leading-7 text-white/65">
+            <p className="mt-5 text-[15px] leading-7 text-[#cacaca]">
               Honest reviews, clear ingredient explainers and side-by-side comparisons,
               so you know what a formula does before it earns a place in your routine.
             </p>
             <Link
               href="/contact"
-              className="mt-8 inline-flex items-center rounded-full bg-white px-6 py-3 text-sm font-bold text-ink transition hover:bg-white/90"
+              className="mt-8 inline-flex items-center rounded-full bg-[#a07cc5] px-6 py-3 text-[15px] font-bold text-white transition hover:brightness-110"
             >
               Get in touch
             </Link>
@@ -80,7 +84,7 @@ export default async function Footer() {
           {/* Get in Touch — email only. No invented address or phone. */}
           <div>
             <h3 className="font-display !text-[17px] font-bold text-white">Get in Touch</h3>
-            <p className="mt-5 text-[15px] leading-7 text-white/65">
+            <p className="mt-5 text-[15px] leading-7 text-[#cacaca]">
               Questions, corrections or a product we should look at — we read everything.
             </p>
             <a href={`mailto:${CONTACT_EMAIL}`} className="mt-3 inline-block text-[15px] text-white underline-offset-4 hover:underline">
@@ -89,10 +93,10 @@ export default async function Footer() {
           </div>
         </div>
 
-        <div aria-hidden className="mt-14 h-px w-full bg-white/15" />
+        <div aria-hidden className="mt-14 h-px w-full bg-white/20" />
 
         <div className="mt-8 flex flex-col-reverse items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-white/55">© {year} {SITE.name}. All rights reserved.</p>
+          <p className="text-sm text-[#cacaca]/80">© {year} {SITE.name}. All rights reserved.</p>
     <div className="flex items-center" data-testid="social-links">
                   <a
                     href={SITE.social.facebook}
