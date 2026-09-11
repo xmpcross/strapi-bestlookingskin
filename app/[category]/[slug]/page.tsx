@@ -10,6 +10,7 @@ import { fmtDate, firstImageUrl, primaryCategorySlug, postPath } from '@/lib/for
 import { withHeadingIds } from '@/lib/toc';
 import PostContent from '@/components/PostContent';
 import ReadingRail from '@/components/ReadingRail';
+import AuthorAvatar from '@/components/AuthorAvatar';
 import RelatedCarousel from '@/components/RelatedCarousel';
 import ArticleSidebar from '@/components/ArticleSidebar';
 
@@ -250,9 +251,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
         <div className="min-w-0">
           {post.author && (
             <p className="flex items-center gap-2 text-[14px] text-ink/60">
-              <span aria-hidden className="grid h-7 w-7 place-items-center rounded-full bg-ink text-[11px] font-bold text-white">
-                {post.author.name.trim().charAt(0).toUpperCase()}
-              </span>
+              <AuthorAvatar name={post.author.name} src={post.author.avatarUrl} size={28} />
               <Link href={`/authors/${post.author.slug}`} className="font-bold text-ink hover:text-primary">
                 {post.author.name}
               </Link>
@@ -290,7 +289,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
           <img
             src={cover}
             alt={post.coverImage?.alternativeText || post.title}
-            className="aspect-[4/3] w-full rounded-2xl object-cover"
+            className="aspect-[4/3] max-h-[400px] w-full rounded-2xl object-cover"
           />
         )}
       </div>
@@ -308,6 +307,18 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
         {/* Main article column */}
         <div className="order-1 min-w-0 lg:order-2">
 
+
+          {/* Disclosure sits above the article, not after it. A notice a reader
+              only meets once they have finished, and scrolled past every buy
+              button, is not much of a disclosure. */}
+          <div className="mb-8 rounded-lg border border-ink/10 bg-muted/30 px-4 py-3 text-[13px] leading-6 text-ink/65">
+            <strong className="font-bold text-ink/80">Heads up:</strong> when you buy through links
+            on this page we may earn a commission, at no extra cost to you. It never changes which
+            products we recommend or what we say about them.{' '}
+            <Link href="/legal/disclosure" className="text-primary underline underline-offset-2 hover:text-primary-highlight">
+              Read our full disclosure
+            </Link>.
+          </div>
 
           <div id="article-body">
             <PostContent html={bodyFirst} />
@@ -346,9 +357,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
               className="mt-12 flex gap-4 rounded-2xl border border-ink/10 bg-muted/30 p-5"
               data-testid="author-card"
             >
-              <div aria-hidden className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-ink text-base font-bold text-white">
-                {post.author.name.trim().charAt(0).toUpperCase()}
-              </div>
+              <AuthorAvatar name={post.author.name} src={post.author.avatarUrl} size={48} />
               <div className="min-w-0">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-ink/45">Written by</p>
                 <Link
@@ -362,11 +371,6 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
             </div>
           )}
 
-          <div className="mt-12 rounded-2xl border border-ink/10 bg-muted/40 p-5 text-xs leading-5 text-ink/60">
-            <strong className="text-ink/80">Affiliate disclosure.</strong> {SITE.name} earns a
-            commission when you buy through links on this page, at no extra cost to you.
-            Prices and availability are accurate as of {fmtDate(post.updatedAt)} and subject to change.
-          </div>
 
         </div>
 

@@ -1,0 +1,75 @@
+/**
+ * Outline-cartoon author avatar.
+ *
+ * Inline SVG line art rather than an image: no upload to manage, no request,
+ * and it inherits currentColor so it works on the light byline and the dark
+ * footer alike.
+ *
+ * Two variants, chosen from the name, so the site's authors are visually
+ * distinct without anyone drawing a portrait. Deliberately generic faces --
+ * a cartoon that looked like a specific person would be inventing a likeness
+ * for a byline, which is the sort of small fiction this site should avoid.
+ *
+ * bls-author.avatarUrl wins when it is set, so a real photo can replace this
+ * without touching any of the call sites.
+ */
+export default function AuthorAvatar({
+  name,
+  src,
+  size = 28,
+  className = '',
+}: {
+  name: string;
+  src?: string | null;
+  size?: number;
+  className?: string;
+}) {
+  if (src) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return (
+      <img
+        src={src}
+        alt={name}
+        width={size}
+        height={size}
+        className={`shrink-0 rounded-full object-cover ${className}`}
+        loading="lazy"
+      />
+    );
+  }
+
+  /* Sum of code points: stable for a given name, and unlike a random pick it
+     gives the same author the same face on every page. */
+  const variant = [...name].reduce((n, c) => n + c.charCodeAt(0), 0) % 2;
+
+  return (
+    <span
+      className={`inline-grid shrink-0 place-items-center rounded-full border border-ink/20 bg-paper text-ink/70 ${className}`}
+      style={{ width: size, height: size }}
+      aria-hidden
+    >
+      <svg
+        viewBox="0 0 32 32"
+        width={size * 0.72}
+        height={size * 0.72}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {/* head */}
+        <circle cx="16" cy="12" r="6" />
+        {/* shoulders */}
+        <path d="M5.5 28c1.4-5.4 5.6-8.2 10.5-8.2S25.1 22.6 26.5 28" />
+        {variant === 0 ? (
+          /* short fringe */
+          <path d="M10.4 9.6c1.7-2.4 9.5-2.4 11.2 0" />
+        ) : (
+          /* longer hair, tucked behind */
+          <path d="M10 12.4c-.4-4 2.5-6.4 6-6.4s6.4 2.4 6 6.4M10.6 12.6c-.9 1.6-.9 3.4-.4 4.6M21.4 12.6c.9 1.6.9 3.4.4 4.6" />
+        )}
+      </svg>
+    </span>
+  );
+}

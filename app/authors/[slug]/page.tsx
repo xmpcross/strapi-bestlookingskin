@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { getAuthor, listAuthors, listPosts } from '@/lib/strapi';
 import { SITE } from '@/lib/site';
 import PostCard from '@/components/PostCard';
+import AuthorAvatar from '@/components/AuthorAvatar';
 
 export const revalidate = 300;
 
@@ -59,9 +60,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
       </nav>
 
       <header className="mt-8 flex gap-5">
-        <div aria-hidden className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-ink text-xl font-bold text-white">
-          {author.name.trim().charAt(0).toUpperCase()}
-        </div>
+        <AuthorAvatar name={author.name} src={author.avatarUrl} size={64} />
         <div className="min-w-0">
           <p className="text-[11px] font-bold uppercase tracking-wider text-ink/45">Author</p>
           <h1 className="font-display text-[2rem] font-bold leading-tight tracking-tight text-ink">{author.name}</h1>
