@@ -241,46 +241,61 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
         <span className="min-w-0 truncate text-ink/75" aria-current="page">{post.title}</span>
       </nav>
 
-      {/* Title and byline sit directly under the breadcrumb, full width and
-          ahead of the article grid, so the page leads with what it is and who
-          wrote it rather than with the cover image. */}
-      <header className="mt-4">
-          <h1 className="font-display text-[2rem] font-bold leading-tight tracking-tight text-ink">
+      {/* Split hero: byline, title, standfirst and tags on the left, cover on
+          the right. The cover used to run full width above everything, which
+          gave the page two competing focal points before a word was read. */}
+      <div className="mt-6 grid items-center gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+        <div className="min-w-0">
+          {post.author && (
+            <p className="flex items-center gap-2 text-[14px] text-ink/60">
+              <span aria-hidden className="grid h-7 w-7 place-items-center rounded-full bg-ink text-[11px] font-bold text-white">
+                {post.author.name.trim().charAt(0).toUpperCase()}
+              </span>
+              <Link href={`/authors/${post.author.slug}`} className="font-bold text-ink hover:text-primary">
+                {post.author.name}
+              </Link>
+              <span className="text-ink/45">on {fmtDate(post.publishedAt)}</span>
+            </p>
+          )}
+
+          <h1 className="mt-5 font-display text-[2rem] font-bold leading-tight tracking-tight text-ink">
             {post.title}
           </h1>
-          <p className="mb-[15px] text-[14px] text-ink/55">
-            {post.author && (
-              <>
-                By{' '}
-                <Link
-                  href={`/authors/${post.author.slug}`}
-                  className="font-semibold text-ink/75 hover:text-primary"
-                >
-                  {post.author.name}
-                </Link>
-                {' · '}
-              </>
+
+          {post.excerpt && (
+            <p className="mt-5 max-w-xl text-[17px] leading-8 text-ink/60">{post.excerpt}</p>
+          )}
+
+          {/* Category and format, as the tags in the reference. Both are real
+              fields, so neither is decoration. */}
+          <div className="mt-7 flex flex-wrap gap-3">
+            <Link
+              href={`/${category}`}
+              className="rounded border border-ink/15 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-ink/70 transition hover:border-ink/30 hover:text-primary"
+            >
+              {cat?.name ?? categoryName(category)}
+            </Link>
+            {post.postType && (
+              <span className="rounded border border-ink/15 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-ink/70">
+                {post.postType.replace(/-/g, ' ')}
+              </span>
             )}
-            Published {fmtDate(post.publishedAt)}
-            {post.readingTimeMinutes ? ` · ${post.readingTimeMinutes} min read` : ''}
-          </p>
-          </header>
+          </div>
+        </div>
 
+        {cover && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={cover}
+            alt={post.coverImage?.alternativeText || post.title}
+            className="aspect-[4/3] w-full rounded-2xl object-cover"
+          />
+        )}
+      </div>
 
-      {/* Featured image sits above the grid, full width. It used to head the
-          article column, which put the left rail alongside it rather than
-          beneath it -- and a contents list level with the cover reads as part
-          of the header instead of as navigation for the text below. */}
-      {cover && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={cover}
-          alt={post.coverImage?.alternativeText || post.title}
-          className="mb-[20px] aspect-[16/9] w-full rounded-3xl object-cover"
-        />
-      )}
+      <div aria-hidden className="mt-10 h-px w-full bg-ink/10" />
 
-      <div className="mt-0 grid gap-10 lg:grid-cols-[210px_minmax(0,1fr)_280px] lg:gap-12">
+      <div className="mt-10 grid gap-10 lg:grid-cols-[210px_minmax(0,1fr)_280px] lg:gap-12">
         {/* Left rail: reading progress + contents. Ordered after the article on
             small screens, where a contents list above the piece is just a wall
             of links between the reader and the text. */}
