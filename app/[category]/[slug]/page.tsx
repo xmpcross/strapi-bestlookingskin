@@ -184,7 +184,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
       {/* Breadcrumbs sit directly under the site nav, full width and flush:
           no vertical margin or padding, so the rule reads as part of the header
           rather than as the article's first element. */}
-      <nav className="my-0 flex items-center gap-2 border-y border-ink/10 py-0 text-[12px] font-semibold uppercase tracking-[0.3px] text-ink/55" data-testid="breadcrumb" aria-label="Breadcrumb">
+      <nav className="my-0 flex items-center gap-2 py-0 text-[12px] font-semibold text-ink/55" data-testid="breadcrumb" aria-label="Breadcrumb">
         <Link href="/" className="shrink-0 font-semibold text-primary hover:text-primary-highlight">Home</Link>
         <span className="shrink-0">/</span>
         <Link href={`/${category}`} className="shrink-0 font-semibold text-primary hover:text-primary-highlight">
@@ -211,7 +211,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
             <h1 className="font-display text-[2rem] font-bold leading-tight tracking-tight text-ink">
               {post.title}
             </h1>
-            <p className="mt-4 mb-[15px] text-[14px] text-ink/55">
+            <p className="mt-[20px] mb-[15px] text-[14px] text-ink/55">
               Published {fmtDate(post.publishedAt)}
               {post.readingTimeMinutes ? ` · ${post.readingTimeMinutes} min read` : ''}
             </p>

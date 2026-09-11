@@ -249,7 +249,7 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
       />
 
-      <nav className="flex items-center gap-2 border-y border-ink/10 py-3 text-[12px] font-semibold uppercase tracking-[0.3px] text-ink/55" aria-label="Breadcrumb">
+      <nav className="flex items-center gap-2 py-3 text-[12px] font-semibold text-ink/55" aria-label="Breadcrumb">
         <Link href="/" className="shrink-0 font-semibold text-primary hover:text-primary-highlight">Home</Link>
         <span>/</span>
         <Link href="/products" className="shrink-0 font-semibold text-primary hover:text-primary-highlight">Products</Link>
