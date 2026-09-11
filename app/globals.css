@@ -646,10 +646,23 @@ span[class*="uppercase"][class*="tracking"] {
   font-weight: 600 !important;
 }
 
+/*
+ * The footer is dark now, so it must not inherit the light-background colour
+ * rules. Two of them reach in: this one used to force paragraphs to #2d3c58,
+ * and the site-wide `.font-bold { color:#1b2026 !important }` catches every
+ * bold heading in here -- both render dark navy on a dark navy panel, i.e.
+ * invisible. Colour is set by the component's own classes; these rules only
+ * keep the sizing they were added for.
+ */
 [data-testid="site-footer"] p {
   font-size: 1rem !important;
   font-weight: 600 !important;
-  color: #2d3c58 !important;
+}
+
+[data-testid="site-footer"] .font-bold,
+[data-testid="site-footer"] h2,
+[data-testid="site-footer"] h3 {
+  color: #fff !important;
 }
 /* All footer text uses the default Inter family (overrides font-display
    headings, the email link, and the menu links). */
