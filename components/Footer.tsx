@@ -24,8 +24,23 @@ export default async function Footer() {
       slug: section.slug,
     })) as BlsCategory[],
   );
-  const sectionSlugs = new Set<string>(SECTIONS.map((s) => s.slug));
-  const topics = postCategories.filter((c) => !sectionSlugs.has(c.slug)).slice(0, 5);
+  /*
+   * Grouped by the parent categories held in Strapi, the same structure the
+   * header's Topics menu reads, so a hub moved between groups in the CMS moves
+   * in both places. Listing all fifteen flat would have been a wall; grouped,
+   * they fit two columns without truncation.
+   *
+   * The parents themselves are excluded from the lists -- they hold no posts and
+   * exist to organise, not to be browsed.
+   */
+  const GROUPS = [
+    { slug: 'product-type-hubs', label: 'Product-Type Hubs' },
+    { slug: 'skin-concern-hubs', label: 'Skin-Concern Hubs' },
+    { slug: 'cross-cutting-hubs', label: 'Cross-Cutting Hubs' },
+  ];
+  const groupSlugs = new Set(GROUPS.map((g) => g.slug));
+  const hubsIn = (parent: string) =>
+    postCategories.filter((c) => !groupSlugs.has(c.slug) && c.parent?.slug === parent);
 
   /* #cacaca on #343f52 is 6.47:1 -- the demo's own link colour and comfortably
      readable. The demo also uses #818a91 for muted copy, which lands at 3.02:1
@@ -36,7 +51,7 @@ export default async function Footer() {
   return (
     <footer className="mt-16 text-white" style={{ backgroundColor: 'var(--sb-footer-bg)' }} data-testid="site-footer">
       <div className="mx-auto max-w-7xl px-6 py-16">
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,2fr)_1fr_1fr_1.1fr]">
+        <div className="grid items-start gap-12 lg:grid-cols-[minmax(0,1.6fr)_1fr_1fr_1.1fr]">
 
           {/* Lead block */}
           <div className="max-w-md">
@@ -65,17 +80,27 @@ export default async function Footer() {
               <li><Link href="/legal/privacy" className={linkClass}>Privacy Policy</Link></li>
               <li><Link href="/legal/cookies" className={linkClass}>Cookie Policy</Link></li>
             </ul>
+
+            <h3 className="mt-8 font-display !text-[17px] font-bold text-white">Skin-Concern Hubs</h3>
+            <ul className="mt-5 space-y-3 text-[15px]">
+              {hubsIn('skin-concern-hubs').map((c) => (
+                <li key={c.slug}><Link href={`/${c.slug}`} className={linkClass}>{c.name}</Link></li>
+              ))}
+            </ul>
           </div>
 
-          {/* Learn More */}
+          {/* Product-Type Hubs, with Cross-Cutting beneath it */}
           <div>
-            <h3 className="font-display !text-[17px] font-bold text-white">Learn More</h3>
+            <h3 className="font-display !text-[17px] font-bold text-white">Product-Type Hubs</h3>
             <ul className="mt-5 space-y-3 text-[15px]">
-              <li><Link href="/about" className={linkClass}>Our Story</Link></li>
-              <li><Link href="/products" className={linkClass}>Products</Link></li>
-              <li><Link href="/brands" className={linkClass}>Popular Brands</Link></li>
-              <li><Link href="/informative-articles" className={linkClass}>All Articles</Link></li>
-              {topics.slice(0, 2).map((c) => (
+              {hubsIn('product-type-hubs').map((c) => (
+                <li key={c.slug}><Link href={`/${c.slug}`} className={linkClass}>{c.name}</Link></li>
+              ))}
+            </ul>
+
+            <h3 className="mt-8 font-display !text-[17px] font-bold text-white">Cross-Cutting Hubs</h3>
+            <ul className="mt-5 space-y-3 text-[15px]">
+              {hubsIn('cross-cutting-hubs').map((c) => (
                 <li key={c.slug}><Link href={`/${c.slug}`} className={linkClass}>{c.name}</Link></li>
               ))}
             </ul>
