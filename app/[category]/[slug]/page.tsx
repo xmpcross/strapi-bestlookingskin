@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 // Single post stylesheet, loaded on all article single pages (App Router
 // code-splits this CSS to the post route).
 import '../../custom.css';
-import { getPost, listPosts, listCategories, listProductsForHub, getAdjacentPosts, mediaUrl, type BlsPost } from '@/lib/strapi';
+import { getPost, listPosts, listCategories, listProductsForPost, getAdjacentPosts, mediaUrl, type BlsPost } from '@/lib/strapi';
 import { SECTIONS, SITE } from '@/lib/site';
 import { fmtDate, firstImageUrl, primaryCategorySlug, postPath } from '@/lib/format';
 import { withHeadingIds } from '@/lib/toc';
@@ -211,7 +211,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
   /* Products from this post's hub, and two more articles to read. Both come
      from data the site already holds, so neither costs a request to a paid API
      at render time. */
-  const inlineProducts = await listProductsForHub(category, 3).catch(() => []);
+  const inlineProducts = await listProductsForPost(post.title, category, 3).catch(() => []);
   const readAlsoRows = recentRows.filter((r) => r.href !== postPath(post)).slice(0, 2);
 
   /* Read Also goes after the fourth paragraph rather than at the end of the

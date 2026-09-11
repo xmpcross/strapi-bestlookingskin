@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { SidebarRow } from '@/components/ArticleSidebar';
 
 /**
@@ -19,13 +19,31 @@ import type { SidebarRow } from '@/components/ArticleSidebar';
 export default function PopularCarousel({ rows }: { rows: SidebarRow[] }) {
   const items = rows.filter((r) => r.img).slice(0, 5);
   const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const count = items.length;
+
+  /* Auto-advance, paused on hover and on keyboard focus so it cannot slide out
+     from under someone reading or tabbing through it. Cleared on unmount. */
+  useEffect(() => {
+    if (count < 2 || paused) return;
+    const id = window.setInterval(() => setIndex((i) => (i + 1) % count), 5000);
+    return () => window.clearInterval(id);
+  }, [count, paused]);
+
   if (items.length === 0) return null;
 
   const current = items[Math.min(index, items.length - 1)];
   const go = (delta: number) => setIndex((i) => (i + delta + items.length) % items.length);
 
   return (
-    <div data-testid="sidebar-popular-carousel">
+    <div
+      data-testid="sidebar-popular-carousel"
+      className="lg:sticky lg:top-24"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+    >
       <h3 className="flex items-center gap-3 !text-[14px] font-bold uppercase tracking-widest text-ink">
         Popular
         <span aria-hidden className="h-px w-10 bg-ink/20" />

@@ -763,6 +763,81 @@ export async function listProductsForHub(hub: string, limit = 3): Promise<Commer
   }
 }
 
+/**
+ * Products named in the post's own title, falling back to its category.
+ *
+ * "CeraVe Moisturizing Cream vs Vanicream" should show those two products, not
+ * three arbitrary moisturisers. Matching is on the brand names this site
+ * actually stocks rather than on free text: a title carries words like "Cream"
+ * and "Skin" that would match half the catalogue, while a brand is a proper
+ * noun that either appears or does not.
+ *
+ * Brands are matched longest-first so "Beauty of Joseon" wins over "Beauty",
+ * and on word boundaries so "Olay" does not match inside another word. For each
+ * brand found, the best-rated product from the post's own category is preferred,
+ * because a moisturiser comparison should surface that brand's moisturiser and
+ * not its cleanser.
+ *
+ * Falls back to the category selection when the title names fewer than two
+ * stocked brands, which is most posts.
+ */
+export async function listProductsForPost(
+  title: string,
+  hub: string,
+  limit = 3,
+): Promise<CommerceProduct[]> {
+  try {
+    const stocked = await listLegacyProductBrands();
+    const named = stocked
+      .map((b) => b.name.trim())
+      .filter((b) => b.length > 2)
+      .sort((a, b) => b.length - a.length)
+      .filter((b) => new RegExp(`(^|[^a-z0-9])${b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^a-z0-9]|$)`, 'i').test(title));
+
+    /* One named brand is enough: a review post names a single product, and
+       showing it beside two from the same shelf beats showing three unrelated
+       ones. Only a title naming nothing falls straight through. */
+    if (named.length === 0) return listProductsForHub(hub, limit);
+
+    const commerceSlug = HUB_TO_COMMERCE[hub];
+    const picked: CommerceProduct[] = [];
+    const seen = new Set<string>();
+
+    for (const brand of named.slice(0, limit)) {
+      /* Same category first, then anywhere -- a brand named in the title is
+         worth showing even if it has nothing on this particular shelf. */
+      for (const filters of [
+        commerceSlug
+          ? { brand: { $eqi: brand }, categories: { slug: { $eqi: commerceSlug } } }
+          : null,
+        { brand: { $eqi: brand } },
+      ]) {
+        if (!filters) continue;
+        const res = await commerceFetch<ListResponse<CommerceProduct>>('commerce-products', {
+          filters,
+          populate: PRODUCT_POPULATE,
+          sort: ['rating:desc', 'ratingCount:desc'],
+          pagination: { page: 1, pageSize: 1 },
+        }).catch(() => null);
+        const hit = res?.data?.[0];
+        if (hit && !seen.has(hit.slug)) { seen.add(hit.slug); picked.push(hit); break; }
+      }
+    }
+
+    if (picked.length === 0) return listProductsForHub(hub, limit);
+    if (picked.length < limit) {
+      /* Top up from the category, skipping anything already shown. */
+      for (const extra of await listProductsForHub(hub, limit + picked.length)) {
+        if (picked.length >= limit) break;
+        if (!seen.has(extra.slug)) { seen.add(extra.slug); picked.push(extra); }
+      }
+    }
+    return picked.slice(0, limit);
+  } catch {
+    return listProductsForHub(hub, limit);
+  }
+}
+
 export async function listProductBrands(): Promise<BlsProductBrand[]> {
   /*
    * commerce-brands is shared across every storefront on this CMS and, like
