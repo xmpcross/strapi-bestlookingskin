@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { SECTIONS, SITE } from '@/lib/site';
-import { listCategories } from '@/lib/strapi';
+import { listCategories, listProductCategoryCounts } from '@/lib/strapi';
 import StickyHeaderShadow from '@/components/StickyHeaderShadow';
 
 type NavChild = { label: string; href: string; heading?: false } | { label: string; heading: true };
@@ -69,8 +69,27 @@ export default async function Header() {
     });
   }
 
+  /*
+   * Product categories under Products, straight from the commerce taxonomy.
+   *
+   * listProductCategoryCounts() is already scoped to this site and already
+   * drops categories with no products, so a category added in the CMS appears
+   * here with no deploy, and an empty one -- Hyaluronic Acid was empty until it
+   * was stocked -- never becomes a nav item leading to an empty page.
+   */
+  const productCategories = await listProductCategoryCounts().catch(() => []);
+
   const nav: NavItem[] = [
-    { label: 'Products', href: '/products' },
+    productCategories.length
+      ? {
+          label: 'Products',
+          href: '/products',
+          children: [
+            { label: 'All Products', href: '/products' },
+            ...productCategories.map((c) => ({ label: c.name, href: `/categories/${c.slug}` })),
+          ],
+        }
+      : { label: 'Products', href: '/products' },
     { label: 'Brands', href: '/brands' },
     ...(topicGroups.length ? [{ label: 'Topics', groups: topicGroups }] : []),
     {

@@ -1719,7 +1719,10 @@ article[data-testid^="post-"] {
   cursor: pointer;
   list-style: none;
   font-size: 1rem !important;
-  font-weight: 700;
+  /* 600, not 700: the post body sets `.post-content strong, b { font-weight:700
+     !important }`, and the questions sat at the same weight as the bold runs
+     inside the answers. !important because that rule would otherwise win. */
+  font-weight: 600 !important;
   line-height: 1.4;
   color: var(--sb-heading);
   transition: color 0.15s ease;
