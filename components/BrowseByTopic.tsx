@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-export type TopicRow = { slug: string; name: string; count: number };
+export type TopicRow = { slug: string; name: string; count: number; href?: string };
 
 /**
  * "Browse by topic" sidebar card.
@@ -11,12 +11,34 @@ export type TopicRow = { slug: string; name: string; count: number };
  * showing a placeholder.
  */
 const EMOJI: Record<string, string> = {
+  // Product categories
   'facial-cleansers': '🧼',
   'facial-serums': '💧',
   'moisturisers': '🧴',
   'anti-aging': '⏳',
   'toners-and-astringents': '🌿',
   'exfoliators-and-scrubs': '✨',
+  // Post format buckets
+  'product-comparisons': '⚖️',
+  'product-reviews': '⭐',
+  'top-rated-products': '🏆',
+  'how-to-guides': '🛠️',
+  'informative-articles': '📘',
+  // Topic hubs
+  sunscreen: '☀️',
+  serums: '💧',
+  moisturizers: '🧴',
+  cleansers: '🧼',
+  'eye-cream': '👁️',
+  exfoliants: '✨',
+  'face-masks': '🎭',
+  acne: '🔬',
+  hyperpigmentation: '🌗',
+  'sensitive-skin': '🌸',
+  routines: '🗓️',
+  ingredients: '🧪',
+  dupes: '💸',
+  'korean-skincare': '🇰🇷',
 };
 
 export default function BrowseByTopic({
@@ -29,15 +51,18 @@ export default function BrowseByTopic({
   basePath?: string;
 }) {
   if (!rows.length) return null;
+  /* Unique per instance: a post page can show this twice (topics and formats)
+     and duplicate ids break the aria-labelledby association. */
+  const headingId = `browse-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 
   return (
     <section
-      aria-labelledby="browse-by-topic"
+      aria-labelledby={headingId}
       className="rounded-xl border border-ink/10 bg-paper p-5"
       data-testid="browse-by-topic"
     >
       <h3
-        id="browse-by-topic"
+        id={headingId}
         className="flex items-center gap-2 pb-3 font-display !text-base font-bold text-ink"
       >
         <span aria-hidden className="text-primary">✦</span>
@@ -50,7 +75,7 @@ export default function BrowseByTopic({
         {rows.map((row) => (
           <li key={row.slug}>
             <Link
-              href={`${basePath}/${row.slug}`}
+              href={row.href ?? `${basePath}/${row.slug}`}
               className="flex items-center justify-between gap-3 rounded-lg px-2 py-2 text-sm text-ink/75 transition hover:bg-muted hover:text-primary"
             >
               <span className="flex min-w-0 items-center gap-2">

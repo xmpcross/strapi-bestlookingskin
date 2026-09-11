@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import PopularCarousel from '@/components/PopularCarousel';
+import BrowseByTopic from '@/components/BrowseByTopic';
 
 export type SidebarCategoryTile = { href: string; name: string; count: number; image: string | null };
 export type SidebarRow = { href: string; title: string; date: string; img: string | null; category?: string };
@@ -24,43 +25,22 @@ export default function ArticleSidebar({
       {/* ---- Popular (carousel, sits above Categories) ---- */}
       <PopularCarousel rows={popular} />
 
-      {/* ---- Categories (image cards + count badge) ---- */}
+      {/* ---- Categories ---- */}
+      {/* Same card as the product page's Browse by topic, so a reader moving
+          between a product and an article meets one list style rather than two.
+          The image tiles it replaces carried a cover photo per category, which
+          said nothing about the category and competed with the carousel
+          directly above it. */}
       {categoryTiles.length > 0 && (
-        <div data-testid="sidebar-categories">
-          <h3 className="flex items-center gap-3 !text-[14px] font-bold uppercase tracking-widest text-ink">
-            Categories
-            <span aria-hidden className="h-px w-10 bg-ink/20" />
-          </h3>
-          <ul className="mt-4 space-y-3">
-            {categoryTiles.map((t) => (
-              <li key={t.href}>
-                <Link
-                  href={t.href}
-                  className="group relative block h-16 overflow-hidden rounded bg-ink"
-                >
-                  {t.image && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={t.image}
-                      alt={t.name}
-                      className="absolute inset-0 h-full w-full object-cover opacity-60 transition duration-500 group-hover:scale-105 group-hover:opacity-70"
-                      loading="lazy"
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/35 to-black/55" />
-                  <div className="absolute inset-0 flex items-center justify-between px-4">
-                    <span className="font-display text-[1rem] font-bold uppercase tracking-wider text-white">
-                      {t.name}
-                    </span>
-                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/25 text-xs font-bold text-white backdrop-blur">
-                      {t.count}
-                    </span>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <BrowseByTopic
+          title="Browse by category"
+          rows={categoryTiles.map((t) => ({
+            slug: t.href.replace(/^\//, ''),
+            name: t.name,
+            count: t.count,
+            href: t.href,
+          }))}
+        />
       )}
 
       {/* ---- Popular / Recent tabbed post list ---- */}
