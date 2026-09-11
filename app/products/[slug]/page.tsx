@@ -5,7 +5,6 @@ import { getProduct, listProducts, listPosts, getPriceHistory, listProductReview
 import { SITE } from '@/lib/site';
 import { fmtDate, firstImageUrl, postPath } from '@/lib/format';
 import ProductCard from '@/components/ProductCard';
-import AdsenseUnit from '@/components/AdsenseUnit';
 import PriceAlertForm from '@/components/PriceAlertForm';
 import PriceHistoryChart from '@/components/PriceHistoryChart';
 import ArticleSidebar from '@/components/ArticleSidebar';
@@ -74,7 +73,19 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
 
   // Specification rows (moved from the description tabs to the right column).
   // Friendlier labels for known noisy spec keys (e.g. from Amazon data).
-  const SPEC_LABEL_OVERRIDES: Record<string, string> = {
+  /*
+ * Right sidebar on the product page, hidden for now at the site owner's request.
+ *
+ * It shows ProductSpecs when a product has spec rows, and falls back to a
+ * recent-articles rail when it does not. Right now every product takes the
+ * fallback: specRows is built from `product.specs.technicalSpecs`, but the
+ * sourcing pipeline writes specs flat at the top level, so the lookup finds
+ * nothing on all 219 products. Worth fixing separately -- the spec data is
+ * there and paid for -- at which point flip this back to true.
+ */
+const SHOW_PRODUCT_SIDEBAR = false;
+
+const SPEC_LABEL_OVERRIDES: Record<string, string> = {
     'recommended uses for product': 'Recommended Uses',
   };
   const specRows = Object.entries(product.specs?.technicalSpecs ?? {})
@@ -509,7 +520,10 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
       </div>{/* top section */}
 
       {/* Lower section: descriptions etc. (75%) + recent posts sidebar. */}
-      <div className="mt-12 grid gap-y-10 lg:grid-cols-[minmax(0,65fr)_5fr_minmax(0,30fr)]" data-testid="product-detail-columns">
+      <div
+        className={`mt-12 grid gap-y-10 ${SHOW_PRODUCT_SIDEBAR ? 'lg:grid-cols-[minmax(0,65fr)_5fr_minmax(0,30fr)]' : 'lg:grid-cols-1'}`}
+        data-testid="product-detail-columns"
+      >
         <div className="min-w-0">
           {/* Skin types tags (key features moved up next to the title/prices). */}
           {product.skinTypes && product.skinTypes.length > 0 && (
@@ -533,10 +547,6 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                   <ProductDescription markdown={product.description} />
                 </div>
               </CollapsibleDescription>
-              {/* In-content display ad within the product description. */}
-              <div className="mt-8 text-center">
-                <AdsenseUnit slot="4749659178" format="horizontal" className="mx-auto" />
-              </div>
             </div>
           )}
 
@@ -549,15 +559,19 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
 
         </div>
 
-        {/* Offset spacer column (~5%). */}
-        <div aria-hidden className="hidden lg:block" />
+        {SHOW_PRODUCT_SIDEBAR && (
+          <>
+            {/* Offset spacer column (~5%). */}
+            <div aria-hidden className="hidden lg:block" />
 
-        {/* Right column — specifications (falls back to recent posts when a
-            product has no specs). */}
-        {specRows.length > 0 || (product.keyFeatures?.length ?? 0) > 0 ? (
-          <ProductSpecs specs={specRows} pros={product.keyFeatures ?? []} />
-        ) : (
-          <ArticleSidebar popular={recentRows} recent={recentRows} />
+            {/* Right column — specifications (falls back to recent posts when a
+                product has no specs). */}
+            {specRows.length > 0 || (product.keyFeatures?.length ?? 0) > 0 ? (
+              <ProductSpecs specs={specRows} pros={product.keyFeatures ?? []} />
+            ) : (
+              <ArticleSidebar popular={recentRows} recent={recentRows} />
+            )}
+          </>
         )}
       </div>
 

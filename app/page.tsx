@@ -4,7 +4,6 @@ import { SECTIONS, SITE } from '@/lib/site';
 import PostCard from '@/components/PostCard';
 import ArticlesCarousel from '@/components/ArticlesCarousel';
 import ProductsCarousel from '@/components/ProductsCarousel';
-import AdsenseUnit from '@/components/AdsenseUnit';
 import ToolsCarousel, { type ToolCard } from '@/components/ToolsCarousel';
 
 export const revalidate = 60;
@@ -136,11 +135,6 @@ export default async function HomePage() {
 
       <Hero />
       <WelcomeIntro />
-      <section className="bg-white py-8 sm:py-10" data-testid="home-ad">
-        <div className="mx-auto max-w-7xl px-6 text-center">
-          <AdsenseUnit slot="3958661572" className="mx-auto" />
-        </div>
-      </section>
       <LatestArrivals products={latestProducts} />
       <CategoryShowcase />
       <ProductSelectionTools />

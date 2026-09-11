@@ -10,7 +10,6 @@ import { fmtDate, firstImageUrl, primaryCategorySlug, postPath } from '@/lib/for
 import PostContent from '@/components/PostContent';
 import RelatedCarousel from '@/components/RelatedCarousel';
 import ArticleSidebar from '@/components/ArticleSidebar';
-import AdsenseUnit from '@/components/AdsenseUnit';
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -214,16 +213,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
 
           <div>
             <PostContent html={bodyFirst} />
-            {bodySecond ? (
-              <>
-                <div className="my-10 text-center">
-                  <AdsenseUnit slot="3958661572" className="mx-auto" />
-                </div>
-                <PostContent html={bodySecond} />
-              </>
-            ) : (
-              <AdsenseUnit slot="3958661572" className="mt-8" />
-            )}
+            {bodySecond ? <PostContent html={bodySecond} /> : null}
           </div>
 
           <div className="mt-12 rounded-2xl border border-ink/10 bg-muted/40 p-5 text-xs leading-5 text-ink/60">

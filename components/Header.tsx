@@ -3,10 +3,12 @@ import { SECTIONS, SITE } from '@/lib/site';
 import { listCategories } from '@/lib/strapi';
 import StickyHeaderShadow from '@/components/StickyHeaderShadow';
 
+type NavChild = { label: string; href: string; heading?: false } | { label: string; heading: true };
+
 type NavItem = {
   label: string;
   href?: string;
-  children?: { label: string; href: string }[];
+  children?: NavChild[];
 };
 
 export default async function Header() {
@@ -22,22 +24,46 @@ export default async function Header() {
    * the next one added needs no deploy.
    */
   const sectionSlugs = new Set<string>(SECTIONS.map((section) => section.slug));
-  const topics = (await listCategories().catch(() => []))
-    .filter((category) => !sectionSlugs.has(category.slug));
+  const allCategories = await listCategories().catch(() => []);
+
+  /*
+   * Topics are grouped by their parent category: product type, skin concern,
+   * cross-cutting. The grouping lives in the CMS as bls-category parent/child,
+   * which the type already supported, so it needed no schema change and no
+   * rebuild -- and a hub moved between groups in Strapi moves here too.
+   *
+   * The three group rows are headings, not destinations: they exist to organise
+   * fifteen hubs that were otherwise one flat list. A hub with no parent still
+   * shows: anything unassigned falls into a trailing "More" group rather
+   * than vanishing from the nav, which is the failure mode that hid these
+   * categories in the first place.
+   */
+  const groupOrder = ['product-type-hubs', 'skin-concern-hubs', 'cross-cutting-hubs'];
+  const isGroupRow = (slug: string) => groupOrder.includes(slug);
+  const hubs = allCategories.filter(
+    (category) => !sectionSlugs.has(category.slug) && !isGroupRow(category.slug),
+  );
+
+  const groupLabel = new Map(
+    allCategories.filter((c) => isGroupRow(c.slug)).map((c) => [c.slug, c.name]),
+  );
+  const topicChildren: NavChild[] = [];
+  for (const groupSlug of groupOrder) {
+    const members = hubs.filter((h) => h.parent?.slug === groupSlug);
+    if (!members.length) continue;
+    topicChildren.push({ label: groupLabel.get(groupSlug) ?? groupSlug, heading: true });
+    for (const m of members) topicChildren.push({ label: m.name, href: `/${m.slug}` });
+  }
+  const ungrouped = hubs.filter((h) => !h.parent || !isGroupRow(h.parent.slug));
+  if (ungrouped.length) {
+    topicChildren.push({ label: 'More', heading: true });
+    for (const m of ungrouped) topicChildren.push({ label: m.name, href: `/${m.slug}` });
+  }
 
   const nav: NavItem[] = [
     { label: 'Products', href: '/products' },
     { label: 'Brands', href: '/brands' },
-    ...(topics.length
-      ? [{
-          label: 'Topics',
-          href: `/${topics[0].slug}`,
-          children: topics.map((category) => ({
-            label: category.name,
-            href: `/${category.slug}`,
-          })),
-        }]
-      : []),
+    ...(topicChildren.length ? [{ label: 'Topics', children: topicChildren }] : []),
     {
       label: 'Articles',
       href: '/informative-articles',
@@ -165,6 +191,13 @@ export default async function Header() {
                     data-testid={`${testId}-dropdown`}
                   >
                     {item.children.map((child) => (
+                      child.heading ? (
+                        <li key={`h-${child.label}`} role="presentation">
+                          <span className="block px-4 pb-1 pt-3 text-xs font-bold uppercase tracking-wider text-ink/45">
+                            {child.label}
+                          </span>
+                        </li>
+                      ) : (
                       <li key={child.label} role="none">
                         <Link
                           href={child.href}
@@ -175,6 +208,7 @@ export default async function Header() {
                           {child.label}
                         </Link>
                       </li>
+                      )
                     ))}
                   </ul>
                 </li>
