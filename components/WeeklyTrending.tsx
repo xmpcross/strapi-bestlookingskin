@@ -41,10 +41,10 @@ export default function WeeklyTrending({
           <li key={row.href}>
             <Link
               href={row.href}
-              className="group grid grid-cols-[minmax(0,1fr)_84px] items-center gap-4 rounded-xl border border-ink/10 bg-paper p-4 transition hover:border-ink/20 hover:shadow-sm"
+              className="group grid grid-cols-[minmax(0,1fr)_84px] items-center gap-4 rounded-xl border border-ink/10 bg-paper p-2 transition hover:border-ink/20 hover:shadow-sm"
             >
               <div className="min-w-0">
-                <h4 className="line-clamp-2 font-display !text-[15px] font-bold leading-snug text-ink transition group-hover:text-primary">
+                <h4 className="line-clamp-2 font-display !text-[14px] font-bold leading-snug text-ink transition group-hover:text-primary">
                   {row.title}
                 </h4>
                 {row.date && (

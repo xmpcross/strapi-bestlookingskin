@@ -244,7 +244,9 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
       {/* Split hero: byline, title, standfirst and tags on the left, cover on
           the right. The cover used to run full width above everything, which
           gave the page two competing focal points before a word was read. */}
-      <div className="mt-6 grid items-center gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+      <div className="mt-6 grid items-center gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+        {/* 40 / 60. Expressed as 2fr / 3fr rather than literal percentages so the
+            10-unit gap comes out of the track sizing instead of overflowing the row. */}
         <div className="min-w-0">
           {post.author && (
             <p className="flex items-center gap-2 text-[14px] text-ink/60">
