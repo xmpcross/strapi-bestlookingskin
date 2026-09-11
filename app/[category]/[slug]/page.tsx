@@ -219,6 +219,31 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
         <span className="min-w-0 truncate text-ink/75" aria-current="page">{post.title}</span>
       </nav>
 
+      {/* Title and byline sit directly under the breadcrumb, full width and
+          ahead of the article grid, so the page leads with what it is and who
+          wrote it rather than with the cover image. */}
+      <header className="mt-4">
+          <h1 className="font-display text-[2rem] font-bold leading-tight tracking-tight text-ink">
+            {post.title}
+          </h1>
+          <p className="mb-[15px] text-[14px] text-ink/55">
+            {post.author && (
+              <>
+                By{' '}
+                <Link
+                  href={`/authors/${post.author.slug}`}
+                  className="font-semibold text-ink/75 hover:text-primary"
+                >
+                  {post.author.name}
+                </Link>
+                {' · '}
+              </>
+            )}
+            Published {fmtDate(post.publishedAt)}
+            {post.readingTimeMinutes ? ` · ${post.readingTimeMinutes} min read` : ''}
+          </p>
+          </header>
+
       <div className="mt-6 grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-12">
         {/* Main article column */}
         <div className="min-w-0">
@@ -231,28 +256,6 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
             />
           )}
 
-          {/* Title and meta sit under the featured image. */}
-          <header className={cover ? 'mt-6' : ''}>
-            <h1 className="font-display text-[2rem] font-bold leading-tight tracking-tight text-ink">
-              {post.title}
-            </h1>
-            <p className="mb-[15px] text-[14px] text-ink/55">
-              {post.author && (
-                <>
-                  By{' '}
-                  <Link
-                    href={`/authors/${post.author.slug}`}
-                    className="font-semibold text-ink/75 hover:text-primary"
-                  >
-                    {post.author.name}
-                  </Link>
-                  {' · '}
-                </>
-              )}
-              Published {fmtDate(post.publishedAt)}
-              {post.readingTimeMinutes ? ` · ${post.readingTimeMinutes} min read` : ''}
-            </p>
-          </header>
 
           <div>
             <PostContent html={bodyFirst} />
