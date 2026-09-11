@@ -1,6 +1,27 @@
 export type TocItem = { id: string; text: string; level: 2 | 3 };
 
 /**
+ * Decode the HTML entities left behind after tags are stripped.
+ *
+ * Heading text goes into the contents list as a React string, and React escapes
+ * what it renders -- so an undecoded `&quot;` reaches the page as the literal
+ * six characters rather than a quotation mark. Covers the named entities this
+ * content actually uses plus numeric refs; anything else is left alone rather
+ * than guessed at.
+ */
+export function decodeEntities(input: string): string {
+  const named: Record<string, string> = {
+    amp: '&', quot: '"', apos: "'", lt: '<', gt: '>', nbsp: ' ',
+    rsquo: '\u2019', lsquo: '\u2018', rdquo: '\u201d', ldquo: '\u201c',
+    mdash: '\u2014', ndash: '\u2013', hellip: '\u2026', times: '\u00d7', deg: '\u00b0',
+  };
+  return input
+    .replace(/&#(\d+);/g, (_m, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_m, n) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/&([a-z]+);/gi, (m, name) => named[String(name).toLowerCase()] ?? m);
+}
+
+/**
  * Add stable ids to body headings and return the table of contents built from
  * the same pass.
  *
@@ -44,7 +65,7 @@ export function withHeadingIds(html: string): { html: string; toc: TocItem[] } {
     /<(h[23])(\b[^>]*)>([\s\S]*?)<\/\1>/gi,
     (whole, tag: string, attrs: string, inner: string) => {
       const level = tag.toLowerCase() === 'h2' ? 2 : 3;
-      const text = inner.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+      const text = decodeEntities(inner.replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
       if (!text) return whole;
 
       const existing = attrs.match(/\bid=["']([^"']+)["']/i);

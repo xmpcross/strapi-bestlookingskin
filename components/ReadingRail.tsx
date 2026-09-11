@@ -109,7 +109,9 @@ export default function ReadingRail({
                   <a
                     href={`#${item.id}`}
                     className={
-                      'block text-[14px] leading-snug transition ' +
+                      /* Indented h3 entries at 13px: the indent alone did not
+                         separate them from the h2 headings above. */
+                      `block leading-snug transition ${item.level === 3 ? 'text-[13px]' : 'text-[14px]'} ` +
                       (active
                         ? 'font-semibold text-primary'
                         : item.level === 2

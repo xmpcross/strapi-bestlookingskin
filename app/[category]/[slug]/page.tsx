@@ -7,7 +7,7 @@ import '../../custom.css';
 import { getPost, listPosts, listCategories, listProductsForPost, getAdjacentPosts, mediaUrl, type BlsPost } from '@/lib/strapi';
 import { SECTIONS, SITE } from '@/lib/site';
 import { fmtDate, firstImageUrl, primaryCategorySlug, postPath } from '@/lib/format';
-import { withHeadingIds } from '@/lib/toc';
+import { withHeadingIds, decodeEntities } from '@/lib/toc';
 import PostContent from '@/components/PostContent';
 import ReadingRail from '@/components/ReadingRail';
 import AuthorAvatar from '@/components/AuthorAvatar';
@@ -203,7 +203,10 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
     const prose = bodyFirst
       .replace(/<h[1-6][^>]*>[\s\S]*?<\/h[1-6]>/gi, ' ')
       .replace(/<(figure|figcaption|table)[\s\S]*?<\/\1>/gi, ' ');
-    const text = prose.replace(/<[^>]+>/g, ' ').replace(/&[a-z]+;|&#\d+;/gi, ' ').replace(/\s+/g, ' ');
+    /* Decoded, not deleted: the earlier pass replaced entities with a space,
+       which silently dropped every quotation mark and apostrophe out of the
+       pull quote. */
+    const text = decodeEntities(prose.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ');
     const sentences = text.split(/(?<=[.!?])\s+/).filter((t) => t.length >= 80 && t.length <= 190);
     return sentences.length ? sentences[Math.floor(sentences.length / 2)].trim() : '';
   })();
