@@ -276,9 +276,9 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
       <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(280px,1.2fr)_minmax(0,2fr)] lg:gap-10">
         {/* Image column (spans the full top-section height) */}
         <div className="lg:row-span-2">
-          <div className="relative overflow-hidden rounded-md bg-white">
+          <div className="card relative overflow-hidden border border-base-300 bg-base-100">
             {hasDiscount && (
-              <span className="absolute right-3 top-3 z-10 rounded bg-primary px-2 py-1 text-xs font-bold text-white">
+              <span className="badge badge-primary absolute right-3 top-3 z-10 font-bold">
                 -{Math.round((1 - product.currentPrice! / product.originalPrice!) * 100)}%
               </span>
             )}
@@ -295,7 +295,7 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
                 const u = mediaUrl(g);
                 if (!u) return null;
                 return (
-                  <div key={i} className="overflow-hidden rounded-md bg-white">
+                  <div key={i} className="card overflow-hidden border border-base-300 bg-base-100 transition hover:border-primary">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={u} alt={`${product.name} ${i + 1}`} className="aspect-square w-full object-contain mix-blend-multiply p-1.5" />
                   </div>
@@ -319,13 +319,29 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
           {/* Rating summary under the product title */}
           {ratingValue > 0 && (
             <div className="mt-2 flex items-center gap-2" data-testid="product-rating-summary">
-              <span className="text-sm leading-none">
-                <span className="text-amber-400">{'★'.repeat(Math.round(ratingValue))}</span>
-                <span className="text-ink/20">{'★'.repeat(Math.max(0, 5 - Math.round(ratingValue)))}</span>
+              {/*
+               * daisyUI's rating is built from radio inputs. They are disabled
+               * rather than interactive here: this is a summary of other
+               * people's ratings, not an input, and a disabled set still draws
+               * the filled/empty stars correctly. aria-hidden because the
+               * numeric value beside it already says the same thing to a screen
+               * reader, and five unlabelled radios would only add noise.
+               */}
+              <span className="rating rating-sm" aria-hidden>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <input
+                    key={n}
+                    type="radio"
+                    name="product-rating-display"
+                    className="mask mask-star-2 bg-warning"
+                    disabled
+                    defaultChecked={n === Math.round(ratingValue)}
+                  />
+                ))}
               </span>
-              <span className="text-sm font-semibold text-ink">{ratingValue.toFixed(1)}</span>
+              <span className="text-sm font-semibold text-base-content">{ratingValue.toFixed(1)}</span>
               {ratingCount > 0 && (
-                <span className="text-sm text-ink/55">
+                <span className="text-sm text-base-content/55">
                   ({ratingCount} {ratingIsReviews ? (ratingCount === 1 ? 'review' : 'reviews') : 'ratings'})
                 </span>
               )}
@@ -352,33 +368,49 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
           <div className="mt-9 grid gap-6 lg:grid-cols-[minmax(280px,1fr)_minmax(0,1.1fr)]">
             {/* Description + price + BUY */}
             <div className="lg:order-2">
-              <div className="p-1 text-[14px] leading-6 text-ink/80">
-                {product.keyFeatures && product.keyFeatures.length > 0 ? (
-                  <>
-                    <p className="text-xs font-bold uppercase tracking-wider text-ink/50">Key Features</p>
-                    <ul className="mt-3 list-disc space-y-2 pl-5">
-                      {product.keyFeatures.map((f, i) => (
-                        <li key={i}>{f}</li>
-                      ))}
-                    </ul>
-                  </>
-                ) : product.shortDescription ? (
-                  <p>{product.shortDescription}</p>
-                ) : (
-                  <p className="italic text-ink/50">No key features yet — add them in Strapi → Commerce · Product → Specs → keyFeatures.</p>
-                )}
-              </div>
+              {/*
+               * The card renders only when there is something to put in it.
+               * The previous third branch printed "No key features yet — add
+               * them in Strapi → …" to the visitor, which is an instruction to
+               * an editor, not copy for a shopper: 238 of the 310 products here
+               * have neither keyFeatures nor shortDescription, so that sentence
+               * was live on most of the catalogue. An empty state that says
+               * nothing is better than one that leaks the CMS.
+               */}
+              {(product.keyFeatures?.length || product.shortDescription) && (
+                <div className="card border border-base-300 bg-base-200/50">
+                  <div className="card-body gap-0 p-5 text-[14px] leading-6 text-base-content/80">
+                    {product.keyFeatures && product.keyFeatures.length > 0 ? (
+                      <>
+                        <p className="text-xs font-bold uppercase tracking-wider text-base-content/50">Key Features</p>
+                        <ul className="mt-3 list-disc space-y-2 pl-5">
+                          {product.keyFeatures.map((f, i) => (
+                            <li key={i}>{f}</li>
+                          ))}
+                        </ul>
+                      </>
+                    ) : (
+                      <p>{product.shortDescription}</p>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {product.currentPrice !== undefined && (
                 <div className="mt-6 flex items-baseline gap-3">
                   {hasDiscount && (
-                    <span className="text-base text-ink/45 line-through">
+                    <span className="text-base text-base-content/45 line-through">
                       {formatPrice(product.originalPrice!, product.currency)}
                     </span>
                   )}
-                  <span className="font-display text-3xl font-bold text-ink">
+                  <span className="font-display text-3xl font-bold text-base-content">
                     {formatPrice(product.currentPrice, product.currency)}
                   </span>
+                  {hasDiscount && (
+                    <span className="badge badge-success badge-outline font-semibold">
+                      Save {formatPrice(product.originalPrice! - product.currentPrice, product.currency)}
+                    </span>
+                  )}
                 </div>
               )}
 
@@ -427,7 +459,7 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
             {/* Offers panel — first 5 prices, with a "view more" toggle for the
                 rest (pure-CSS checkbox toggle so this stays a server component). */}
             <div className="lg:order-1">
-              <div className="overflow-hidden rounded-md border border-ink/10">
+              <div className="card overflow-hidden border border-base-300 bg-base-100">
                 {offerRows.length > 0 ? (
                   <>
                     {offerRows.slice(0, 9).map((row, i) => (
@@ -459,13 +491,13 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
                         </div>
                         <label
                           htmlFor="more-offers"
-                          className="flex cursor-pointer items-center justify-center gap-1 border-t border-ink/10 px-4 py-2 text-sm font-semibold text-primary transition hover:bg-paper peer-checked:hidden"
+                          className="btn btn-ghost btn-sm btn-block rounded-none border-t border-base-300 text-primary peer-checked:hidden"
                         >
                           View {offerRows.length - 9} more {offerRows.length - 9 === 1 ? 'price' : 'prices'}
                         </label>
                         <label
                           htmlFor="more-offers"
-                          className="hidden cursor-pointer items-center justify-center gap-1 border-t border-ink/10 px-4 py-1 text-sm font-semibold text-primary transition hover:bg-paper peer-checked:flex"
+                          className="btn btn-ghost btn-sm btn-block hidden rounded-none border-t border-base-300 text-primary peer-checked:flex"
                         >
                           Show fewer
                         </label>
@@ -473,9 +505,9 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
                     )}
                   </>
                 ) : (
-                  <p className="px-4 py-6 text-center text-sm text-ink/55">
-                    No offers yet — add an Amazon, Walmart or eBay URL in Strapi.
-                  </p>
+                  <div className="alert rounded-none border-0 bg-base-200/60 text-sm text-base-content/60">
+                    <span>No offers yet — add an Amazon, Walmart or eBay URL in Strapi.</span>
+                  </div>
                 )}
               </div>
 
@@ -538,7 +570,7 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
               <p className="text-xs font-bold uppercase tracking-wider text-ink/50">Skin types</p>
               <ul className="mt-3 flex flex-wrap gap-2">
                 {product.skinTypes.map((s) => (
-                  <li key={s} className="rounded-full bg-muted px-3 py-1 text-xs font-medium capitalize text-ink/75">
+                  <li key={s} className="badge badge-outline badge-lg border-base-300 text-xs font-medium capitalize text-base-content/75">
                     {s}
                   </li>
                 ))}
@@ -606,8 +638,8 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
             {/* Left rail: rating summary + write-a-review form. */}
             <div className="space-y-6 lg:sticky lg:top-24">
               {productReviews.length > 0 && (
-                <div className="rounded-xl border border-ink/10 bg-[#f5f7fd] p-6 text-center">
-                  <p className="text-5xl font-bold leading-none text-ink">{ratingValue.toFixed(1)}</p>
+                <div className="card border border-base-300 bg-base-200 p-6 text-center">
+                  <p className="text-5xl font-bold leading-none text-base-content">{ratingValue.toFixed(1)}</p>
                   <span className="mt-3 inline-block relative text-xl leading-none">
                     <span className="text-ink/20">★★★★★</span>
                     <span
@@ -617,7 +649,7 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
                       ★★★★★
                     </span>
                   </span>
-                  <p className="mt-3 text-sm text-ink/60">
+                  <p className="mt-3 text-sm text-base-content/60">
                     Based on {ratingCount} {ratingCount === 1 ? 'review' : 'reviews'}
                   </p>
                 </div>
@@ -732,24 +764,28 @@ function OfferRow({
   logoUrl?: string | null;
 }) {
   return (
-    <div className="grid grid-cols-[1fr_auto_auto] items-center gap-4 border-b border-ink/10 px-4 py-1 last:border-b-0 odd:bg-paper">
-      <span className="flex items-center gap-2.5 text-xs font-normal text-ink/80">
+    <div className="grid grid-cols-[1fr_auto_auto] items-center gap-4 border-b border-base-300 px-4 py-2 last:border-b-0 odd:bg-base-200/60">
+      <span className="flex items-center gap-2.5 text-xs font-normal text-base-content/80">
         <MerchantLogo merchant={merchant} logoUrl={logoUrl} size={28} />
         {merchant}
       </span>
       <span className="text-right">
         {price !== undefined && (
-          <span className="block text-sm font-bold text-ink">{formatPrice(price, currency)}</span>
+          <span className="block text-sm font-bold text-base-content">{formatPrice(price, currency)}</span>
         )}
         {outOfStock && (
-          <span className="block text-xs text-primary">out of stock</span>
+          <span className="badge badge-ghost badge-sm mt-0.5 font-medium">out of stock</span>
         )}
       </span>
+      {/* The row's own CTA. `btn-primary` on the cheapest offer and a quieter
+          `btn-outline` elsewhere would be the obvious move, but OfferRow does
+          not know its rank — the panel orders the rows. Keeping every row
+          identical also stops the table reading as nine competing buttons. */}
       <a
         href={url}
         target="_blank"
         rel="noopener noreferrer sponsored"
-        className="inline-flex items-center justify-center rounded-md bg-[rgb(235,237,245)] px-4 py-2 text-xs font-semibold text-[#1b2026] transition hover:bg-[rgb(224,227,238)]"
+        className="btn btn-sm btn-outline border-base-300 font-semibold hover:btn-primary"
       >
         See it
       </a>

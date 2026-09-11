@@ -125,13 +125,47 @@ export default {
   },
   plugins: [require('@tailwindcss/typography'), require('daisyui')],
   daisyui: {
-    // One theme, and `base: false` on purpose. daisyUI's base layer sets
-    // html/body colours from the theme, which would repaint every existing
-    // page the moment the plugin landed — the storefront's own bg-paper and
-    // text-ink already carry that. Component classes (btn, card, badge, …)
-    // still work wherever we opt into them, and nothing already in the markup
-    // changes. Drop `base: false` only alongside a deliberate re-theme.
-    themes: ['light'],
+    /*
+     * `bls` is this site's palette expressed in daisyUI's semantic names, so a
+     * daisyUI component lands already wearing the brand: primary is the same
+     * #478162 the storefront has always used for links and labels, base-200 is
+     * the existing paper grey, neutral is ink. Nothing new is invented here —
+     * every value is lifted from theme.extend.colors above, which is what keeps
+     * the redesign recognisably the same site rather than a daisyUI demo.
+     *
+     * `base: false` still holds while the redesign is a pilot: daisyUI's base
+     * layer would set html/body colours globally, repainting the 18 pages that
+     * have not been converted yet. It comes off in the same change that
+     * converts the last page.
+     */
+    themes: [
+      {
+        bls: {
+          primary: '#478162',
+          'primary-content': '#ffffff',
+          secondary: '#ffce00',
+          'secondary-content': '#332800',
+          accent: '#0072de',
+          'accent-content': '#ffffff',
+          neutral: '#07142b',
+          'neutral-content': '#f5f7fd',
+          'base-100': '#ffffff',
+          'base-200': '#f5f7fd',
+          'base-300': '#e4e5e8',
+          'base-content': '#07142b',
+          info: '#575d64',
+          success: '#03721e',
+          warning: '#983e00',
+          error: '#b00625',
+          // Matches the site's existing rounding: borderRadius['3xl'] is 1rem.
+          '--rounded-box': '1rem',
+          '--rounded-btn': '0.625rem',
+          '--rounded-badge': '9999px',
+          '--border-btn': '1px',
+          '--tab-radius': '0.5rem',
+        },
+      },
+    ],
     base: false,
     logs: false,
   },
