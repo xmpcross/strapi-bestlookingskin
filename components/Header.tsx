@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { SECTIONS, SITE } from '@/lib/site';
+import { listCategories } from '@/lib/strapi';
 import StickyHeaderShadow from '@/components/StickyHeaderShadow';
 
 type NavItem = {
@@ -9,9 +10,34 @@ type NavItem = {
 };
 
 export default async function Header() {
+  /*
+   * Topic hubs come from the CMS; the format buckets in SECTIONS stay hardcoded.
+   *
+   * These are two different axes and the nav had only ever shown one. SECTIONS
+   * is how a post is written -- comparison, review, how-to -- and it is fixed by
+   * the postType enum, so a constant is the right home for it. The hubs are what
+   * a reader browses by, they are editorial, and they get added in Strapi: the
+   * fifteen created on 11 Sep reached the footer, which reads listCategories(),
+   * and never reached the header, which did not. Driving this from the CMS means
+   * the next one added needs no deploy.
+   */
+  const sectionSlugs = new Set<string>(SECTIONS.map((section) => section.slug));
+  const topics = (await listCategories().catch(() => []))
+    .filter((category) => !sectionSlugs.has(category.slug));
+
   const nav: NavItem[] = [
     { label: 'Products', href: '/products' },
     { label: 'Brands', href: '/brands' },
+    ...(topics.length
+      ? [{
+          label: 'Topics',
+          href: `/${topics[0].slug}`,
+          children: topics.map((category) => ({
+            label: category.name,
+            href: `/${category.slug}`,
+          })),
+        }]
+      : []),
     {
       label: 'Articles',
       href: '/informative-articles',
