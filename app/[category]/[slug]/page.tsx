@@ -7,7 +7,9 @@ import '../../custom.css';
 import { getPost, listPosts, mediaUrl, type BlsPost } from '@/lib/strapi';
 import { SECTIONS, SITE } from '@/lib/site';
 import { fmtDate, firstImageUrl, primaryCategorySlug, postPath } from '@/lib/format';
+import { withHeadingIds } from '@/lib/toc';
 import PostContent from '@/components/PostContent';
+import ReadingRail from '@/components/ReadingRail';
 import RelatedCarousel from '@/components/RelatedCarousel';
 import ArticleSidebar from '@/components/ArticleSidebar';
 
@@ -141,11 +143,16 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
       })
     : postBodyRaw;
 
+  /* Ids and the contents list come from one pass, so the rail's anchors and the
+     body's headings cannot drift apart. Done before the split, or headings in
+     the second half would be numbered as if the first half did not exist. */
+  const { html: bodyWithIds, toc } = withHeadingIds(postBodyHtml);
+
   // Split the body near its mid-point so the in-article ad lands in the middle
   // of the blog. Prefer a heading boundary (clean section break); fall back to
   // the nearest paragraph end so HTML blocks are never cut open.
   const [bodyFirst, bodySecond] = (() => {
-    const html = postBodyHtml;
+    const html = bodyWithIds;
     if (html.length < 600) return [html, ''] as const;
     const mid = Math.floor(html.length / 2);
     const nearest = (positions: number[]) =>
@@ -244,20 +251,33 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
           </p>
           </header>
 
-      <div className="mt-6 grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-12">
+
+      {/* Featured image sits above the grid, full width. It used to head the
+          article column, which put the left rail alongside it rather than
+          beneath it -- and a contents list level with the cover reads as part
+          of the header instead of as navigation for the text below. */}
+      {cover && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={cover}
+          alt={post.coverImage?.alternativeText || post.title}
+          className="mb-[20px] aspect-[16/9] w-full rounded-3xl object-cover"
+        />
+      )}
+
+      <div className="mt-0 grid gap-10 lg:grid-cols-[210px_minmax(0,1fr)_280px] lg:gap-12">
+        {/* Left rail: reading progress + contents. Ordered after the article on
+            small screens, where a contents list above the piece is just a wall
+            of links between the reader and the text. */}
+        <div className="order-2 lg:order-1">
+          <ReadingRail minutes={post.readingTimeMinutes} toc={toc} />
+        </div>
+
         {/* Main article column */}
-        <div className="min-w-0">
-          {cover && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={cover}
-              alt={post.coverImage?.alternativeText || post.title}
-              className="aspect-[16/9] w-full rounded-3xl object-cover"
-            />
-          )}
+        <div className="order-1 min-w-0 lg:order-2">
 
 
-          <div>
+          <div id="article-body">
             <PostContent html={bodyFirst} />
             {/*
               Gallery images are rendered here rather than embedded in the body.
@@ -318,12 +338,14 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
 
         </div>
 
-        {/* Right sidebar: post categories + recent posts */}
+        {/* Right sidebar: post categories + trending */}
+        <div className="order-3">
         <ArticleSidebar
           categoryTiles={categoryTiles}
           popular={popularRows}
           recent={recentRows}
         />
+        </div>
       </div>
 
     </article>

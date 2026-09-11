@@ -6,9 +6,10 @@ export const SITE = {
   url: (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.bestlooking.skin').replace(/\/$/, ''),
   amazonAffiliateTag: process.env.NEXT_PUBLIC_AMAZON_AFFILIATE_TAG || '',
   social: {
-    facebook: 'https://www.facebook.com/bestlookingskin',
-    twitter: 'https://x.com/bestlookingskin',
-    whatsapp: 'https://wa.me/15551234567',
+    facebook: 'https://www.facebook.com/1bestlookingskin/',
+    /* X and WhatsApp removed for now. The WhatsApp entry was wa.me/15551234567 --
+       a placeholder number, which would have sent anyone who tapped it to a
+       stranger or nowhere. Re-add either with a real destination. */
   },
 };
 
