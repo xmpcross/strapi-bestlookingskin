@@ -41,17 +41,25 @@ export default function PopularCarousel({ rows }: { rows: SidebarRow[] }) {
               className="aspect-[4/3] w-full object-cover"
               loading="lazy"
             />
-            <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink/45 via-transparent to-transparent" />
+            <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/25 to-transparent" />
 
             {current.category && (
-              <span className="absolute left-3 top-3 bg-ink px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+              <span className="absolute left-3 top-3 rounded bg-white/85 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-ink backdrop-blur-sm">
                 {current.category}
               </span>
             )}
 
-            {/* Title as stacked highlight bars, matching the reference design. */}
+            {/*
+              Title sits directly on the image: no highlight bars. The stacked
+              dark boxes the reference used made the text hard to read once real
+              covers went behind them, so legibility comes from the gradient
+              below plus a text shadow instead.
+            */}
             <span className="absolute inset-x-3 bottom-3 block">
-              <span className="box-decoration-clone bg-ink px-2 py-1 font-display text-[17px] font-bold leading-[1.5] text-white">
+              <span
+                className="font-display text-[17px] font-bold leading-[1.35] text-white"
+                style={{ textShadow: '0 1px 3px rgba(0,0,0,.55), 0 0 14px rgba(0,0,0,.35)' }}
+              >
                 {current.title}
               </span>
             </span>

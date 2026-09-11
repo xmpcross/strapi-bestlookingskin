@@ -6,8 +6,10 @@ export default {
     extend: {
       colors: {
         // Primary brand blue (Polaris primary tokens).
+        // Sandbox demo 25 accent. Kept as a literal here (Tailwind needs a real
+        // value at build time) and mirrored by --sb-primary in globals.css.
         primary: {
-          DEFAULT: '#014fd3',
+          DEFAULT: '#d16b86',
           emphasis: '#014fd3',
           emphasisHover: '#0072de',
           emphasisPressed: '#0046be',

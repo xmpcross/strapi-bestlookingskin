@@ -1,3 +1,47 @@
+/* ---- Sandbox theme typography: Manrope, self-hosted ----
+   The theme's --sandbox-font-main. Files reused from nxt.deals so the site
+   keeps making zero requests to fonts.gstatic.com at pageload. */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('/fonts/Manrope-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('/fonts/Manrope-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/*
+ * Sandbox design tokens (demo 25).
+ *
+ * Ported from a WordPress theme, so the sizes are converted rather than copied:
+ * the theme runs a 20px root and states its scale in rem, which would shrink
+ * every heading by a fifth on this site's 16px root. These are the theme's
+ * effective pixel sizes.
+ *
+ * The accent is demo 25's own colour -- the theme's --sandbox-color-pink. The
+ * rest of that demo's colours are social-brand values (LinkedIn, Dribbble,
+ * Google) and greys, so pink is the scheme. Change --sb-primary alone to move
+ * to another demo's accent.
+ */
+:root {
+  --sb-primary: #d16b86;
+  --sb-heading: #343f52;
+  --sb-body: #60697b;
+  --sb-muted: #818a91;
+  --sb-soft-bg: #f6f7f9;
+  --sb-bg: #fefefe;
+  --sb-secondary: #aab0bc;
+  --sb-radius: 8px;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -743,6 +787,35 @@ h1 *, h2 *, h3 *, h4 *, h5 *, h6 * {
   font-weight: 700 !important;
   color: #1b2026 !important;
 }
+
+/* ---- Sandbox scale, applied last so it wins over the Inter block above ----
+   Theme values converted from its 20px root to real pixels:
+     h1 calc(1.27rem + .24vw)   -> ~25.4px + .24vw
+     h2 calc(1.255rem + .06vw)  -> ~25.1px + .06vw
+     h3 22 / h4 19 / h5 18 / h6 17px, weights 700, line-heights 1.3-1.55. */
+body,
+.post-content {
+  font-family: 'Manrope', system-ui, sans-serif !important;
+  font-weight: 500;
+  line-height: 1.7;
+  color: var(--sb-body);
+}
+
+h1, h2, h3, h4, h5, h6,
+.post-content h1, .post-content h2, .post-content h3,
+.post-content h4, .post-content h5, .post-content h6,
+h1 *, h2 *, h3 *, h4 *, h5 *, h6 * {
+  font-family: 'Manrope', system-ui, sans-serif !important;
+  font-weight: 700 !important;
+  color: var(--sb-heading) !important;
+}
+
+h1, .post-content h1 { font-size: calc(25.4px + 0.24vw) !important; line-height: 1.3 !important; }
+h2, .post-content h2, .post-content h2 * { font-size: calc(25.1px + 0.06vw) !important; line-height: 1.35 !important; }
+h3, .post-content h3, .post-content h3 * { font-size: 22px !important; line-height: 1.4 !important; }
+h4, .post-content h4 { font-size: 19px !important; line-height: 1.45 !important; }
+h5, .post-content h5 { font-size: 18px !important; line-height: 1.5 !important; }
+h6, .post-content h6 { font-size: 17px !important; line-height: 1.55 !important; }
 
 /* Site-wide heading sizes. Applies everywhere, not just article bodies, so
    section headings on product, listing and static pages match the post
