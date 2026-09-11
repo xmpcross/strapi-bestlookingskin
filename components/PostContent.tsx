@@ -19,6 +19,56 @@ import { useEffect, useRef } from 'react';
  * Affiliate-tag rewriting happens at import time (server-side, in the importer)
  * — not here.
  */
+/**
+ * Turn a trailing FAQ section into an accordion.
+ *
+ * The generated posts end with "<h2>Frequently Asked Questions</h2>" followed
+ * by a flat run of h3/answer pairs -- 74 of 100 posts carry one -- which reads
+ * as a wall of text the reader scrolls past.
+ *
+ * <details> rather than a client component or a checkbox trick: every answer
+ * stays in the HTML even while collapsed, so crawlers and FAQ structured data
+ * still see the full text, and the open/close behaviour is the browser's own,
+ * keyboard accessible with nothing to wire up.
+ *
+ * Anchored on the heading text and stopped at the next h2, so a post without
+ * that section is returned untouched and FAQ-shaped content elsewhere in the
+ * article is left alone. Fewer than two pairs is not a FAQ run, so it bails.
+ */
+function withFaqAccordion(value: string) {
+  const html = String(value || '');
+  const heading = /<h([23])\b[^>]*>(?:(?!<\/h\1>).)*(?:FAQ|Frequently\s+Asked)(?:(?!<\/h\1>).)*<\/h\1>/i;
+  const match = html.match(heading);
+  if (!match) return html;
+
+  const start = html.search(heading);
+  const afterHeading = start + match[0].length;
+  const rest = html.slice(afterHeading);
+  const nextH2 = rest.search(/<h2\b/i);
+  const sectionEnd = nextH2 === -1 ? html.length : afterHeading + nextH2;
+  const section = html.slice(afterHeading, sectionEnd);
+
+  const pairs = [...section.matchAll(/<h3\b[^>]*>([\s\S]*?)<\/h3>([\s\S]*?)(?=<h3\b|$)/gi)];
+  if (pairs.length < 2) return html;
+
+  const items = pairs
+    .map((pair) => {
+      const question = pair[1].replace(/<[^>]+>/g, '').trim();
+      const answer = pair[2].trim();
+      if (!question || !answer) return '';
+      return (
+        '<details class="faq-item">' +
+        `<summary class="faq-question">${question}<span class="faq-icon" aria-hidden="true"></span></summary>` +
+        `<div class="faq-answer">${answer}</div>` +
+        '</details>'
+      );
+    })
+    .join('');
+  if (!items) return html;
+
+  return html.slice(0, afterHeading) + `<div class="faq-accordion">${items}</div>` + html.slice(sectionEnd);
+}
+
 export default function PostContent({ html }: { html: string }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -64,7 +114,7 @@ export default function PostContent({ html }: { html: string }) {
       ref={ref}
       className="post-content"
       data-testid="post-content"
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: withFaqAccordion(html) }}
     />
   );
 }
