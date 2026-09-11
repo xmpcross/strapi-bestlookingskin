@@ -22,6 +22,18 @@ type SearchParams = {
   view?: string;
 };
 
+/*
+ * The brand filter is hidden for now.
+ *
+ * commerce-brands is shared across every storefront on this CMS and a brand row
+ * carries no site ownership, so the sidebar was listing all 76 brands in the
+ * pool -- Acer, Anker, Apple, Garmin, Reolink, Samsung -- on a skincare site.
+ * listProductBrands() now derives the list from this site's own tagged products
+ * and returns only brands it actually stocks, so flipping this back to true is
+ * safe once the skincare catalogue has been reviewed.
+ */
+const SHOW_BRAND_FILTER = false;
+
 const PAGE_SIZE = 24;
 const VALID_SORTS = ['newest', 'price-asc', 'price-desc', 'rating-desc'] as const;
 type Sort = (typeof VALID_SORTS)[number];
@@ -119,7 +131,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
               </div>
             )}
 
-            {brands.length > 0 && (
+            {SHOW_BRAND_FILTER && brands.length > 0 && (
               <div>
                 <h6 className="font-display text-base font-bold capitalize tracking-wider text-ink">Brand</h6>
                 <ul className="mt-3 space-y-1 text-sm">

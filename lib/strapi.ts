@@ -561,15 +561,37 @@ export async function listProductCategories(): Promise<BlsProductCategory[]> {
 }
 
 export async function listProductBrands(): Promise<BlsProductBrand[]> {
+  /*
+   * commerce-brands is shared across every storefront on this CMS and, like
+   * commerce-categories, a brand row carries no site ownership at all -- no
+   * tag, no relation. Reading it unfiltered put all 76 brands in the pool into
+   * this skincare site's brand filter: Acer, Anker, Apple, Garmin, Reolink,
+   * Samsung, CanaKit.
+   *
+   * The fallback below already had the right idea and was fixed for exactly
+   * this, but it only runs when commerce-brands is unreachable -- which it
+   * never is -- so the fix never executed. So derive the allowed set from this
+   * site's own tagged products first, then keep the catalogue rows for those
+   * brands (they carry the logo and slug the derived rows lack).
+   */
+  const own = await listLegacyProductBrands();
+  const stocked = new Set(own.map((b) => b.name.trim().toLowerCase()));
+  if (stocked.size === 0) return [];
+
   try {
     const res = await strapiFetch<ListResponse<BlsProductBrand>>('commerce-brands', {
       sort: ['order:asc', 'name:asc'],
       populate: ['logo'],
       pagination: { pageSize: 200 },
     });
-    return res.data;
+    const matched = res.data.filter((b) => stocked.has(b.name.trim().toLowerCase()));
+    const covered = new Set(matched.map((b) => b.name.trim().toLowerCase()));
+    // A brand this site stocks but the catalogue has no row for still belongs
+    // in the filter, so fall back to the product-derived entry for those.
+    return [...matched, ...own.filter((b) => !covered.has(b.name.trim().toLowerCase()))]
+      .sort((a, b) => a.name.localeCompare(b.name));
   } catch {
-    return listLegacyProductBrands();
+    return own;
   }
 }
 
@@ -650,6 +672,11 @@ export async function listAllProductSlugs(): Promise<{ slug: string; updatedAt: 
   let page = 1;
   while (true) {
     const res = await strapiFetch<ListResponse<BlsProduct>>('commerce-products', {
+      // Every sibling query filters by the site tag; this one did not, so the
+      // sitemap advertised all 418 products in the shared pool -- every one of
+      // them belonging to nxt.bargains or nxt.deals. getProduct() IS filtered,
+      // so all of them 404'd: a sitemap of dead URLs handed to search engines.
+      filters: { tags: { $containsi: SITE_PRODUCT_TAG } },
       fields: ['slug', 'updatedAt'],
       sort: ['publishedAt:desc'],
       pagination: { page, pageSize: 100 },
