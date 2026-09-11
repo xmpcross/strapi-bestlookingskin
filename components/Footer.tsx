@@ -13,6 +13,18 @@ import { listCategories, type BlsCategory } from '@/lib/strapi';
  * network or a reader checks. The columns carry real destinations and the only
  * contact shown is the address that actually receives mail.
  */
+/**
+ * Legal pages, all of them. Each is a real route under app/legal/ -- checked,
+ * not assumed, because a dead policy link is worse than no link on a site
+ * carrying affiliate disclosures and an ad network.
+ */
+const LEGAL_LINKS = [
+  { href: '/legal/disclosure', label: 'Affiliate Disclosure' },
+  { href: '/legal/privacy', label: 'Privacy Policy' },
+  { href: '/legal/cookies', label: 'Cookie Policy' },
+  { href: '/legal/terms', label: 'Terms and Conditions' },
+];
+
 export default async function Footer() {
   const year = new Date().getFullYear();
   const postCategories = await listCategories().catch(() =>
@@ -121,8 +133,31 @@ export default async function Footer() {
 
         <div aria-hidden className="mt-14 h-px w-full bg-white/20" />
 
-        <div className="mt-8 flex flex-col-reverse items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-[#cacaca]/80">© {year} {SITE.name}. All rights reserved.</p>
+        {/* Bottom strip. Carries the footer-bottom test id, which globals.css has
+            styled (14px, weight 400) since the demo-14 port -- the id was only
+            ever in the stylesheet, never on an element, so those rules had
+            never matched anything. */}
+        <div
+          className="mt-8 flex flex-col-reverse items-start gap-6 sm:flex-row sm:items-center sm:justify-between"
+          data-testid="footer-bottom"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-2">
+            <p className="text-sm text-[#cacaca]/80">© {year} {SITE.name}. All rights reserved.</p>
+            {/* Every legal page, in the bottom strip rather than a link column:
+                an affiliate site is judged on these being present and findable,
+                and this is where a reader (or a review) looks for them. */}
+            <nav aria-label="Legal" className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              {LEGAL_LINKS.map((l) => (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className="text-sm text-[#cacaca] transition-colors hover:text-white"
+                >
+                  {l.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
     <div className="flex items-center" data-testid="social-links">
                   <a
                     href={SITE.social.facebook}
