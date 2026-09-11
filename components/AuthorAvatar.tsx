@@ -17,13 +17,17 @@ export default function AuthorAvatar({
   name,
   src,
   size = 28,
+  shape = 'circle',
   className = '',
 }: {
   name: string;
   src?: string | null;
   size?: number;
+  /** The bio card uses a rounded square; bylines stay circular. */
+  shape?: 'circle' | 'square';
   className?: string;
 }) {
+  const radius = shape === 'square' ? 'rounded-2xl' : 'rounded-full';
   if (src) {
     // eslint-disable-next-line @next/next/no-img-element
     return (
@@ -32,7 +36,7 @@ export default function AuthorAvatar({
         alt={name}
         width={size}
         height={size}
-        className={`shrink-0 rounded-full object-cover ${className}`}
+        className={`shrink-0 ${radius} object-cover ${className}`}
         loading="lazy"
       />
     );
@@ -44,7 +48,7 @@ export default function AuthorAvatar({
 
   return (
     <span
-      className={`inline-grid shrink-0 place-items-center rounded-full border border-ink/20 bg-paper text-ink/70 ${className}`}
+      className={`inline-grid shrink-0 place-items-center ${radius} border border-ink/20 bg-paper text-ink/70 ${className}`}
       style={{ width: size, height: size }}
       aria-hidden
     >

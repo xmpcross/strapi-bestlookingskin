@@ -451,19 +451,33 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
 
           {post.author?.bio && (
             <div
-              className="mt-12 flex gap-4 rounded-2xl border border-ink/10 bg-muted/30 p-5"
+              className="mt-12 rounded-2xl border border-ink/10 bg-paper p-7 sm:p-8"
               data-testid="author-card"
             >
-              <AuthorAvatar name={post.author.name} src={post.author.avatarUrl} size={48} />
-              <div className="min-w-0">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-ink/45">Written by</p>
-                <Link
-                  href={`/authors/${post.author.slug}`}
-                  className="font-display text-base font-bold text-ink hover:text-primary"
-                >
-                  {post.author.name}
-                </Link>
-                <p className="mt-2 text-sm leading-6 text-ink/70">{post.author.bio}</p>
+              <div className="flex flex-col gap-5 sm:flex-row sm:gap-7">
+                <AuthorAvatar name={post.author.name} src={post.author.avatarUrl} size={96} shape="square" />
+                <div className="min-w-0">
+                  <p className="font-display !text-[22px] font-bold leading-tight text-ink">
+                    <Link href={`/authors/${post.author.slug}`} className="hover:text-primary">
+                      {post.author.name}
+                    </Link>
+                  </p>
+                  <p className="mt-3 text-[15px] leading-7 text-ink/65">{post.author.bio}</p>
+                  {/* The reference card carried five social icons. bls-author has
+                      name, slug, bio and avatarUrl and nothing else, so each one
+                      would link somewhere invented. An address that receives mail
+                      is worth more than five icons that go nowhere. */}
+                  <a
+                    href="mailto:contact@bestlooking.skin"
+                    className="mt-4 inline-flex items-center gap-2 text-[14px] font-semibold text-primary hover:underline"
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                      <rect x="3" y="5" width="18" height="14" rx="2" />
+                      <path d="m3.5 6.5 8.5 6 8.5-6" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    contact@bestlooking.skin
+                  </a>
+                </div>
               </div>
             </div>
           )}
