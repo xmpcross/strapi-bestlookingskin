@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getCategory, listPosts, mediaUrl } from '@/lib/strapi';
+import { getCategory, listCategories, listPosts, mediaUrl } from '@/lib/strapi';
 import { SECTIONS, SITE } from '@/lib/site';
 import { firstImageUrl, fmtDate, postPath } from '@/lib/format';
 import LoadMoreArticles from '@/components/LoadMoreArticles';
@@ -72,21 +72,38 @@ export default async function CategoryPage({
 
   const sectionMeta = SECTIONS.find((s) => s.slug === category);
 
-  // Sidebar data — same shape as the single-post page's ArticleSidebar:
-  // category image tiles (count + representative image), plus Popular (this
-  // category's posts) and Recent (across all categories) tabbed lists.
-  const categoryTiles = await Promise.all(
-    SECTIONS.map(async (s) => {
-      const r = await listPosts({ category: s.slug, pageSize: 1 }).catch(() => null);
-      const first = r?.data?.[0];
-      return {
-        href: `/${s.slug}`,
-        name: s.short,
-        count: r?.meta?.pagination?.total ?? 0,
-        image: first ? mediaUrl(first.coverImage ?? null) ?? firstImageUrl(first.content) : null,
-      };
-    }),
-  );
+  /*
+   * Sidebar categories: every post category in the CMS, not the SECTIONS
+   * constant.
+   *
+   * SECTIONS is the format buckets -- comparison, review, how-to -- which is
+   * how a post is written, not what it is about. The topic hubs are what a
+   * reader browses by, they live in Strapi, and listing them here means a hub
+   * added in the CMS appears with no deploy. The three group rows
+   * (product-type-hubs and friends) are excluded: they hold no posts and exist
+   * to organise, not to be browsed.
+   *
+   * Empty categories are dropped rather than shown at zero -- a row leading to
+   * "No posts here yet" is worse than no row.
+   */
+  const GROUP_SLUGS = new Set(['product-type-hubs', 'skin-concern-hubs', 'cross-cutting-hubs']);
+  const allCategories = await listCategories().catch(() => []);
+  const categoryTiles = (
+    await Promise.all(
+      allCategories
+        .filter((c) => !GROUP_SLUGS.has(c.slug))
+        .map(async (c) => {
+          const r = await listPosts({ category: c.slug, pageSize: 1 }).catch(() => null);
+          const first = r?.data?.[0];
+          return {
+            href: `/${c.slug}`,
+            name: c.name,
+            count: r?.meta?.pagination?.total ?? 0,
+            image: first ? mediaUrl(first.coverImage ?? null) ?? firstImageUrl(first.content) : null,
+          };
+        }),
+    )
+  ).filter((t) => t.count > 0);
   const toRow = (p: (typeof allPosts)[number]) => ({
     href: postPath(p),
     title: p.title,
@@ -128,6 +145,12 @@ export default async function CategoryPage({
             categoryTiles={categoryTiles}
             popular={popularRows}
             recent={recentRows}
+            /* The body of this page is already a list of posts from this
+               category; a ranked list of posts beside it repeats itself. */
+            showTrending={false}
+            /* Every category now, so the list is capped and scrolls rather than
+               pushing everything below it off the screen. */
+            categoryMaxHeight={420}
           />
 
           {/* Results */}

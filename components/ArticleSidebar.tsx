@@ -10,10 +10,20 @@ export default function ArticleSidebar({
   categoryTiles = [],
   popular = [],
   recent = [],
+  showTrending = true,
+  categoryMaxHeight = 340,
 }: {
   categoryTiles?: SidebarCategoryTile[];
   popular?: SidebarRow[];
   recent?: SidebarRow[];
+  /**
+   * Weekly trending is off on the category listing pages: the page body is
+   * already a list of posts from this category, so a second ranked list of
+   * posts beside it is the same content twice.
+   */
+  showTrending?: boolean;
+  /** Cap for the category list; it scrolls past this. */
+  categoryMaxHeight?: number;
 }) {
   /* No tabs any more, so no client state: show popular where there is enough of
      it and fall back to recent, rather than rendering an empty panel. */
@@ -22,7 +32,7 @@ export default function ArticleSidebar({
   return (
     <aside className="space-y-10" aria-label="Sidebar" data-testid="article-sidebar">
       {/* ---- Weekly trending (above Categories) ---- */}
-      <WeeklyTrending rows={rows} />
+      {showTrending && <WeeklyTrending rows={rows} />}
 
       {/* ---- Categories ---- */}
       {/* Same card as the product page's Browse by topic, so a reader moving
@@ -35,7 +45,7 @@ export default function ArticleSidebar({
           title="Browse by category"
           /* Every non-empty category now, which is ~20 rows -- enough to push
              the trending list far below the fold. Capped and scrolled. */
-          maxHeight={340}
+          maxHeight={categoryMaxHeight}
           rows={categoryTiles.map((t) => ({
             slug: t.href.replace(/^\//, ''),
             name: t.name,
