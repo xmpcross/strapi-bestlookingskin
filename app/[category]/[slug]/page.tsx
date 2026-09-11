@@ -4,13 +4,16 @@ import type { Metadata } from 'next';
 // Single post stylesheet, loaded on all article single pages (App Router
 // code-splits this CSS to the post route).
 import '../../custom.css';
-import { getPost, listPosts, listCategories, mediaUrl, type BlsPost } from '@/lib/strapi';
+import { getPost, listPosts, listCategories, listProductsForHub, mediaUrl, type BlsPost } from '@/lib/strapi';
 import { SECTIONS, SITE } from '@/lib/site';
 import { fmtDate, firstImageUrl, primaryCategorySlug, postPath } from '@/lib/format';
 import { withHeadingIds } from '@/lib/toc';
 import PostContent from '@/components/PostContent';
 import ReadingRail from '@/components/ReadingRail';
 import AuthorAvatar from '@/components/AuthorAvatar';
+import PullQuote from '@/components/PullQuote';
+import ReadAlso from '@/components/ReadAlso';
+import InlineProducts from '@/components/InlineProducts';
 import RelatedCarousel from '@/components/RelatedCarousel';
 import ArticleSidebar from '@/components/ArticleSidebar';
 
@@ -164,9 +167,11 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
      the second half would be numbered as if the first half did not exist. */
   const { html: bodyWithIds, toc } = withHeadingIds(postBodyHtml);
 
-  // Split the body near its mid-point so the in-article ad lands in the middle
-  // of the blog. Prefer a heading boundary (clean section break); fall back to
-  // the nearest paragraph end so HTML blocks are never cut open.
+  /* Split the body at two heading boundaries, giving three parts, so the
+     in-article blocks land between sections rather than inside one. Headings
+     are preferred over paragraph ends because a block dropped mid-argument
+     reads as an interruption; falls back to a paragraph end so HTML is never
+     cut open. */
   const [bodyFirst, bodySecond] = (() => {
     const html = bodyWithIds;
     if (html.length < 600) return [html, ''] as const;
@@ -184,6 +189,28 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
   const galleryImages = (post.gallery ?? [])
     .map((g) => mediaUrl(g))
     .filter((url): url is string => Boolean(url) && url !== cover);
+
+  /* A sentence from the article, set as a pull quote. Its own words, so nothing
+     is attributed to anyone -- see PullQuote. Picked from the longer sentences
+     in the first half, where a highlight still earns its place. */
+  const pullQuote = (() => {
+    /* Headings are dropped before the text is flattened. Stripping tags alone
+       glues a heading onto the sentence that follows it -- the first run
+       produced "Combination Skin Combination skin - oily through the T-zone
+       ...", which reads as a transcription error. */
+    const prose = bodyFirst
+      .replace(/<h[1-6][^>]*>[\s\S]*?<\/h[1-6]>/gi, ' ')
+      .replace(/<(figure|figcaption|table)[\s\S]*?<\/\1>/gi, ' ');
+    const text = prose.replace(/<[^>]+>/g, ' ').replace(/&[a-z]+;|&#\d+;/gi, ' ').replace(/\s+/g, ' ');
+    const sentences = text.split(/(?<=[.!?])\s+/).filter((t) => t.length >= 80 && t.length <= 190);
+    return sentences.length ? sentences[Math.floor(sentences.length / 2)].trim() : '';
+  })();
+
+  /* Products from this post's hub, and two more articles to read. Both come
+     from data the site already holds, so neither costs a request to a paid API
+     at render time. */
+  const inlineProducts = await listProductsForHub(category, 3).catch(() => []);
+  const readAlsoRows = recentRows.filter((r) => r.href !== postPath(post)).slice(0, 2);
 
   const articleJsonLd = {
     '@context': 'https://schema.org',
@@ -331,6 +358,10 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
               Rendering from the relation keeps the stored content clean and
               means the placement can change without rewriting every post.
             */}
+            {pullQuote && <PullQuote text={pullQuote} />}
+
+            {inlineProducts.length >= 2 && <InlineProducts products={inlineProducts} />}
+
             {galleryImages[0] && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -341,6 +372,8 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
               />
             )}
             {bodySecond ? <PostContent html={bodySecond} /> : null}
+            {readAlsoRows.length === 2 && <ReadAlso rows={readAlsoRows} />}
+
             {galleryImages[1] && (
               // eslint-disable-next-line @next/next/no-img-element
               <img

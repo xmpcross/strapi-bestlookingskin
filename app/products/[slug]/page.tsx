@@ -633,9 +633,12 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
       {related.length > 0 && (
         <aside className="mt-16" data-testid="related-products">
           <h3 className="font-display font-bold tracking-tight text-ink">More in {cat?.name ?? 'this category'}</h3>
-          <div className="mt-6 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-5">
+          {/* 15px between cards, and no card background: the tiles sit on the
+              page rather than in boxes. thumbBg is the knob ProductCard already
+              exposes for this, so nothing needs overriding with !important. */}
+          <div className="mt-6 grid gap-[15px] sm:grid-cols-2 lg:grid-cols-5">
             {related.map((r) => (
-              <ProductCard key={r.id} product={r} variant="tile" />
+              <ProductCard key={r.id} product={r} variant="tile" thumbBg="bg-transparent" />
             ))}
           </div>
         </aside>

@@ -428,7 +428,7 @@ export type CommerceOffer = {
   merchant?: CommerceMerchant | null;
 };
 
-type CommerceProduct = Omit<
+export type CommerceProduct = Omit<
   BlsProduct,
   | 'brandRef'
   | 'categories'
@@ -690,6 +690,48 @@ export async function listProductCategoryCounts(): Promise<
     }),
   );
   return counted.filter((c) => c.count > 0);
+}
+
+/**
+ * Products to show inside an article, chosen from the post's own category.
+ *
+ * Mapped from the editorial hub to the commerce category, because the two use
+ * different words for the same shelf -- the site writes about "moisturizers"
+ * and stocks "moisturisers", "serums" against "facial-serums". No DataForSEO
+ * call: every one of these categories already holds 33 to 43 products.
+ *
+ * Returns nothing for a hub with no obvious shelf (routines, ingredients,
+ * dupes). A "related products" block under an explainer about how niacinamide
+ * works, stocked with whatever happened to be nearby, is an advert wearing a
+ * recommendation's clothes.
+ */
+const HUB_TO_COMMERCE: Record<string, string> = {
+  serums: 'facial-serums',
+  moisturizers: 'moisturisers',
+  cleansers: 'facial-cleansers',
+  exfoliants: 'exfoliators-and-scrubs',
+  'anti-aging': 'anti-aging',
+  'eye-cream': 'anti-aging',
+  'sensitive-skin': 'moisturisers',
+  acne: 'facial-cleansers',
+  hyperpigmentation: 'facial-serums',
+  sunscreen: 'moisturisers',
+};
+
+export async function listProductsForHub(hub: string, limit = 3): Promise<CommerceProduct[]> {
+  const slug = HUB_TO_COMMERCE[hub];
+  if (!slug) return [];
+  try {
+    const res = await commerceFetch<ListResponse<CommerceProduct>>('commerce-products', {
+      filters: { categories: { slug: { $eqi: slug } } },
+      populate: PRODUCT_POPULATE,
+      sort: ['rating:desc', 'ratingCount:desc'],
+      pagination: { page: 1, pageSize: limit },
+    });
+    return res.data ?? [];
+  } catch {
+    return [];
+  }
 }
 
 export async function listProductBrands(): Promise<BlsProductBrand[]> {
