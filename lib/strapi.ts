@@ -5,6 +5,8 @@ const BASE = (process.env.NEXT_PUBLIC_STRAPI_URL || 'https://cms.fxnstudio.com')
 // This storefront only shows products tagged for it (filtered via $containsi —
 // the JSON-array op Strapi serves reliably; $contains 500s).
 const SITE_PRODUCT_TAG = process.env.NEXT_PUBLIC_SITE_PRODUCT_TAG || 'bestlooking-skin';
+/** This storefront's commerce-site slug -- the relation products are scoped by. */
+const SITE_SLUG = process.env.NEXT_PUBLIC_SITE_SLUG || 'bestlooking-skin';
 
 /**
  * The product categories this storefront is allowed to show.
@@ -117,18 +119,33 @@ type CommerceCollection =
 
 function scopeFor(collection: CommerceCollection): Record<string, unknown> {
   switch (collection) {
-    /* Products carry the site tag. $containsi rather than $contains: it is the
-       JSON-array op Strapi serves reliably; $contains 500s. */
+    /* Products belong to a site by relation. This replaced a $containsi match
+       on the `tags` JSON array: substring matching on free text, where a wrong
+       tag returns an empty catalogue instead of an error. All 637 products in
+       the pool were backfilled from their tag, and the relation reproduces the
+       tag counts exactly (219 / 271 / 147). */
     case 'commerce-products':
-      return { tags: { $containsi: SITE_PRODUCT_TAG } };
-    /* Categories carry no ownership at all, so the scope is this storefront's
-       own allowlist rather than anything stored on the row. */
+      return { site: { slug: { $eq: SITE_SLUG } } };
+    /*
+     * Categories are NOT scoped by their `sites` relation, deliberately.
+     *
+     * That relation records which sites have products in a category, which is
+     * broader than which categories a storefront means to show. For this site
+     * it returns nine: the six skincare ones plus antioxidants,
+     * brain-and-cognitive and hair-skin-and-nails -- stale assignments holding
+     * zero bestlooking products. Scoping by it would put three empty, off-brand
+     * categories back in the nav, which is the leak this module exists to stop.
+     *
+     * So the allowlist stays until the relation is curated to mean "this
+     * storefront's categories" rather than "categories something of ours landed
+     * in". Move to `sites.slug.$eq` once that is true.
+     */
     case 'commerce-categories':
       return { slug: { $in: [...CATEGORY_SLUGS] } };
     /* Offers and reviews are scoped through the product they hang off. */
     case 'commerce-offers':
     case 'commerce-reviews':
-      return { product: { tags: { $containsi: SITE_PRODUCT_TAG } } };
+      return { product: { site: { slug: { $eq: SITE_SLUG } } } };
   }
 }
 
