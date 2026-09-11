@@ -123,5 +123,16 @@ export default {
       },
     },
   },
-  plugins: [require('@tailwindcss/typography')],
+  plugins: [require('@tailwindcss/typography'), require('daisyui')],
+  daisyui: {
+    // One theme, and `base: false` on purpose. daisyUI's base layer sets
+    // html/body colours from the theme, which would repaint every existing
+    // page the moment the plugin landed — the storefront's own bg-paper and
+    // text-ink already carry that. Component classes (btn, card, badge, …)
+    // still work wherever we opt into them, and nothing already in the markup
+    // changes. Drop `base: false` only alongside a deliberate re-theme.
+    themes: ['light'],
+    base: false,
+    logs: false,
+  },
 } satisfies Config;
