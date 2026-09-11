@@ -94,6 +94,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
     title: p.title,
     date: fmtDate(p.publishedAt),
     img: mediaUrl(p.coverImage ?? null) ?? firstImageUrl(p.content),
+    category: p.categories?.[0]?.name,
   });
   const popularRows = related.map(toRow);
   const recentRows = recentPosts.map(toRow);
@@ -180,19 +181,33 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
       />
 
+      {/* Breadcrumbs sit directly under the site nav, full width and flush:
+          no vertical margin or padding, so the rule reads as part of the header
+          rather than as the article's first element. */}
+      <nav className="my-0 flex items-center gap-2 border-y border-ink/10 py-0 text-[12px] font-semibold uppercase tracking-[0.3px] text-ink/55" data-testid="breadcrumb" aria-label="Breadcrumb">
+        <Link href="/" className="shrink-0 font-semibold text-primary hover:text-primary-highlight">Home</Link>
+        <span className="shrink-0">/</span>
+        <Link href={`/${category}`} className="shrink-0 font-semibold text-primary hover:text-primary-highlight">
+          {cat?.name ?? categoryName(category)}
+        </Link>
+        <span className="shrink-0">/</span>
+        <span className="min-w-0 truncate text-ink/75" aria-current="page">{post.title}</span>
+      </nav>
+
       <div className="mt-6 grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-12">
         {/* Main article column */}
         <div className="min-w-0">
-          <header>
-            <nav className="mb-5 flex items-center gap-2 border-y border-ink/10 py-3 text-[12px] font-semibold uppercase tracking-[0.3px] text-ink/55" data-testid="breadcrumb" aria-label="Breadcrumb">
-              <Link href="/" className="shrink-0 font-semibold text-primary hover:text-primary-highlight">Home</Link>
-              <span className="shrink-0">/</span>
-              <Link href={`/${category}`} className="shrink-0 font-semibold text-primary hover:text-primary-highlight">
-                {cat?.name ?? categoryName(category)}
-              </Link>
-              <span className="shrink-0">/</span>
-              <span className="min-w-0 truncate text-ink/75" aria-current="page">{post.title}</span>
-            </nav>
+          {cover && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={cover}
+              alt={post.coverImage?.alternativeText || post.title}
+              className="aspect-[16/9] w-full rounded-3xl object-cover"
+            />
+          )}
+
+          {/* Title and meta sit under the featured image. */}
+          <header className={cover ? 'mt-6' : ''}>
             <h1 className="font-display text-[2rem] font-bold leading-tight tracking-tight text-ink">
               {post.title}
             </h1>
@@ -201,15 +216,6 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
               {post.readingTimeMinutes ? ` · ${post.readingTimeMinutes} min read` : ''}
             </p>
           </header>
-
-          {cover && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={cover}
-              alt={post.coverImage?.alternativeText || post.title}
-              className="mt-8 aspect-[16/9] w-full rounded-3xl object-cover"
-            />
-          )}
 
           <div>
             <PostContent html={bodyFirst} />

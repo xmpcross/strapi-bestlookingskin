@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import PopularCarousel from '@/components/PopularCarousel';
 
 export type SidebarCategoryTile = { href: string; name: string; count: number; image: string | null };
-export type SidebarRow = { href: string; title: string; date: string; img: string | null };
+export type SidebarRow = { href: string; title: string; date: string; img: string | null; category?: string };
 
 export default function ArticleSidebar({
   categoryTiles = [],
@@ -20,6 +21,9 @@ export default function ArticleSidebar({
 
   return (
     <aside className="space-y-10" aria-label="Sidebar" data-testid="article-sidebar">
+      {/* ---- Popular (carousel, sits above Categories) ---- */}
+      <PopularCarousel rows={popular} />
+
       {/* ---- Categories (image cards + count badge) ---- */}
       {categoryTiles.length > 0 && (
         <div data-testid="sidebar-categories">
