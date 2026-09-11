@@ -744,6 +744,22 @@ h1 *, h2 *, h3 *, h4 *, h5 *, h6 * {
   color: #1b2026 !important;
 }
 
+/* Site-wide heading sizes. Applies everywhere, not just article bodies, so
+   section headings on product, listing and static pages match the post
+   hierarchy. !important because most headings carry a Tailwind text-* class
+   (text-2xl, text-lg) that would otherwise win on specificity. */
+h2,
+.post-content h2,
+.post-content h2 * {
+  font-size: 1.6rem !important;
+}
+
+h3,
+.post-content h3,
+.post-content h3 * {
+  font-size: 1.2rem !important;
+}
+
 /* Single post body heading sizes. !important because imported WordPress and
    Elementor bodies carry inline font-size on their headings, which would
    otherwise win over a class rule. */
@@ -927,11 +943,18 @@ article strong,
   padding-left: 1.5rem;
   margin: 0;
 }
+
+/* Lists start flush with the text above them. */
+.post-content :where(ul, ol),
+.post-content :where(ul, ol) :where(ul, ol) {
+  margin-top: 0;
+}
 .post-content :where(ul) { list-style-type: disc; }
 .post-content :where(ol) { list-style-type: decimal; }
 .post-content :where(ul) :where(ul) { list-style-type: circle; }
 .post-content :where(ul) :where(ul) :where(ul) { list-style-type: square; }
-.post-content :where(ul, ol) > li { margin: 0.5rem 0; }
+/* List items sit flush; vertical rhythm comes from the list's own spacing. */
+.post-content :where(ul, ol) > li { margin-top: 0; margin-bottom: 0; }
 .post-content > :where(blockquote) {
   border-left: 4px solid theme('colors.primary.DEFAULT');
   padding: 0.5rem 1rem;
@@ -1546,7 +1569,11 @@ article[data-testid^="post-"] {
 }
 
 .post-content :where(ul, ol) > li {
-  margin: 0.6em 0;
+  /* Flush list items. This rule sits after the earlier one and has the same
+     specificity, so it is the one that decides -- zeroing only the first left
+     0.6em in place. */
+  margin-top: 0;
+  margin-bottom: 0;
   line-height: 1.8;
 }
 
