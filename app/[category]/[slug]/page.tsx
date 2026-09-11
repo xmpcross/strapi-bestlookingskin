@@ -143,6 +143,11 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
     return cut > 0 ? ([html.slice(0, cut), html.slice(cut)] as const) : ([html, ''] as const);
   })();
 
+  /* Gallery images, excluding anything that duplicates the cover. */
+  const galleryImages = (post.gallery ?? [])
+    .map((g) => mediaUrl(g))
+    .filter((url): url is string => Boolean(url) && url !== cover);
+
   const articleJsonLd = {
     '@context': 'https://schema.org',
     '@type': post.postType === 'product-review' ? 'Review' : 'Article',
@@ -219,7 +224,34 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
 
           <div>
             <PostContent html={bodyFirst} />
+            {/*
+              Gallery images are rendered here rather than embedded in the body.
+              The generator reports "embedded N contextual image(s)" for every
+              site, but the function behind that message returns early unless the
+              site is flightfares.one -- so 67 posts carry gallery images that
+              were never placed in their HTML, and only the cover ever showed.
+              Rendering from the relation keeps the stored content clean and
+              means the placement can change without rewriting every post.
+            */}
+            {galleryImages[0] && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={galleryImages[0]}
+                alt={post.gallery?.[0]?.alternativeText || post.title}
+                className="my-10 aspect-[16/9] w-full rounded-2xl object-cover"
+                loading="lazy"
+              />
+            )}
             {bodySecond ? <PostContent html={bodySecond} /> : null}
+            {galleryImages[1] && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={galleryImages[1]}
+                alt={post.gallery?.[1]?.alternativeText || post.title}
+                className="mt-10 aspect-[16/9] w-full rounded-2xl object-cover"
+                loading="lazy"
+              />
+            )}
           </div>
 
           <div className="mt-12 rounded-2xl border border-ink/10 bg-muted/40 p-5 text-xs leading-5 text-ink/60">
