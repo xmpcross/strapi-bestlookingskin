@@ -36,6 +36,9 @@ export const CATEGORY_SLUGS = [
   'toners-and-astringents',
   'moisturisers',
   'exfoliators-and-scrubs',
+  /* Ingestible hyaluronic acid supplements -- capsules and powders -- not the
+     topical serums, which sit under facial-serums. */
+  'hyaluronic-acid',
 ] as const;
 // Reads on /api/bls-* are configured as public in Strapi. Skip the
 // Authorization header when the env token is missing OR a known stale
