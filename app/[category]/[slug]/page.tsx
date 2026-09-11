@@ -213,6 +213,27 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
   const inlineProducts = await listProductsForHub(category, 3).catch(() => []);
   const readAlsoRows = recentRows.filter((r) => r.href !== postPath(post)).slice(0, 2);
 
+  /* Read Also goes after the fourth paragraph rather than at the end of the
+     article: by then the reader has committed, and a related link is a next
+     step instead of an interruption. Split on a paragraph close, so the cut is
+     always between elements and never inside one. */
+  const [bodyIntro, bodyAfterIntro] = (() => {
+    const closes = [...bodyFirst.matchAll(/<\/p>/gi)].map((m) => (m.index ?? 0) + m[0].length);
+    if (closes.length < 5) return [bodyFirst, ''] as const;
+    const cut = closes[3];
+    return [bodyFirst.slice(0, cut), bodyFirst.slice(cut)] as const;
+  })();
+
+  /* The FAQ is the last section of every one of these posts, so anything
+     rendered after the body lands underneath it. Split it off, and the second
+     gallery image can sit in the article where it belongs rather than stranded
+     below a list of questions. */
+  const [bodyBeforeFaq, faqSection] = (() => {
+    const m = bodySecond.match(/<h[23]\b[^>]*>(?:(?!<\/h[23]>).)*(?:FAQ|Frequently\s+Asked)(?:(?!<\/h[23]>).)*<\/h[23]>/i);
+    if (!m || m.index === undefined) return [bodySecond, ''] as const;
+    return [bodySecond.slice(0, m.index), bodySecond.slice(m.index)] as const;
+  })();
+
   const { prev: prevPost, next: nextPost } = await getAdjacentPosts(category, slug);
 
   const articleJsonLd = {
@@ -351,7 +372,11 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
           </div>
 
           <div id="article-body" className="after:clear-both after:block after:content-['']">
-            <PostContent html={bodyFirst} />
+            <PostContent html={bodyIntro} />
+
+            {readAlsoRows.length === 2 && <ReadAlso rows={readAlsoRows} />}
+
+            {bodyAfterIntro && <PostContent html={bodyAfterIntro} />}
             {/*
               Gallery images are rendered here rather than embedded in the body.
               The generator reports "embedded N contextual image(s)" for every
@@ -361,9 +386,14 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
               Rendering from the relation keeps the stored content clean and
               means the placement can change without rewriting every post.
             */}
-            {pullQuote && <PullQuote text={pullQuote} />}
-
+            {/* Products sit here, not next to the floated gallery images. In the
+                previous order they rendered immediately above the first one, so
+                a product grid and a photograph stacked directly on top of each
+                other and the section read as one large advert. The pull quote
+                between them keeps text on both sides of the block. */}
             {inlineProducts.length >= 2 && <InlineProducts products={inlineProducts} />}
+
+            {pullQuote && <PullQuote text={pullQuote} />}
 
             {/* Floated so the text wraps alongside, as in the reference. Full
                 width on small screens -- a 45% float in a 360px column leaves
@@ -385,9 +415,9 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
                 )}
               </figure>
             )}
-            {bodySecond ? <PostContent html={bodySecond} /> : null}
-            {readAlsoRows.length === 2 && <ReadAlso rows={readAlsoRows} />}
+            {bodyBeforeFaq ? <PostContent html={bodyBeforeFaq} /> : null}
 
+            {/* Above the FAQ, never below it. */}
             {galleryImages[1] && (
               <figure className="mb-6 sm:float-right sm:ml-7 sm:mb-4 sm:w-[45%]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -404,6 +434,8 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
                 )}
               </figure>
             )}
+
+            {faqSection && <PostContent html={faqSection} />}
           </div>
 
           <PostFooterNav

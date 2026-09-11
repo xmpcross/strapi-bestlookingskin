@@ -48,13 +48,32 @@ function withFaqAccordion(value: string) {
   const sectionEnd = nextH2 === -1 ? html.length : afterHeading + nextH2;
   const section = html.slice(afterHeading, sectionEnd);
 
-  const pairs = [...section.matchAll(/<h3\b[^>]*>([\s\S]*?)<\/h3>([\s\S]*?)(?=<h3\b|$)/gi)];
+  /*
+   * Two shapes in this library, both from the same generator:
+   *   <h3>Question</h3><p>Answer</p>            -- 62 posts
+   *   <p><strong>Question?</strong> Answer</p>  -- 13 posts
+   * Handling only the first left a fifth of the posts as flat walls of text
+   * while the run reported success.
+   */
+  let pairs: { q: string; a: string }[] = [...section.matchAll(/<h3\b[^>]*>([\s\S]*?)<\/h3>([\s\S]*?)(?=<h3\b|$)/gi)]
+    .map((m) => ({ q: m[1], a: m[2] }));
+
+  if (pairs.length < 2) {
+    pairs = [...section.matchAll(
+      /<p[^>]*>\s*<strong[^>]*>([\s\S]*?)<\/strong>([\s\S]*?)<\/p>([\s\S]*?)(?=<p[^>]*>\s*<strong|$)/gi,
+    )]
+      /* Only question-shaped bold leads. A bold run opening an ordinary
+         paragraph is emphasis, not a FAQ entry. */
+      .filter((m) => /\?\s*$/.test(m[1].replace(/<[^>]+>/g, '').trim()))
+      .map((m) => ({ q: m[1], a: `${m[2].trim() ? `<p>${m[2].trim()}</p>` : ''}${m[3]}` }));
+  }
+
   if (pairs.length < 2) return html;
 
   const items = pairs
     .map((pair) => {
-      const question = pair[1].replace(/<[^>]+>/g, '').trim();
-      const answer = pair[2].trim();
+      const question = pair.q.replace(/<[^>]+>/g, '').trim();
+      const answer = pair.a.trim();
       if (!question || !answer) return '';
       return (
         '<details class="faq-item">' +
@@ -66,7 +85,15 @@ function withFaqAccordion(value: string) {
     .join('');
   if (!items) return html;
 
-  return html.slice(0, afterHeading) + `<div class="faq-accordion">${items}</div>` + html.slice(sectionEnd);
+  /* "FAQs" rather than the generator's "Frequently Asked Questions": shorter,
+     and it stops a heading running two lines in the narrowed article column. */
+  const renamedHeading = match[0].replace(/>([^<]*)</, '>FAQs<');
+  return (
+    html.slice(0, start) +
+    renamedHeading +
+    `<div class="faq-accordion">${items}</div>` +
+    html.slice(sectionEnd)
+  );
 }
 
 export default function PostContent({ html }: { html: string }) {

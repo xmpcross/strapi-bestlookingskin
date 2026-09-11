@@ -11,9 +11,13 @@ import { mediaUrl } from '@/lib/strapi';
  * page view.
  *
  * Ordered by rating, and a product with no rating simply sorts last -- no star
- * is invented for one that has never been rated. Prices are not shown: they
- * come from an offer feed that moves, and a stale figure next to a buy button
- * is the one number a reader will hold against you.
+ * is invented for one that has never been rated.
+ *
+ * The price shown is the lowest in-stock offer, labelled "from" because the
+ * product carries several and this is the cheapest of them -- printing one
+ * retailer's figure as "the price" would be wrong the moment a reader opened a
+ * different one. A product with no priced, in-stock offer shows no price at all
+ * rather than a placeholder or a stale last-known figure.
  */
 export default function InlineProducts({
   products,
@@ -26,14 +30,20 @@ export default function InlineProducts({
   if (items.length < 2) return null;
 
   return (
-    <aside className="my-10 rounded-2xl border border-ink/10 bg-muted/30 p-6" data-testid="inline-products">
+    <aside className="my-10" data-testid="inline-products">
       <p className="font-display !text-[17px] font-bold text-ink">{title}</p>
       <ul className="mt-5 grid gap-4 sm:grid-cols-3">
         {items.map((p) => {
           const img = mediaUrl(p.primaryImage ?? null);
+          const priced = (p.offers ?? [])
+            .filter((o) => typeof o.price === 'number' && o.availability !== 'out_of_stock')
+            .sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity))[0];
           return (
             <li key={p.slug}>
-              <Link href={`/products/${p.slug}`} className="group block">
+              <Link
+                href={`/products/${p.slug}`}
+                className="group block rounded-lg border border-[#dddddd] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition hover:shadow-[0_2px_10px_rgba(0,0,0,0.09)]"
+              >
                 <span className="block overflow-hidden rounded-lg bg-white">
                   {img ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -51,6 +61,16 @@ export default function InlineProducts({
                   {p.name}
                 </span>
                 {p.brand && <span className="mt-1 block text-[12px] text-ink/50">{p.brand}</span>}
+                {priced && (
+                  <span className="mt-2 block text-[13px] font-bold text-ink">
+                    from{' '}
+                    {new Intl.NumberFormat('en-US', {
+                      style: 'currency',
+                      currency: priced.currency || 'USD',
+                      maximumFractionDigits: 2,
+                    }).format(priced.price as number)}
+                  </span>
+                )}
               </Link>
             </li>
           );
