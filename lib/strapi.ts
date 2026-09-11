@@ -89,6 +89,17 @@ export type BlsPost = {
   ogImage?: StrapiImage;
   gallery?: NonNullable<StrapiImage>[];
   categories?: BlsCategory[];
+  author?: BlsAuthor | null;
+};
+
+/** Post byline. Bio drives the author card under each article (E-E-A-T). */
+export type BlsAuthor = {
+  id: number;
+  documentId?: string;
+  name: string;
+  slug: string;
+  bio?: string;
+  avatarUrl?: string;
 };
 
 type ListResponse<T> = {
@@ -241,14 +252,15 @@ function localizePost<T extends BlsPost>(post: T): T {
   };
 }
 
-const POST_POPULATE = ['coverImage', 'ogImage', 'categories', 'gallery'];
+const POST_POPULATE = ['coverImage', 'ogImage', 'categories', 'gallery', 'author'];
 
 export async function listPosts(
-  opts: { page?: number; pageSize?: number; category?: string; postType?: BlsPostType; q?: string } = {},
+  opts: { page?: number; pageSize?: number; category?: string; postType?: BlsPostType; q?: string; author?: string } = {},
 ) {
   const filters: Record<string, unknown> = {};
   if (opts.category) filters.categories = { slug: { $eqi: opts.category } };
   if (opts.postType) filters.postType = { $eq: opts.postType };
+  if (opts.author) filters.author = { slug: { $eqi: opts.author } };
   if (opts.q?.trim()) {
     const q = opts.q.trim();
     filters.$or = [
@@ -276,6 +288,22 @@ export async function getPost(slug: string): Promise<BlsPost | null> {
   });
   const post = res.data?.[0];
   return post ? localizePost(post) : null;
+}
+
+export async function getAuthor(slug: string): Promise<BlsAuthor | null> {
+  const res = await strapiFetch<ListResponse<BlsAuthor>>('bls-authors', {
+    filters: { slug: { $eqi: slug } },
+    pagination: { pageSize: 1 },
+  });
+  return res.data?.[0] ?? null;
+}
+
+export async function listAuthors(): Promise<BlsAuthor[]> {
+  const res = await strapiFetch<ListResponse<BlsAuthor>>('bls-authors', {
+    sort: ['name:asc'],
+    pagination: { pageSize: 50 },
+  });
+  return res.data;
 }
 
 export async function listCategories(): Promise<BlsCategory[]> {

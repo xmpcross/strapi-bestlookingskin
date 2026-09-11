@@ -156,6 +156,12 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
     image: cover ? [cover] : undefined,
     datePublished: post.publishedAt,
     dateModified: post.updatedAt,
+    /* A named author is one of the things reviewers and search engines look for
+       on affiliate content; without it an Article carries a publisher and no
+       human behind it. */
+    author: post.author
+      ? { '@type': 'Person', name: post.author.name, url: `${SITE.url}/authors/${post.author.slug}` }
+      : undefined,
     publisher: {
       '@type': 'Organization',
       name: SITE.name,
@@ -217,6 +223,18 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
               {post.title}
             </h1>
             <p className="mt-[20px] mb-[15px] text-[14px] text-ink/55">
+              {post.author && (
+                <>
+                  By{' '}
+                  <Link
+                    href={`/authors/${post.author.slug}`}
+                    className="font-semibold text-ink/75 hover:text-primary"
+                  >
+                    {post.author.name}
+                  </Link>
+                  {' · '}
+                </>
+              )}
               Published {fmtDate(post.publishedAt)}
               {post.readingTimeMinutes ? ` · ${post.readingTimeMinutes} min read` : ''}
             </p>
@@ -253,6 +271,27 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
               />
             )}
           </div>
+
+          {post.author?.bio && (
+            <div
+              className="mt-12 flex gap-4 rounded-2xl border border-ink/10 bg-muted/30 p-5"
+              data-testid="author-card"
+            >
+              <div aria-hidden className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-ink text-base font-bold text-white">
+                {post.author.name.trim().charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-ink/45">Written by</p>
+                <Link
+                  href={`/authors/${post.author.slug}`}
+                  className="font-display text-base font-bold text-ink hover:text-primary"
+                >
+                  {post.author.name}
+                </Link>
+                <p className="mt-2 text-sm leading-6 text-ink/70">{post.author.bio}</p>
+              </div>
+            </div>
+          )}
 
           <div className="mt-12 rounded-2xl border border-ink/10 bg-muted/40 p-5 text-xs leading-5 text-ink/60">
             <strong className="text-ink/80">Affiliate disclosure.</strong> {SITE.name} earns a

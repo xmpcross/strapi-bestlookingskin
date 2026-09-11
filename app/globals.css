@@ -744,6 +744,19 @@ h1 *, h2 *, h3 *, h4 *, h5 *, h6 * {
   color: #1b2026 !important;
 }
 
+/* Single post body heading sizes. !important because imported WordPress and
+   Elementor bodies carry inline font-size on their headings, which would
+   otherwise win over a class rule. */
+.post-content h2,
+.post-content h2 * {
+  font-size: 1.6rem !important;
+}
+
+.post-content h3,
+.post-content h3 * {
+  font-size: 1.2rem !important;
+}
+
 /* Post body text follows the site Urbanist body setting. */
 .post-content {
   font-family: "Inter", sans-serif;
