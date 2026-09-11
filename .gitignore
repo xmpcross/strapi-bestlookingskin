@@ -9,3 +9,8 @@ next-env.d.ts
 # Local build/run
 .env.local
 preview.log
+
+# Backup copies of env files -- ".env.local" alone does not match
+# ".env.local.bak-20260814", which sat untracked but committable.
+.env*.bak*
+.env.local.*
