@@ -17,11 +17,12 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-PULL=0; ALLOW_DIRTY=0
+PULL=0; ALLOW_DIRTY=0; ALLOW_CMS_FALLBACK=0
 for a in "$@"; do
   case "$a" in
     --pull) PULL=1 ;;
     --allow-dirty) ALLOW_DIRTY=1 ;;
+    --allow-cms-fallback) ALLOW_CMS_FALLBACK=1 ;;
     *) echo "unknown flag: $a" >&2; exit 2 ;;
   esac
 done
@@ -64,8 +65,40 @@ fi
 sudo systemctl stop bestlooking-skin.service
 rm -rf .next
 
-yarn build
+# CMS-fallback guard. This site is a special case: the service was STOPPED
+# above, so bailing out here would leave the site DOWN. A site serving seed
+# content is bad; a site serving nothing is worse. So start the service either
+# way, and fail the deploy afterwards so the problem is still impossible to
+# miss in the exit status.
+CMS_FALLBACK_RE='\[strapi\].*unavailable|\[Strapi Fetch (Error|Warning)\]'
+BUILD_LOG="$(mktemp -t bestlooking-build-XXXXXX.log)"
+
+if ! yarn build 2>&1 | tee "$BUILD_LOG"; then
+  echo "build failed -- restarting the old build so the site is not left down" >&2
+  sudo systemctl start bestlooking-skin.service || true
+  echo "log kept at $BUILD_LOG" >&2
+  exit 1
+fi
+
+CMS_FELL_BACK=0
+grep -Eqi "$CMS_FALLBACK_RE" "$BUILD_LOG" && CMS_FELL_BACK=1
+
 sudo systemctl start bestlooking-skin.service
+
+if [ "$CMS_FELL_BACK" = 1 ] && [ "$ALLOW_CMS_FALLBACK" = 0 ]; then
+  echo >&2
+  echo "DEPLOY FAILED: the CMS was unreachable during this build, so pages were" >&2
+  echo "rendered from seed content. The service HAS been started (leaving it down" >&2
+  echo "would be worse), but this build is publishing incomplete content." >&2
+  echo >&2
+  grep -Eni "$CMS_FALLBACK_RE" "$BUILD_LOG" | head -20 | sed 's/^/  /' >&2
+  echo >&2
+  echo "Fix STRAPI_API_TOKEN in .env.local, then re-run ./deploy.sh" >&2
+  echo "Full log: $BUILD_LOG" >&2
+  exit 1
+fi
+[ "$CMS_FELL_BACK" = 1 ] && echo "warning: built with seed content (--allow-cms-fallback)" >&2
+rm -f "$BUILD_LOG"
 
 for _ in $(seq 1 20); do
   sleep 2
