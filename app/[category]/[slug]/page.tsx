@@ -8,6 +8,7 @@ import { SECTIONS, SITE } from '@/lib/site';
 import { fmtDate, primaryCategorySlug, postPath } from '@/lib/format';
 import { withHeadingIds, decodeEntities } from '@/lib/toc';
 import { cleanProductRoundupHtml } from '@/lib/legacy-product-roundup';
+import { isMarkdownBody, markdownToHtml } from '@/lib/markdown';
 import { getTopicGroups } from '@/lib/nav';
 import { toCard } from '@/lib/post-card';
 import PostContent from '@/components/PostContent';
@@ -121,7 +122,9 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
   /* Top-rated roundups imported from WordPress (Content Egg / GreenShift markup): their legacy styles and frozen prices
      are stripped first. Keyed on the post type and the markup, not the category, so it follows a post into a hub. */
   const isTopRated = post.postType === 'top-rated' && /cegg5-container|gspb_/.test(post.content ?? '');
-  const postBodyRaw = (isTopRated ? cleanProductRoundupHtml(post.content ?? '') : (post.content ?? ''))
+  /* Markdown bodies (articles pushed from app.fxnseo.com) become HTML first, so the rest of this pipeline applies. */
+  const bodySource = isMarkdownBody(post.content) ? markdownToHtml(post.content ?? '') : (post.content ?? '');
+  const postBodyRaw = (isTopRated ? cleanProductRoundupHtml(bodySource) : bodySource)
     // Collapse "<wbr>/<wbr>" sequences to a single "<wbr>" (drops the slash).
     .replace(/<wbr\s*\/?>\s*\/\s*<wbr\s*\/?>/gi, '<wbr>')
     .replace(/<\/?em\b[^>]*>/gi, '')

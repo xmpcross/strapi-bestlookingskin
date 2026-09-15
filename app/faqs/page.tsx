@@ -1,3 +1,4 @@
+import { isMarkdownBody, markdownToHtml } from '@/lib/markdown';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { listPosts, type BlsPost } from '@/lib/strapi';
@@ -40,7 +41,7 @@ const strip = (v: string) => decodeEntities(v.replace(/<[^>]+>/g, ' ')).replace(
  * forty answers were being dropped that way.
  */
 function extract(post: BlsPost): Entry[] {
-  const html = post.content || '';
+  const html = isMarkdownBody(post.content) ? markdownToHtml(post.content ?? '') : post.content || '';
   const headings = [...html.matchAll(/<h([23])\b[^>]*>(?:(?!<\/h\1>).)*(?:FAQ|Frequently\s+Asked)(?:(?!<\/h\1>).)*<\/h\1>/gi)];
 
   for (const m of headings) {
