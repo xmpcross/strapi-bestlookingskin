@@ -19,7 +19,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const cmsCatSlugs = new Set(cmsCategories.map((c) => c.slug));
   const sectionCatSlugs = SECTIONS.map((s) => s.slug);
-  const categorySlugs = Array.from(new Set([...cmsCatSlugs, ...sectionCatSlugs]));
+  /* Retired archives redirect, so they are not listed. */
+  const retired = new Set<string>(SECTIONS.filter((s) => s.redirectTo).map((s) => s.slug));
+  const categorySlugs = Array.from(new Set([...cmsCatSlugs, ...sectionCatSlugs])).filter((slug) => !retired.has(slug));
 
   const staticEntries: MetadataRoute.Sitemap = [
     { url: `${SITE.url}/`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },

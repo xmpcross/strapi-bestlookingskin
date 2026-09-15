@@ -1,8 +1,8 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getCategory, listPostSummaries, type BlsPostType } from '@/lib/strapi';
-import { SECTIONS, SITE } from '@/lib/site';
+import { SECTIONS, SITE, isListedSection } from '@/lib/site';
 import { getTopicGroups } from '@/lib/nav';
 import { toCard } from '@/lib/post-card';
 import { ListCard, RowCard, SectionTitle, TextCard, TileCard } from '@/components/magzin/cards';
@@ -45,6 +45,8 @@ const clip = (s: string, n = 158) => (s.length <= n ? s : `${s.slice(0, s.lastIn
 export async function generateMetadata({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<SearchParams> }): Promise<Metadata> {
   const { category } = await params;
   if (RESERVED.has(category)) return {};
+  const retiredTo = SECTIONS.find((sec) => sec.slug === category)?.redirectTo;
+  if (retiredTo) permanentRedirect(retiredTo);
   const { page: pageRaw, topics } = await searchParams;
   const page = Math.max(1, Number(pageRaw) || 1);
   const c = await resolveCategory(category);
@@ -63,6 +65,9 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
 export default async function CategoryPage({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<SearchParams> }) {
   const { category } = await params;
   if (RESERVED.has(category)) notFound();
+  /* Retired format archives (reviews, comparisons, top-rated, how-to): their posts live in the topic hubs now. */
+  const retiredTo = SECTIONS.find((sec) => sec.slug === category)?.redirectTo;
+  if (retiredTo) permanentRedirect(retiredTo);
   const { page: pageRaw, topics: topicsRaw } = await searchParams;
   const page = Math.max(1, Number(pageRaw) || 1);
 
@@ -126,7 +131,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
      widget from the product pages); the current archive is highlighted. */
   const topicSources = [
     ...groups.flatMap((g) => g.items).map((t) => ({ slug: t.href.replace(/^\//, ''), name: t.label })),
-    ...SECTIONS.filter((sec) => !sec.allPosts).map((sec) => ({ slug: sec.slug, name: sec.title, postType: sec.postType })),
+    ...SECTIONS.filter(isListedSection).map((sec) => ({ slug: sec.slug, name: sec.title, postType: sec.postType })),
   ] as { slug: string; name: string; postType?: BlsPostType }[];
   const [allTotal, ...topicCounts] = await Promise.all([
     listPostSummaries({ pageSize: 1 })

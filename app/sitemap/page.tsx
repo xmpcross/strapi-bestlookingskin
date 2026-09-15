@@ -46,7 +46,7 @@ export default async function HtmlSitemapPage() {
   // Use config sections for stable display order; fall back to whatever else
   // came from the CMS or got tagged with an unknown slug.
   const orderedCats = [
-    ...SECTIONS.map((s) => ({ slug: s.slug, name: s.title })),
+    ...SECTIONS.filter((s) => !s.redirectTo).map((s) => ({ slug: s.slug, name: s.title })),
     ...cmsCats
       .filter((c) => !SECTIONS.some((s) => s.slug === c.slug))
       .map((c) => ({ slug: c.slug, name: c.name })),

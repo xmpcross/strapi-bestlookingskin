@@ -54,7 +54,7 @@ export default async function NotFound() {
               <Link href="/products" className="tag-item bls-tag">
                 All products
               </Link>
-              {SECTIONS.map((s) => (
+              {SECTIONS.filter((s) => !s.redirectTo).map((s) => (
                 <Link key={s.slug} href={`/${s.slug}`} className="tag-item bls-tag">
                   {s.short}
                 </Link>

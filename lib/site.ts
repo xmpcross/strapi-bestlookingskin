@@ -37,12 +37,19 @@ export type Section = {
   allPosts?: boolean;
   /** Format archives list posts by their post type, whatever topic hub they sit in. */
   postType?: BlsPostType;
+  /** Retired archive: its URL permanently redirects here and it is linked from nowhere on the site. */
+  redirectTo?: string;
 };
+
+/** Sections still shown on the site (menus, topic lists, sitemaps): not retired, not the All Articles listing. */
+export const isListedSection = (s: Section) => !s.redirectTo && !s.allPosts;
 
 export const SECTIONS: Section[] = [
   {
     slug: 'product-comparisons',
     postType: 'product-comparison',
+    /* Retired 15 Sep 2026: its posts moved into the topic hubs. */
+    redirectTo: '/informative-articles',
     title: 'Product Comparisons',
     short: 'Comparisons',
     subtitle: 'Two formulas, head to head — pick the one that wins for your skin.',
@@ -52,6 +59,8 @@ export const SECTIONS: Section[] = [
   {
     slug: 'product-reviews',
     postType: 'product-review',
+    /* Retired 15 Sep 2026: its posts moved into the topic hubs. */
+    redirectTo: '/informative-articles',
     title: 'Product Reviews',
     short: 'Reviews',
     subtitle: 'Tested in real routines. Honest verdicts. No sponsored gushing.',
@@ -61,6 +70,8 @@ export const SECTIONS: Section[] = [
   {
     slug: 'top-rated-products',
     postType: 'top-rated',
+    /* Retired 15 Sep 2026: its posts moved into the topic hubs. */
+    redirectTo: '/informative-articles',
     title: 'Top-Rated Products',
     short: 'Top Rated',
     subtitle: 'Ranked roundups of the best skincare products for every skin type and concern.',
@@ -73,6 +84,8 @@ export const SECTIONS: Section[] = [
   {
     slug: 'how-to-guides',
     postType: 'how-to-guide',
+    /* Retired 15 Sep 2026: its posts moved into the topic hubs. */
+    redirectTo: '/informative-articles',
     title: 'How-to Guides',
     short: 'How-to',
     subtitle: 'Step-by-step routines that build better skin from the basics up.',
