@@ -10,9 +10,18 @@ import PriceHistoryChart from '@/components/PriceHistoryChart';
 import ReviewForm from '@/components/ReviewForm';
 import ReviewList from '@/components/ReviewList';
 import PriceBadges from '@/components/PriceBadges';
-import ProductSpecs from '@/components/ProductSpecs';
-import CollapsibleDescription from '@/components/CollapsibleDescription';
+import ProductInfoTabs from '@/components/ProductInfoTabs';
+import SidebarTitle from '@/components/magzin/SidebarTitle';
+import { productAttributes, productLead } from '@/lib/product-attributes';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
+
+/*
+ * Right sidebar on the product page (col-lg-4 beside the tabs).
+ *
+ * It shows topic browsing and the latest guides. Product specifications now live in the Specifications tab
+ * (lib/product-attributes.ts reads both the flat sourcing attributes and the iHerb `technicalSpecs`).
+ */
+const SHOW_PRODUCT_SIDEBAR = true;
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -74,43 +83,9 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
   const ratingCount = fpCount || product.ratingCount || 0;
   const ratingIsReviews = fpCount > 0;
 
-  // Specification rows (moved from the description tabs to the right column).
-  // Friendlier labels for known noisy spec keys (e.g. from Amazon data).
-  /*
- * Right sidebar on the product page, hidden for now at the site owner's request.
- *
- * It shows ProductSpecs when a product has spec rows, and falls back to a
- * recent-articles rail when it does not.
- *
- * For a long time every product took the fallback: specRows reads
- * `product.specs.technicalSpecs` while the sourcing pipeline wrote specs flat
- * at the top level, so the lookup found nothing on all 219 products. The iHerb
- * enricher writes the nested shape, so the 72 products it has been run over are
- * the first to render a specs table. The older 219 still need a migration into
- * the same shape -- the data is there and paid for.
- */
-const SHOW_PRODUCT_SIDEBAR = true;
-
-const SPEC_LABEL_OVERRIDES: Record<string, string> = {
-    'recommended uses for product': 'Recommended Uses',
-  };
-  const specRows = Object.entries(product.specs?.technicalSpecs ?? {})
-    .filter(([, v]) => v !== null && v !== undefined && String(v).trim() !== '')
-    .map(([k, v]) => [
-      (SPEC_LABEL_OVERRIDES[k.toLowerCase().trim()] ?? k)
-        .replace(/<wbr\s*\/?>\s*\/\s*<wbr\s*\/?>/gi, ' / ')
-        .replace(/<wbr\s*\/?>/gi, '')
-        .replace(/\s+/g, ' ')
-        .trim(),
-      String(v).replace(/<wbr\s*\/?>\s*\/\s*<wbr\s*\/?>/gi, '/'),
-    ] as [string, string]);
-  // Pin these labels to the top of the specifications list, in this order.
-  const SPEC_PRIORITY = ['best sellers rank', 'product benefits'];
-  specRows.sort((a, b) => {
-    const ia = SPEC_PRIORITY.indexOf(a[0].toLowerCase().trim());
-    const ib = SPEC_PRIORITY.indexOf(b[0].toLowerCase().trim());
-    return (ia === -1 ? Infinity : ia) - (ib === -1 ? Infinity : ib);
-  });
+  // Attribute rows for the Specifications and Additional Info tabs, and the lead under the title.
+  const attributes = productAttributes(product.specs as Record<string, unknown> | undefined);
+  const lead = productLead(product.shortDescription, product.description);
 
   // Recent articles for the right-hand sidebar column. Card-sized summaries (no bodies), and only authored
   // posts with their own cover: the old fallback to the first image in the body pulled merchant-hotlinked
@@ -324,6 +299,9 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
               </div>
             )}
 
+            {/* Short description under the title and rating: the product's own, else the description's opening. */}
+            {lead && <p className="shop-lead fs-7 mt-3 mb-0">{lead}</p>}
+
             {/* Social share icons under product title */}
             <div className="shop-share d-flex align-items-center gap-2 mt-3" data-testid="product-share">
               <ShareLink label="Share on Facebook" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${SITE.url}/products/${product.slug}`)}`} tone="is-facebook">
@@ -340,10 +318,10 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
               </ShareLink>
             </div>
 
-            {/* 2-col layout: description block on left, offers panel on right */}
+            {/* Two columns under the title: price and buy panel in the middle, retailer offer list on the right. */}
             <div className="row g-4 mt-3">
-              {/* Description + price + BUY */}
-              <div className="col-xl-6 col-12 order-xl-2">
+              {/* Price + BUY */}
+              <div className="col-xl-6 col-12">
                 {/* Key features, else the short description. With neither, nothing renders: the empty state
                     used to print an editor instruction ("add them in Strapi") on the live page. */}
                 {product.keyFeatures && product.keyFeatures.length > 0 ? (
@@ -355,8 +333,6 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
                       ))}
                     </ul>
                   </>
-                ) : product.shortDescription ? (
-                  <p className="fs-7 mb-0">{product.shortDescription}</p>
                 ) : null}
 
                 {product.currentPrice !== undefined && (
@@ -407,9 +383,9 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
                 </p>
               </div>
 
-              {/* Offers panel — first 5 prices, with a "view more" toggle for the
+              {/* Offers panel (right column) — first 9 prices, with a "view more" toggle for the
                   rest (pure-CSS checkbox toggle so this stays a server component). */}
-              <div className="col-xl-6 col-12 order-xl-1">
+              <div className="col-xl-6 col-12">
                 {offerRows.length > 0 ? (
                   <div className="offer-list">
                     <div className="offer-rows">
@@ -520,14 +496,21 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
               </div>
             )}
 
-            {product.description && (
-              <div data-testid="product-description">
-                <h2 className="h4 mb-4">Description</h2>
-                <CollapsibleDescription>
-                  <ProductDescription markdown={product.description} />
-                </CollapsibleDescription>
-              </div>
-            )}
+            {/* Description / Specifications / Additional Info. The description shows in full (no "View more" clamp);
+                a tab with nothing sourced for this product is left out rather than shown empty. */}
+            <ProductInfoTabs
+              tabs={[
+                ...(product.description
+                  ? [{ key: 'description', label: 'Description', content: <div data-testid="product-description"><ProductDescription markdown={product.description} /></div> }]
+                  : []),
+                ...(attributes.specifications.length
+                  ? [{ key: 'specifications', label: 'Specifications', content: <AttributeTable rows={attributes.specifications} testId="product-specifications" /> }]
+                  : []),
+                ...(attributes.additional.length
+                  ? [{ key: 'additional', label: 'Additional Info', content: <AttributeTable rows={attributes.additional} testId="product-additional-info" /> }]
+                  : []),
+              ]}
+            />
 
             {product.ingredients && (
               <section className="mt-5">
@@ -546,7 +529,7 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
             <aside className="col-lg-4 col-12" aria-label="Product sidebar">
               {topicRows.length > 0 && (
                 <div className="mb-5" data-testid="browse-by-topic">
-                  <h2 className="h5 mb-3">Browse by topic</h2>
+                  <SidebarTitle>Browse by topic</SidebarTitle>
                   <ul className="list-unstyled ps-0 d-flex flex-wrap gap-2 m-0">
                     {topicRows.map((row) => (
                       <li key={row.slug}>
@@ -563,14 +546,9 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
                   </ul>
                 </div>
               )}
-              {(specRows.length > 0 || (product.keyFeatures?.length ?? 0) > 0) && (
-                <div className="mb-5">
-                  <ProductSpecs specs={specRows} pros={product.keyFeatures ?? []} />
-                </div>
-              )}
               {recentRows.length > 0 && (
                 <div className="mb-5">
-                  <h2 className="h5 mb-3">Latest guides</h2>
+                  <SidebarTitle>Latest guides</SidebarTitle>
                   <div className="d-flex flex-column gap-3">
                     {recentRows.map((row) => (
                       <div className="article card-10 style-1" key={row.href}>
@@ -897,5 +875,21 @@ function PriceComparisonChart({
         })}
       </ul>
     </div>
+  );
+}
+
+/* Label/value table for the Specifications and Additional Info tabs. */
+function AttributeTable({ rows, testId }: { rows: [string, string][]; testId: string }) {
+  return (
+    <table className="shop-spec-table" data-testid={testId}>
+      <tbody>
+        {rows.map(([label, value]) => (
+          <tr key={label}>
+            <th scope="row">{label}</th>
+            <td>{value}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
