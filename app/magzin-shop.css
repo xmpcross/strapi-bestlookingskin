@@ -735,6 +735,40 @@ html .product-page .shop-desc h4 {
   font-size: 1.1rem;
   padding-top: 4px;
 }
+/* Read more: description clamped to 600px with a fade into the page background. */
+.read-more-content {
+  position: relative;
+}
+.read-more-content.is-collapsed {
+  overflow: hidden;
+}
+.read-more-content.is-collapsed::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 120px;
+  background: linear-gradient(to bottom, transparent, var(--tc-neutral-50));
+  pointer-events: none;
+}
+.read-more-toggle {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tc-neutral-900);
+  font-size: 15px;
+  font-weight: var(--tc-fw-semi-bold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.read-more-toggle:hover {
+  color: var(--tc-neutral-600);
+}
+
 .shop-desc ol {
   padding-left: 22px;
   list-style: decimal;

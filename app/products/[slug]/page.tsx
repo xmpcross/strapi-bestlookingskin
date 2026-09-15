@@ -12,6 +12,7 @@ import ReviewForm from '@/components/ReviewForm';
 import ReviewList from '@/components/ReviewList';
 import PriceBadges from '@/components/PriceBadges';
 import ProductInfoAccordion from '@/components/ProductInfoAccordion';
+import ReadMore from '@/components/ReadMore';
 import SidebarTitle from '@/components/magzin/SidebarTitle';
 import CategoryListWidget from '@/components/magzin/CategoryListWidget';
 import { plainShortDescription, productAttributes, productHighlights, productLead, splitShortDescription } from '@/lib/product-attributes';
@@ -514,7 +515,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
             <ProductInfoAccordion
               sections={[
                 ...(product.description
-                  ? [{ key: 'description', label: 'Description', content: <div data-testid="product-description"><ProductDescription markdown={product.description} /></div> }]
+                  ? [{ key: 'description', label: 'Description', content: <div data-testid="product-description"><ReadMore maxHeight={600}><ProductDescription markdown={product.description} /></ReadMore></div> }]
                   : []),
                 ...(attributes.specifications.length
                   ? [{ key: 'specifications', label: 'Specifications', peek: true, content: <AttributeTable rows={attributes.specifications} testId="product-specifications" /> }]
