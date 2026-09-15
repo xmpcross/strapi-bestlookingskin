@@ -293,7 +293,7 @@
 }
 .pillar-body .post-content h2 {
   margin-top: 0 !important;
-  font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+  font-size: 1.6rem !important;
   line-height: 1.2;
   letter-spacing: -0.01em;
   scroll-margin-top: 110px;
@@ -368,7 +368,7 @@
 }
 .pillar-section-title {
   margin: 6px 0 0;
-  font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+  font-size: 1.6rem;
   color: var(--tc-neutral-900);
 }
 .pillar-section-link {
