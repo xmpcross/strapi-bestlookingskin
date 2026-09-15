@@ -9,6 +9,7 @@ import { withHeadingIds, decodeEntities } from '@/lib/toc';
 import { getTopicGroups } from '@/lib/nav';
 import { toCard } from '@/lib/post-card';
 import PostContent from '@/components/PostContent';
+import ArticleContents from '@/components/ArticleContents';
 import ReadingRail from '@/components/ReadingRail';
 import AuthorAvatar from '@/components/AuthorAvatar';
 import PullQuote from '@/components/PullQuote';
@@ -199,6 +200,24 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
     return [bodyFirst.slice(0, cut), bodyFirst.slice(cut)] as const;
   })();
 
+  /* The contents box goes after the first paragraph (on Tier A posts, the direct-answer paragraph). */
+  const [bodyLead, bodyIntroRest] = (() => {
+    /* Only a top-level paragraph: cutting inside an imported WordPress block (div, table, list…) would split
+       its markup across two renders. Walk the block tags and stop at the first </p> at depth 0. */
+    let depth = 0;
+    for (const m of bodyIntro.matchAll(/<(\/?)(div|section|article|table|figure|ul|ol|blockquote|details|aside)\b[^>]*>|<\/p>/gi)) {
+      if (m[0].toLowerCase() === '</p>') {
+        if (depth === 0) {
+          const cut = (m.index ?? 0) + 4;
+          return [bodyIntro.slice(0, cut), bodyIntro.slice(cut)] as const;
+        }
+      } else if (!m[0].endsWith('/>')) {
+        depth += m[1] ? -1 : 1;
+      }
+    }
+    return ['', bodyIntro] as const;
+  })();
+
   /* The FAQ is the last section of every one of these posts, so anything
      rendered after the body lands underneath it. Split it off, and the second
      gallery image can sit in the article where it belongs rather than stranded
@@ -327,7 +346,9 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
               </p>
 
               <div id="article-body" className="post-body">
-                <PostContent html={bodyIntro} />
+                {bodyLead && <PostContent html={bodyLead} />}
+                <ArticleContents toc={toc} />
+                {bodyIntroRest && <PostContent html={bodyIntroRest} />}
                 {figure(0, 'start')}
                 {readAlsoRows.length === 2 && <ReadAlso rows={readAlsoRows} />}
                 {bodyMid && <PostContent html={bodyMid} />}

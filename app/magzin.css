@@ -371,3 +371,66 @@ body {
 .sidebar-heading {
   font-size: 1.2rem;
 }
+
+/* ---- In-article "Contents" box (after the first paragraph) ---- */
+.article-contents {
+  background: #f7f7fd;
+  border-radius: 12px;
+  padding: 24px 28px 22px;
+  margin: 1.5rem 0 2rem;
+}
+.article-contents-title {
+  font-size: 1.35rem !important;
+  font-weight: var(--tc-fw-semi-bold);
+  color: #22223b;
+  margin: 0 0 14px;
+  line-height: 1.2;
+}
+.article-contents ul {
+  margin: 0;
+  padding-left: 1.4rem;
+  list-style: disc;
+}
+.article-contents li {
+  color: #4a5ba5;
+  margin: 0 0 10px;
+  font-size: 16px;
+  line-height: 1.45;
+}
+.article-contents li:last-child {
+  margin-bottom: 0;
+}
+.article-contents a {
+  color: #4a5ba5;
+  font-weight: var(--tc-fw-semi-bold);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
+}
+.article-contents a:hover {
+  color: #2f3d80;
+}
+[data-bs-theme='dark'] .article-contents {
+  background: #1e1c25;
+}
+[data-bs-theme='dark'] .article-contents-title {
+  color: #f3f4f6;
+}
+[data-bs-theme='dark'] .article-contents li,
+[data-bs-theme='dark'] .article-contents a {
+  color: #aab6f0;
+}
+
+/*
+ * Every heading and title at weight 600, site-wide, including article bodies (app/article.css sets 700 with
+ * !important on .post-content headings, hence the html-prefixed selectors) and card/section titles.
+ */
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+.card-title,
+.section-title h2, .section-title h5,
+html .post-content h1, html .post-content h2, html .post-content h3,
+html .post-content h4, html .post-content h5, html .post-content h6,
+html body .card-title.fw-normal {
+  font-weight: 600 !important;
+}
