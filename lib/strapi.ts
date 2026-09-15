@@ -340,6 +340,13 @@ export const POST_COVER_OVERRIDES: Record<string, StrapiImage> = {
     height: 896,
     size: 150,
   },
+  'serums-cerave-vs-truskin': {
+    url: '/cms-uploads/serums_cerave_vs_truskin_cover.jpg',
+    alternativeText: 'CeraVe Skin Renewing Vitamin C Serum vs TruSkin Vitamin C Facial Serum',
+    width: 1280,
+    height: 720,
+    size: 70,
+  },
   'top-6-exfoliating-face-scrubs-your-path-to-radiant-skin': {
     url: '/cms-uploads/top_6_exfoliating_face_scrubs_cover.jpg',
     alternativeText: 'Top 6 Exfoliating Face Scrubs: Your Path to Radiant Skin',
