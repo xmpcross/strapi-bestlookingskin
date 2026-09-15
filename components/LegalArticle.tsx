@@ -2,6 +2,7 @@ import { Children, cloneElement, isValidElement } from 'react';
 import Link from 'next/link';
 import { format, parseISO } from 'date-fns';
 import ReadingRail from '@/components/ReadingRail';
+import Breadcrumb from '@/components/magzin/Breadcrumb';
 import type { TocItem } from '@/lib/toc';
 
 const NAV: { key: 'terms' | 'privacy' | 'cookies' | 'disclosure'; label: string; href: string }[] = [
@@ -79,67 +80,62 @@ export default function LegalArticle({
 
   return (
     <div data-testid={`legal-${pageKey}`}>
-      <section className="bg-paper">
-        <div className="mx-auto max-w-7xl px-6 py-12">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Legal</p>
-          <h1 className="mt-4 font-display font-bold leading-tight tracking-tight text-ink">
-            {title}
-          </h1>
-          {modifiedLabel && (
-            <p className="mt-3 text-sm text-ink/55">Last updated {modifiedLabel}</p>
-          )}
+      <section className="sec-breadcumb">
+        <div className="container">
+          <Breadcrumb items={[{ label: title }]} />
+          <div className="row align-items-end">
+            <div className="col-lg-9 col-12">
+              <div className="title">
+                <p className="bls-eyebrow mb-3">Legal</p>
+                <h1 className="h3 mb-0">{title}</h1>
+                {modifiedLabel && <p className="fs-7 text-600 mt-2 mb-0">Last updated {modifiedLabel}</p>}
 
-          {/* Operator attribution — present on every legal page */}
-          <p className="mt-5 max-w-3xl text-sm leading-6 text-ink/70" data-testid="operator-attribution">
-            This website, <a href="https://www.bestlooking.skin" className="font-medium text-ink hover:text-primary">www.bestlooking.skin</a>, is owned and operated by{' '}
-            <strong className="text-ink">FXN Holdings</strong>, a registered business in Australia.
-          </p>
+                {/* Operator attribution — present on every legal page */}
+                <p className="fs-7 mt-3 mb-0" data-testid="operator-attribution">
+                  This website, <a href="https://www.bestlooking.skin" className="bls-link fw-medium">www.bestlooking.skin</a>, is owned and operated by{' '}
+                  <strong className="text-dark">FXN Holdings</strong>, a registered business in Australia.
+                </p>
 
-          <nav className="mt-6 flex flex-wrap gap-2 text-xs font-bold uppercase tracking-wider" aria-label="Legal pages">
-            {NAV.map((n) => {
-              const active = n.key === pageKey;
-              return (
-                <Link
-                  key={n.key}
-                  href={n.href}
-                  className={
-                    active
-                      ? 'rounded-full bg-primary px-4 py-2 text-white'
-                      : 'rounded-full border border-ink/15 px-4 py-2 text-ink transition hover:border-primary hover:text-primary'
-                  }
-                >
-                  {n.label}
-                </Link>
-              );
-            })}
-          </nav>
+                <nav className="block-tag d-flex flex-wrap gap-2 mt-4" aria-label="Legal pages">
+                  {NAV.map((n) => {
+                    const active = n.key === pageKey;
+                    return (
+                      <Link
+                        key={n.key}
+                        href={n.href}
+                        className={`tag-item bls-tag ${active ? 'is-active' : ''}`}
+                        aria-current={active ? 'page' : undefined}
+                      >
+                        {n.label}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="bg-white py-12">
+      <section className="pt-5 pb-70">
         {/* Contents rail left, policy right. The rail is the same component the
             articles use, so the scroll-spy and active highlight come with it. */}
-        <div className="mx-auto grid max-w-7xl gap-10 px-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-12">
-          {toc.length > 1 ? (
-            <ReadingRail toc={toc} targetId="legal-body" />
-          ) : (
-            <div aria-hidden />
-          )}
+        <div className="container">
+          <div className="row g-5">
+            <div className="col-lg-3 col-12">
+              {toc.length > 1 ? (
+                <div className="post-sticky">
+                  <ReadingRail toc={toc} targetId="legal-body" />
+                </div>
+              ) : (
+                <div aria-hidden />
+              )}
+            </div>
 
-        <article className="min-w-0" id="legal-body">
-          <div
-            className="legal-content space-y-5 text-base leading-7 text-ink/80
-                       [&_h3]:mt-10 [&_h3]:mb-3 [&_h3]:font-display [&_h3]:font-bold [&_h3]:text-ink
-                       [&_h4]:mt-6  [&_h4]:mb-2 [&_h4]:font-display [&_h4]:font-bold [&_h4]:text-ink
-                       [&_p]:my-3
-                       [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:space-y-1
-                       [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:space-y-1
-                       [&_a]:text-primary [&_a]:underline-offset-2 hover:[&_a]:underline
-                       [&_strong]:text-ink"
-          >
-            {nodes}
+            <article className="col-lg-9 col-12" id="legal-body">
+              <div className="legal-content legal-body">{nodes}</div>
+            </article>
           </div>
-        </article>
         </div>
       </section>
     </div>

@@ -1,19 +1,18 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getProduct, listProducts, listPosts, getPriceHistory, listProductReviews, mediaUrl, type BlsProduct, type BlsPost, listProductCategoryCounts } from '@/lib/strapi';
+import { getProduct, listProducts, listPostSummaries, getPriceHistory, listProductReviews, mediaUrl, type BlsProduct, type BlsPostSummary, listProductCategoryCounts } from '@/lib/strapi';
 import { SITE } from '@/lib/site';
-import { fmtDate, firstImageUrl, postPath } from '@/lib/format';
+import { fmtDate, postPath } from '@/lib/format';
 import ProductCard from '@/components/ProductCard';
 import PriceAlertForm from '@/components/PriceAlertForm';
 import PriceHistoryChart from '@/components/PriceHistoryChart';
-import ArticleSidebar from '@/components/ArticleSidebar';
 import ReviewForm from '@/components/ReviewForm';
 import ReviewList from '@/components/ReviewList';
 import PriceBadges from '@/components/PriceBadges';
 import ProductSpecs from '@/components/ProductSpecs';
-import BrowseByTopic from '@/components/BrowseByTopic';
 import CollapsibleDescription from '@/components/CollapsibleDescription';
+import Breadcrumb from '@/components/magzin/Breadcrumb';
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -113,13 +112,17 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
     return (ia === -1 ? Infinity : ia) - (ib === -1 ? Infinity : ib);
   });
 
-  // Recent articles for the right-hand sidebar column.
-  const recentPosts = (await listPosts({ pageSize: 6 }).catch(() => null))?.data ?? [];
-  const recentRows = recentPosts.map((p: BlsPost) => ({
+  // Recent articles for the right-hand sidebar column. Card-sized summaries (no bodies), and only authored
+  // posts with their own cover: the old fallback to the first image in the body pulled merchant-hotlinked
+  // Amazon images out of the legacy posts, which this site must not display.
+  const recentPosts = await listPostSummaries({ pageSize: 5, authored: true, withCover: true })
+    .then((r) => r.data)
+    .catch(() => [] as BlsPostSummary[]);
+  const recentRows = recentPosts.map((p) => ({
     href: postPath(p),
     title: p.title,
     date: fmtDate(p.publishedAt),
-    img: mediaUrl(p.coverImage ?? null) ?? firstImageUrl(p.content),
+    img: mediaUrl(p.coverImage ?? null),
   }));
 
   const cover = mediaUrl(product.primaryImage ?? null);
@@ -134,7 +137,7 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
   // Amazon/Walmart/eBay. Falls back to the legacy flat fields only when a
   // product has no offers relation.
   type OfferRow = { merchant: string; price?: number; url: string; available: boolean; logoUrl?: string | null };
-  let offerRows: OfferRow[] = (product.offers ?? [])
+  const offerRows: OfferRow[] = (product.offers ?? [])
     .map((offer) => ({
       merchant: merchantLabel(offer.merchant?.slug) || offer.merchant?.name || 'Store',
       price: typeof offer.price === 'number' ? offer.price : undefined,
@@ -250,201 +253,182 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
   };
 
   return (
-    <article className="mx-auto max-w-7xl px-6 py-12" data-testid={`product-${product.slug}`}>
+    <article className="pb-70" data-testid={`product-${product.slug}`}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
       />
 
-      <nav className="flex items-center gap-2 py-3 text-[12px] font-semibold text-ink/55" aria-label="Breadcrumb">
-        <Link href="/" className="shrink-0 font-semibold text-primary hover:text-primary-highlight">Home</Link>
-        <span>/</span>
-        <Link href="/products" className="shrink-0 font-semibold text-primary hover:text-primary-highlight">Products</Link>
-        {cat && (
-          <>
-            <span>/</span>
-            <Link href={`/categories/${cat.slug}`} className="shrink-0 font-semibold text-primary hover:text-primary-highlight">
-              {cat.name}
-            </Link>
-          </>
-        )}
-        <span>/</span>
-        <span className="min-w-0 truncate text-ink/75" aria-current="page">{product.name}</span>
-      </nav>
+      <div className="container">
+        <Breadcrumb
+          items={[
+            { label: 'Products', href: '/products' },
+            ...(cat ? [{ label: cat.name, href: `/categories/${cat.slug}` }] : []),
+            { label: product.name },
+          ]}
+        />
 
-      {/* ─── Title bar — full width across the top ─── */}
-      <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(280px,1.2fr)_minmax(0,2fr)] lg:gap-10">
-        {/* Image column (spans the full top-section height) */}
-        <div className="lg:row-span-2">
-          <div className="relative overflow-hidden rounded-md bg-white">
-            {hasDiscount && (
-              <span className="absolute right-3 top-3 z-10 rounded bg-primary px-2 py-1 text-xs font-bold text-white">
-                -{Math.round((1 - product.currentPrice! / product.originalPrice!) * 100)}%
-              </span>
-            )}
-            {cover ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={cover} alt={product.name} className="aspect-square w-full object-contain mix-blend-multiply p-6" />
-            ) : (
-              <div className="aspect-square w-full bg-gradient-to-br from-primary-hover to-primary" />
-            )}
-          </div>
-          {galleryImgs.length > 0 && (
-            <div className="mt-3 grid grid-cols-4 gap-2">
-              {galleryImgs.map((g, i) => {
-                const u = mediaUrl(g);
-                if (!u) return null;
-                return (
-                  <div key={i} className="overflow-hidden rounded-md bg-white">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={u} alt={`${product.name} ${i + 1}`} className="aspect-square w-full object-contain mix-blend-multiply p-1.5" />
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Right side — full-width title row, then 2-col below (description / offers panel) */}
-        <div>
-          {product.brand && (
-            <p className="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-primary">
-              {product.brand}
-            </p>
-          )}
-          <h1 className="font-display font-semibold leading-snug tracking-tight text-ink" style={{ fontSize: '2rem' }}>
-            {product.name}
-          </h1>
-
-          {/* Rating summary under the product title */}
-          {ratingValue > 0 && (
-            <div className="mt-2 flex items-center gap-2" data-testid="product-rating-summary">
-              <span className="text-sm leading-none">
-                <span className="text-amber-400">{'★'.repeat(Math.round(ratingValue))}</span>
-                <span className="text-ink/20">{'★'.repeat(Math.max(0, 5 - Math.round(ratingValue)))}</span>
-              </span>
-              <span className="text-sm font-semibold text-ink">{ratingValue.toFixed(1)}</span>
-              {ratingCount > 0 && (
-                <span className="text-sm text-ink/55">
-                  ({ratingCount} {ratingIsReviews ? (ratingCount === 1 ? 'review' : 'reviews') : 'ratings'})
+        {/* ─── Top section: gallery left, title + buying panel right ─── */}
+        <div className="row g-5">
+          {/* Image column */}
+          <div className="col-lg-5 col-12">
+            <div className="shop-hero-img">
+              {hasDiscount && (
+                <span className="shop-hero-badge">
+                  -{Math.round((1 - product.currentPrice! / product.originalPrice!) * 100)}%
                 </span>
               )}
+              {cover ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={cover} alt={product.name} fetchPriority="high" />
+              ) : (
+                <span className="shop-thumb-empty" aria-hidden />
+              )}
             </div>
-          )}
-
-          {/* Social share icons under product title */}
-          <div className="mt-3 flex items-center gap-2" data-testid="product-share">
-            <ShareLink href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${SITE.url}/products/${product.slug}`)}`} bg="bg-[#1877f2]">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99h-2.5V12h2.5V9.83c0-2.47 1.47-3.84 3.73-3.84 1.08 0 2.21.19 2.21.19v2.43h-1.25c-1.23 0-1.61.76-1.61 1.55V12h2.74l-.44 2.89h-2.3v6.99A10 10 0 0 0 22 12Z" /></svg>
-            </ShareLink>
-            <ShareLink href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(`${SITE.url}/products/${product.slug}`)}&text=${encodeURIComponent(product.name)}`} bg="bg-black">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M18.244 2H21.5l-7.55 8.63L22.75 22h-6.96l-5.45-7.13L4.04 22H.78l8.08-9.23L1.25 2h7.13l4.93 6.52L18.244 2Zm-1.22 18h1.93L7.06 4H5.04l11.984 16Z" /></svg>
-            </ShareLink>
-            <ShareLink href={`https://pinterest.com/pin/create/button/?url=${encodeURIComponent(`${SITE.url}/products/${product.slug}`)}&description=${encodeURIComponent(product.name)}${cover ? `&media=${encodeURIComponent(cover)}` : ''}`} bg="bg-[#e60023]">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 0a12 12 0 0 0-4.37 23.18c-.1-.93-.2-2.36.04-3.38.21-.91 1.4-5.79 1.4-5.79s-.36-.72-.36-1.78c0-1.67 1-2.91 2.18-2.91 1.03 0 1.53.78 1.53 1.71 0 1.04-.66 2.6-1 4.05-.29 1.21.61 2.2 1.8 2.2 2.16 0 3.83-2.28 3.83-5.58 0-2.92-2.1-4.96-5.1-4.96-3.47 0-5.51 2.6-5.51 5.29 0 1.05.4 2.17.91 2.78.1.12.11.23.08.36-.09.36-.28 1.16-.32 1.32-.05.21-.17.26-.39.16-1.45-.68-2.36-2.79-2.36-4.5 0-3.66 2.66-7.02 7.67-7.02 4.03 0 7.16 2.87 7.16 6.7 0 4-2.52 7.21-6.02 7.21-1.18 0-2.28-.61-2.66-1.34l-.72 2.75c-.26 1-.96 2.26-1.43 3.03A12 12 0 1 0 12 0z" /></svg>
-            </ShareLink>
-            <ShareLink href={`mailto:?subject=${encodeURIComponent(product.name)}&body=${encodeURIComponent(`${SITE.url}/products/${product.slug}`)}`} bg="bg-[#3b5998]">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
-            </ShareLink>
+            {galleryImgs.length > 0 && (
+              <div className="row g-2 mt-1">
+                {galleryImgs.map((g, i) => {
+                  const u = mediaUrl(g);
+                  if (!u) return null;
+                  return (
+                    <div key={i} className="col-3">
+                      <div className="shop-gallery-img">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={u} alt={`${product.name} ${i + 1}`} loading="lazy" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          {/* 2-col layout: description block on left, offers panel on right */}
-          <div className="mt-9 grid gap-6 lg:grid-cols-[minmax(280px,1fr)_minmax(0,1.1fr)]">
-            {/* Description + price + BUY */}
-            <div className="lg:order-2">
-              <div className="p-1 text-[14px] leading-6 text-ink/80">
+          {/* Right side — full-width title row, then 2-col below (description / offers panel) */}
+          <div className="col-lg-7 col-12">
+            {product.brand && <p className="shop-eyebrow mb-2">{product.brand}</p>}
+            <h1 className="h4 mb-0">{product.name}</h1>
+
+            {/* Rating summary under the product title */}
+            {ratingValue > 0 && (
+              <div className="d-flex flex-wrap align-items-center gap-2 mt-3" data-testid="product-rating-summary">
+                <span className="fs-7" style={{ lineHeight: 1 }} aria-hidden>
+                  <span className="shop-star-on">{'★'.repeat(Math.round(ratingValue))}</span>
+                  <span className="shop-star-off">{'★'.repeat(Math.max(0, 5 - Math.round(ratingValue)))}</span>
+                </span>
+                <span className="fs-7 fw-semi-bold text-dark">{ratingValue.toFixed(1)}</span>
+                {ratingCount > 0 && (
+                  <span className="fs-7 text-600">
+                    ({ratingCount} {ratingIsReviews ? (ratingCount === 1 ? 'review' : 'reviews') : 'ratings'})
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Social share icons under product title */}
+            <div className="shop-share d-flex align-items-center gap-2 mt-3" data-testid="product-share">
+              <ShareLink label="Share on Facebook" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${SITE.url}/products/${product.slug}`)}`} tone="is-facebook">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99h-2.5V12h2.5V9.83c0-2.47 1.47-3.84 3.73-3.84 1.08 0 2.21.19 2.21.19v2.43h-1.25c-1.23 0-1.61.76-1.61 1.55V12h2.74l-.44 2.89h-2.3v6.99A10 10 0 0 0 22 12Z" /></svg>
+              </ShareLink>
+              <ShareLink label="Share on X" href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(`${SITE.url}/products/${product.slug}`)}&text=${encodeURIComponent(product.name)}`} tone="is-x">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M18.244 2H21.5l-7.55 8.63L22.75 22h-6.96l-5.45-7.13L4.04 22H.78l8.08-9.23L1.25 2h7.13l4.93 6.52L18.244 2Zm-1.22 18h1.93L7.06 4H5.04l11.984 16Z" /></svg>
+              </ShareLink>
+              <ShareLink label="Pin on Pinterest" href={`https://pinterest.com/pin/create/button/?url=${encodeURIComponent(`${SITE.url}/products/${product.slug}`)}&description=${encodeURIComponent(product.name)}${cover ? `&media=${encodeURIComponent(cover)}` : ''}`} tone="is-pinterest">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 0a12 12 0 0 0-4.37 23.18c-.1-.93-.2-2.36.04-3.38.21-.91 1.4-5.79 1.4-5.79s-.36-.72-.36-1.78c0-1.67 1-2.91 2.18-2.91 1.03 0 1.53.78 1.53 1.71 0 1.04-.66 2.6-1 4.05-.29 1.21.61 2.2 1.8 2.2 2.16 0 3.83-2.28 3.83-5.58 0-2.92-2.1-4.96-5.1-4.96-3.47 0-5.51 2.6-5.51 5.29 0 1.05.4 2.17.91 2.78.1.12.11.23.08.36-.09.36-.28 1.16-.32 1.32-.05.21-.17.26-.39.16-1.45-.68-2.36-2.79-2.36-4.5 0-3.66 2.66-7.02 7.67-7.02 4.03 0 7.16 2.87 7.16 6.7 0 4-2.52 7.21-6.02 7.21-1.18 0-2.28-.61-2.66-1.34l-.72 2.75c-.26 1-.96 2.26-1.43 3.03A12 12 0 1 0 12 0z" /></svg>
+              </ShareLink>
+              <ShareLink label="Share by email" href={`mailto:?subject=${encodeURIComponent(product.name)}&body=${encodeURIComponent(`${SITE.url}/products/${product.slug}`)}`} tone="is-email">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
+              </ShareLink>
+            </div>
+
+            {/* 2-col layout: description block on left, offers panel on right */}
+            <div className="row g-4 mt-3">
+              {/* Description + price + BUY */}
+              <div className="col-xl-6 col-12 order-xl-2">
+                {/* Key features, else the short description. With neither, nothing renders: the empty state
+                    used to print an editor instruction ("add them in Strapi") on the live page. */}
                 {product.keyFeatures && product.keyFeatures.length > 0 ? (
                   <>
-                    <p className="text-xs font-bold uppercase tracking-wider text-ink/50">Key Features</p>
-                    <ul className="mt-3 list-disc space-y-2 pl-5">
+                    <p className="shop-eyebrow mb-0">Key Features</p>
+                    <ul className="shop-bullets">
                       {product.keyFeatures.map((f, i) => (
                         <li key={i}>{f}</li>
                       ))}
                     </ul>
                   </>
                 ) : product.shortDescription ? (
-                  <p>{product.shortDescription}</p>
-                ) : (
-                  <p className="italic text-ink/50">No key features yet — add them in Strapi → Commerce · Product → Specs → keyFeatures.</p>
+                  <p className="fs-7 mb-0">{product.shortDescription}</p>
+                ) : null}
+
+                {product.currentPrice !== undefined && (
+                  <div className="d-flex flex-wrap align-items-baseline gap-3 mt-4">
+                    {hasDiscount && (
+                      <span className="fs-6 shop-was">
+                        {formatPrice(product.originalPrice!, product.currency)}
+                      </span>
+                    )}
+                    <span className="shop-price-lg">
+                      {formatPrice(product.currentPrice, product.currency)}
+                    </span>
+                  </div>
                 )}
+
+                <PriceBadges history={priceHistory} current={bestOffer?.price ?? product.currentPrice} />
+
+                {bestOffer && (
+                  <p className="d-flex flex-wrap align-items-center gap-2 fs-7 mt-4 mb-0">
+                    <span className="text-600">Best deal at:</span>
+                    <MerchantLogo merchant={bestOffer.merchant} logoUrl={bestOffer.logoUrl} />
+                    <span className="fw-medium text-dark">{bestOffer.merchant}</span>
+                  </p>
+                )}
+
+                {(product.documentId || bestOffer?.url) && (
+                  <PriceAlertForm
+                    productDocumentId={product.documentId}
+                    currency={product.currency || 'USD'}
+                    currentPrice={bestOffer?.price}
+                    buyHref={bestOffer?.url}
+                  />
+                )}
+
+                <p className="fs-8 text-500 mt-3 mb-0">
+                  <strong>Affiliate disclosure</strong>
+                  <span className="shop-tip">
+                    <button type="button" aria-label="Affiliate disclosure details">
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                        <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+                      </svg>
+                    </button>
+                    <span role="tooltip" className="shop-tip-bubble">
+                      {SITE.name} earns a commission when you buy through links on this page, at no extra cost to you. Prices and availability subject to change.
+                    </span>
+                  </span>
+                </p>
               </div>
 
-              {product.currentPrice !== undefined && (
-                <div className="mt-6 flex items-baseline gap-3">
-                  {hasDiscount && (
-                    <span className="text-base text-ink/45 line-through">
-                      {formatPrice(product.originalPrice!, product.currency)}
-                    </span>
-                  )}
-                  <span className="font-display text-3xl font-bold text-ink">
-                    {formatPrice(product.currentPrice, product.currency)}
-                  </span>
-                </div>
-              )}
-
-              <PriceBadges history={priceHistory} current={bestOffer?.price ?? product.currentPrice} />
-
-              {bestOffer && (
-                <p className="mt-[20px] flex items-center gap-1.5 text-sm text-ink/70">
-                  <span className="text-ink/55">Best deal at:</span>
-                  <MerchantLogo merchant={bestOffer.merchant} logoUrl={bestOffer.logoUrl} />
-                  <span className="font-medium text-ink">{bestOffer.merchant}</span>
-                </p>
-              )}
-
-              {(product.documentId || bestOffer?.url) && (
-                <PriceAlertForm
-                  productDocumentId={product.documentId}
-                  currency={product.currency || 'USD'}
-                  currentPrice={bestOffer?.price}
-                  buyHref={bestOffer?.url}
-                />
-              )}
-
-              <p className="mt-3 text-[12px] text-ink/45">
-                <strong>Affiliate disclosure</strong>
-                <span className="group relative ml-1 inline-flex align-middle">
-                  <button
-                    type="button"
-                    aria-label="Affiliate disclosure details"
-                    className="inline-flex h-4 w-4 cursor-help items-center justify-center text-ink/55 hover:text-primary focus:outline-none"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
-                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                      <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
-                    </svg>
-                  </button>
-                  <span
-                    role="tooltip"
-                    className="pointer-events-none invisible absolute bottom-full left-1/2 z-20 mb-2 w-64 -translate-x-1/2 rounded-md bg-ink px-3 py-2 text-[11px] leading-snug text-white opacity-0 shadow-lg transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
-                  >
-                    {SITE.name} earns a commission when you buy through links on this page, at no extra cost to you. Prices and availability subject to change.
-                  </span>
-                </span>
-              </p>
-            </div>
-
-            {/* Offers panel — first 5 prices, with a "view more" toggle for the
-                rest (pure-CSS checkbox toggle so this stays a server component). */}
-            <div className="lg:order-1">
-              <div className="overflow-hidden rounded-md border border-ink/10">
+              {/* Offers panel — first 5 prices, with a "view more" toggle for the
+                  rest (pure-CSS checkbox toggle so this stays a server component). */}
+              <div className="col-xl-6 col-12 order-xl-1">
                 {offerRows.length > 0 ? (
-                  <>
-                    {offerRows.slice(0, 9).map((row, i) => (
-                      <OfferRow
-                        key={i}
-                        merchant={row.merchant}
-                        logoUrl={row.logoUrl}
-                        price={row.price}
-                        currency={product.currency}
-                        url={row.url}
-                        outOfStock={!row.available}
-                      />
-                    ))}
+                  <div className="offer-list">
+                    <div className="offer-rows">
+                      {offerRows.slice(0, 9).map((row, i) => (
+                        <OfferRow
+                          key={i}
+                          merchant={row.merchant}
+                          logoUrl={row.logoUrl}
+                          price={row.price}
+                          currency={product.currency}
+                          url={row.url}
+                          outOfStock={!row.available}
+                        />
+                      ))}
+                    </div>
                     {offerRows.length > 9 && (
                       <>
-                        <input id="more-offers" type="checkbox" className="peer sr-only" />
-                        <div className="hidden peer-checked:block">
+                        <input id="more-offers" type="checkbox" className="offer-toggle visually-hidden" />
+                        <div className="offer-more">
                           {offerRows.slice(9).map((row, i) => (
                             <OfferRow
                               key={i + 9}
@@ -457,195 +441,221 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
                             />
                           ))}
                         </div>
-                        <label
-                          htmlFor="more-offers"
-                          className="flex cursor-pointer items-center justify-center gap-1 border-t border-ink/10 px-4 py-2 text-sm font-semibold text-primary transition hover:bg-paper peer-checked:hidden"
-                        >
+                        <label htmlFor="more-offers" className="offer-show-more">
                           View {offerRows.length - 9} more {offerRows.length - 9 === 1 ? 'price' : 'prices'}
                         </label>
-                        <label
-                          htmlFor="more-offers"
-                          className="hidden cursor-pointer items-center justify-center gap-1 border-t border-ink/10 px-4 py-1 text-sm font-semibold text-primary transition hover:bg-paper peer-checked:flex"
-                        >
+                        <label htmlFor="more-offers" className="offer-show-less">
                           Show fewer
                         </label>
                       </>
                     )}
-                  </>
+                  </div>
                 ) : (
-                  <p className="px-4 py-6 text-center text-sm text-ink/55">
-                    No offers yet — add an Amazon, Walmart or eBay URL in Strapi.
+                  <p className="fs-7 text-600 mb-0">
+                    No retailer prices are listed for this product right now.
                   </p>
                 )}
+
+                {product.lastPriceSyncAt && (
+                  <p className="fs-8 text-600 mt-2 mb-0">
+                    Last price update was:{' '}
+                    {new Date(product.lastPriceSyncAt).toLocaleString('en-US', {
+                      year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+                    })}
+                  </p>
+                )}
+
+                {/* Price comparison bar chart — directly under the
+                    "Last price update" line for at-a-glance merchant comparison.
+                    Renders whenever at least one offer has a price; with a single
+                    offer this is a one-bar reference. */}
+                {/* Price comparison chart hidden per request. To restore, change
+                    `false` back to
+                    `offerRows.filter((r) => r.price !== undefined).length >= 1`. */}
+                {false && (
+                  <div className="mt-4" data-testid="price-comparison">
+                    <p className="shop-eyebrow mb-0">Price comparison</p>
+                    <div className="mt-2">
+                      <PriceComparisonChart
+                        rows={offerRows.filter((r) => r.price !== undefined)}
+                        currency={product?.currency}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Wishlist + share */}
+                <div className="d-none align-items-center justify-content-end mt-4">
+                  <button
+                    type="button"
+                    className="d-inline-flex align-items-center gap-2 fs-7 text-600 border-0 bg-transparent"
+                    aria-label="Add to wishlist"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                    Add to wishlist
+                  </button>
+                </div>
+
+              </div>{/* offers col */}
+            </div>{/* 2-col wrapper */}
+          </div>{/* right side */}
+        </div>{/* top section */}
+
+        {/* Lower section: descriptions etc. + sidebar. The g-5 gutter stands in for the old ~5% spacer column. */}
+        <div className="row g-5 mt-0" data-testid="product-detail-columns">
+          <div className={SHOW_PRODUCT_SIDEBAR ? 'col-lg-8 col-12' : 'col-12'}>
+            {/* Skin types tags (key features moved up next to the title/prices). */}
+            {product.skinTypes && product.skinTypes.length > 0 && (
+              <div className="mb-5">
+                <p className="shop-eyebrow mb-0">Skin types</p>
+                <ul className="list-unstyled ps-0 d-flex flex-wrap gap-2 mt-3 mb-0">
+                  {product.skinTypes.map((s) => (
+                    <li key={s} className="shop-pill text-capitalize">
+                      {s}
+                    </li>
+                  ))}
+                </ul>
               </div>
+            )}
 
-              {product.lastPriceSyncAt && (
-                <p className="mt-2 text-[11px] text-ink/55">
-                  Last price update was:{' '}
-                  {new Date(product.lastPriceSyncAt).toLocaleString('en-US', {
-                    year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
-                  })}
-                </p>
+            {product.description && (
+              <div data-testid="product-description">
+                <h2 className="h4 mb-4">Description</h2>
+                <CollapsibleDescription>
+                  <ProductDescription markdown={product.description} />
+                </CollapsibleDescription>
+              </div>
+            )}
+
+            {product.ingredients && (
+              <section className="mt-5">
+                <h2 className="h4 mb-3">Ingredients</h2>
+                <p className="fs-7 mb-0" style={{ lineHeight: 1.8 }}>{product.ingredients}</p>
+              </section>
+            )}
+
+          </div>
+
+          {SHOW_PRODUCT_SIDEBAR && (
+            /* Right column. Topic browsing first -- it is useful on every
+               product, where the specs panel is only useful when a product has
+               spec rows. Latest guides close the column: Tier A posts with their
+               own cover, as on the post page's aside. */
+            <aside className="col-lg-4 col-12" aria-label="Product sidebar">
+              {topicRows.length > 0 && (
+                <div className="mb-5" data-testid="browse-by-topic">
+                  <h2 className="h5 mb-3">Browse by topic</h2>
+                  <ul className="list-unstyled ps-0 d-flex flex-wrap gap-2 m-0">
+                    {topicRows.map((row) => (
+                      <li key={row.slug}>
+                        <Link
+                          href={`/categories/${row.slug}`}
+                          className="tag-item"
+                          aria-current={cat?.slug === row.slug ? 'page' : undefined}
+                        >
+                          <span className="fs-7">{row.name}</span>
+                          <span className="number">{row.count}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
-
-              {/* Price comparison bar chart — directly under the
-                  "Last price update" line for at-a-glance merchant comparison.
-                  Renders whenever at least one offer has a price; with a single
-                  offer this is a one-bar reference. */}
-              {/* Price comparison chart hidden per request. To restore, change
-                  `false` back to
-                  `offerRows.filter((r) => r.price !== undefined).length >= 1`. */}
-              {false && (
-                <div className="mt-4" data-testid="price-comparison">
-                  <p className="text-xs font-bold uppercase tracking-wider text-ink/50">Price comparison</p>
-                  <div className="mt-2">
-                    <PriceComparisonChart
-                      rows={offerRows.filter((r) => r.price !== undefined)}
-                      currency={product?.currency}
-                    />
+              {(specRows.length > 0 || (product.keyFeatures?.length ?? 0) > 0) && (
+                <div className="mb-5">
+                  <ProductSpecs specs={specRows} pros={product.keyFeatures ?? []} />
+                </div>
+              )}
+              {recentRows.length > 0 && (
+                <div className="mb-5">
+                  <h2 className="h5 mb-3">Latest guides</h2>
+                  <div className="d-flex flex-column gap-3">
+                    {recentRows.map((row) => (
+                      <div className="article card-10 style-1" key={row.href}>
+                        <Link href={row.href} className="card-img">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          {row.img ? <img className="w-100 rounded-8" src={row.img} alt="" width={96} height={96} loading="lazy" /> : null}
+                        </Link>
+                        <div className="card-body">
+                          <Link href={row.href}>
+                            <span className="h6 fs-6 mb-2 text-truncate-2 d-block">{row.title}</span>
+                          </Link>
+                          <span className="fs-8 text-600">{row.date}</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
-
-              {/* Wishlist + share */}
-              <div className="mt-6 hidden items-center justify-end">
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 text-sm text-ink/65 transition hover:text-primary"
-                  aria-label="Add to wishlist"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                  </svg>
-                  Add to wishlist
-                </button>
-              </div>
-
-            </div>{/* offers col */}
-          </div>{/* 2-col wrapper */}
-        </div>{/* right side */}
-      </div>{/* top section */}
-
-      {/* Lower section: descriptions etc. (75%) + recent posts sidebar. */}
-      <div
-        className={`mt-12 grid gap-y-10 ${SHOW_PRODUCT_SIDEBAR ? 'lg:grid-cols-[minmax(0,65fr)_5fr_minmax(0,30fr)]' : 'lg:grid-cols-1'}`}
-        data-testid="product-detail-columns"
-      >
-        <div className="min-w-0">
-          {/* Skin types tags (key features moved up next to the title/prices). */}
-          {product.skinTypes && product.skinTypes.length > 0 && (
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-ink/50">Skin types</p>
-              <ul className="mt-3 flex flex-wrap gap-2">
-                {product.skinTypes.map((s) => (
-                  <li key={s} className="rounded-full bg-muted px-3 py-1 text-xs font-medium capitalize text-ink/75">
-                    {s}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            </aside>
           )}
-
-          {product.description && (
-            <div data-testid="product-description">
-              <h2 className="font-display text-2xl font-bold text-ink">Description</h2>
-              <CollapsibleDescription>
-                <div className="mt-4 text-base leading-7 text-ink/80">
-                  <ProductDescription markdown={product.description} />
-                </div>
-              </CollapsibleDescription>
-            </div>
-          )}
-
-          {product.ingredients && (
-            <section className="mt-12">
-              <h2 className="font-display font-bold tracking-tight text-ink">Ingredients</h2>
-              <p className="mt-4 text-sm leading-7 text-ink/75">{product.ingredients}</p>
-            </section>
-          )}
-
         </div>
 
-        {SHOW_PRODUCT_SIDEBAR && (
-          <>
-            {/* Offset spacer column (~5%). */}
-            <div aria-hidden className="hidden lg:block" />
+        {priceHistory.length > 0 && (
+          <section className="mt-5 pt-4" data-testid="price-history">
+            <h2 className="h4 mb-3">Price history</h2>
+            <p className="fs-6 mb-4">
+              See how the price of {product.name} has changed over time. The chart below tracks every
+              price we&rsquo;ve recorded, so you can spot the typical range, catch recent drops, and judge
+              whether today&rsquo;s price is a genuine deal or worth waiting out before you buy.
+            </p>
+            <PriceHistoryChart points={priceHistory} />
+          </section>
+        )}
 
-            {/* Right column. Topic browsing first -- it is useful on every
-                product, where the specs panel is only useful when a product has
-                spec rows, and the old recent-articles fallback was filler. */}
-            <div className="space-y-6">
-              <BrowseByTopic rows={topicRows} />
-              {(specRows.length > 0 || (product.keyFeatures?.length ?? 0) > 0) && (
-                <ProductSpecs specs={specRows} pros={product.keyFeatures ?? []} />
-              )}
+        {/* Reviews — moved out of the description tabs to its own section. */}
+        {(productReviews.length > 0 || product.documentId) && (
+          <section className="mt-5 pt-4" data-testid="product-reviews">
+            <h2 className="h4 mb-4">Reviews</h2>
+            <div className="row g-5 align-items-start">
+              {/* Left rail: rating summary + write-a-review form. */}
+              <div className="col-lg-4 col-12 shop-sticky">
+                {productReviews.length > 0 && (
+                  <div className="review-summary text-center p-4">
+                    <p className="score mb-0">{ratingValue.toFixed(1)}</p>
+                    <span className="shop-stars fs-5 mt-3" aria-hidden>
+                      <span className="shop-star-off">★★★★★</span>
+                      <span
+                        className="shop-star-fill shop-star-on"
+                        style={{ width: `${(Math.min(5, ratingValue) / 5) * 100}%` }}
+                      >
+                        ★★★★★
+                      </span>
+                    </span>
+                    <p className="fs-7 text-600 mt-3 mb-0">
+                      Based on {ratingCount} {ratingCount === 1 ? 'review' : 'reviews'}
+                    </p>
+                  </div>
+                )}
+                {product.documentId && <ReviewForm productDocumentId={product.documentId} />}
+              </div>
+
+              {/* Right: reviews card grid. */}
+              <div className="col-lg-8 col-12">
+                <ReviewList reviews={productReviews} />
+              </div>
             </div>
-          </>
+          </section>
+        )}
+
+        {related.length > 0 && (
+          <aside className="mt-5 pt-4" data-testid="related-products">
+            <h2 className="h4 mb-4">More in {cat?.name ?? 'this category'}</h2>
+            {/* 15px between cards, and no card background: the tiles sit on the
+                page rather than in boxes. thumbBg is the knob ProductCard already
+                exposes for this, so nothing needs overriding with !important. */}
+            <div className="row row-cols-lg-5 row-cols-sm-2 row-cols-1 g-3">
+              {related.map((r) => (
+                <div className="col" key={r.id}>
+                  <ProductCard product={r} variant="tile" thumbBg="bg-transparent" />
+                </div>
+              ))}
+            </div>
+          </aside>
         )}
       </div>
-
-      {priceHistory.length > 0 && (
-        <section className="mt-16" data-testid="price-history">
-          <h2 className="font-display font-bold tracking-tight text-ink">Price history</h2>
-          <p className="mt-3 w-full text-base leading-7 text-ink/70">
-            See how the price of {product.name} has changed over time. The chart below tracks every
-            price we&rsquo;ve recorded, so you can spot the typical range, catch recent drops, and judge
-            whether today&rsquo;s price is a genuine deal or worth waiting out before you buy.
-          </p>
-          <div className="mt-6">
-            <PriceHistoryChart points={priceHistory} />
-          </div>
-        </section>
-      )}
-
-      {/* Reviews — moved out of the description tabs to its own section. */}
-      {(productReviews.length > 0 || product.documentId) && (
-        <section className="mt-16" data-testid="product-reviews">
-          <h2 className="font-display font-bold tracking-tight text-ink">Reviews</h2>
-          <div className="mt-6 grid items-start gap-10 lg:grid-cols-[300px_minmax(0,1fr)]">
-            {/* Left rail: rating summary + write-a-review form. */}
-            <div className="space-y-6 lg:sticky lg:top-24">
-              {productReviews.length > 0 && (
-                <div className="rounded-xl border border-ink/10 bg-[#f5f7fd] p-6 text-center">
-                  <p className="text-5xl font-bold leading-none text-ink">{ratingValue.toFixed(1)}</p>
-                  <span className="mt-3 inline-block relative text-xl leading-none">
-                    <span className="text-ink/20">★★★★★</span>
-                    <span
-                      className="absolute inset-0 overflow-hidden whitespace-nowrap text-amber-400"
-                      style={{ width: `${(Math.min(5, ratingValue) / 5) * 100}%` }}
-                    >
-                      ★★★★★
-                    </span>
-                  </span>
-                  <p className="mt-3 text-sm text-ink/60">
-                    Based on {ratingCount} {ratingCount === 1 ? 'review' : 'reviews'}
-                  </p>
-                </div>
-              )}
-              {product.documentId && <ReviewForm productDocumentId={product.documentId} />}
-            </div>
-
-            {/* Right: reviews card grid. */}
-            <div>
-              <ReviewList reviews={productReviews} />
-            </div>
-          </div>
-        </section>
-      )}
-
-      {related.length > 0 && (
-        <aside className="mt-16" data-testid="related-products">
-          <h3 className="font-display font-bold tracking-tight text-ink">More in {cat?.name ?? 'this category'}</h3>
-          {/* 15px between cards, and no card background: the tiles sit on the
-              page rather than in boxes. thumbBg is the knob ProductCard already
-              exposes for this, so nothing needs overriding with !important. */}
-          <div className="mt-6 grid gap-[15px] sm:grid-cols-2 lg:grid-cols-5">
-            {related.map((r) => (
-              <ProductCard key={r.id} product={r} variant="tile" thumbBg="bg-transparent" />
-            ))}
-          </div>
-        </aside>
-      )}
     </article>
   );
 }
@@ -683,13 +693,14 @@ function merchantLabel(slug?: string | null): string {
   return slug.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function ShareLink({ href, bg, children }: { href: string; bg: string; children: React.ReactNode }) {
+function ShareLink({ href, tone, label, children }: { href: string; tone: string; label: string; children: React.ReactNode }) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className={`inline-flex h-9 w-10 items-center justify-center rounded-md text-white transition hover:opacity-90 ${bg}`}
+      aria-label={label}
+      className={tone}
     >
       {children}
     </a>
@@ -715,8 +726,7 @@ function MerchantLogo({ merchant, logoUrl, size = 16 }: { merchant: string; logo
       alt={`${merchant} logo`}
       width={size}
       height={size}
-      style={{ width: size, height: size }}
-      className="shrink-0 object-contain"
+      style={{ width: size, height: size, flexShrink: 0, objectFit: 'contain' }}
     />
   );
 }
@@ -732,24 +742,24 @@ function OfferRow({
   logoUrl?: string | null;
 }) {
   return (
-    <div className="grid grid-cols-[1fr_auto_auto] items-center gap-4 border-b border-ink/10 px-4 py-1 last:border-b-0 odd:bg-paper">
-      <span className="flex items-center gap-2.5 text-xs font-normal text-ink/80">
+    <div className="offer-row">
+      <span className="offer-merchant">
         <MerchantLogo merchant={merchant} logoUrl={logoUrl} size={28} />
         {merchant}
       </span>
-      <span className="text-right">
+      <span className="text-end">
         {price !== undefined && (
-          <span className="block text-sm font-bold text-ink">{formatPrice(price, currency)}</span>
+          <span className="d-block fs-7 fw-semi-bold text-dark">{formatPrice(price, currency)}</span>
         )}
         {outOfStock && (
-          <span className="block text-xs text-primary">out of stock</span>
+          <span className="d-block fs-8 shop-discount">out of stock</span>
         )}
       </span>
       <a
         href={url}
         target="_blank"
         rel="noopener noreferrer sponsored"
-        className="inline-flex items-center justify-center rounded-md bg-[rgb(235,237,245)] px-4 py-2 text-xs font-semibold text-[#1b2026] transition hover:bg-[rgb(224,227,238)]"
+        className="offer-cta"
       >
         See it
       </a>
@@ -792,7 +802,7 @@ function ProductDescription({ markdown }: { markdown: string }) {
     if (!line.trim()) { i += 1; continue; }
     if (line.startsWith('### ')) {
       blocks.push(
-        <h4 key={key++} className="mt-5 first:mt-0 pt-[15px] text-base font-semibold text-ink">
+        <h4 key={key++}>
           {inline(line.slice(4).trim())}
         </h4>,
       );
@@ -801,7 +811,7 @@ function ProductDescription({ markdown }: { markdown: string }) {
     }
     if (line.startsWith('## ')) {
       blocks.push(
-        <h2 key={key++} className="mt-5 first:mt-0 text-lg font-semibold text-ink">
+        <h2 key={key++}>
           {inline(line.slice(3).trim())}
         </h2>,
       );
@@ -815,7 +825,7 @@ function ProductDescription({ markdown }: { markdown: string }) {
         i += 1;
       }
       blocks.push(
-        <ul key={key++} className="mt-2 list-disc space-y-1 pl-5">
+        <ul key={key++}>
           {items.map((it, idx) => <li key={idx}>{inline(it)}</li>)}
         </ul>,
       );
@@ -833,9 +843,10 @@ function ProductDescription({ markdown }: { markdown: string }) {
       para.push(lines[i]);
       i += 1;
     }
-    blocks.push(<p key={key++} className="mt-2 first:mt-0">{inline(para.join(' '))}</p>);
+    blocks.push(<p key={key++}>{inline(para.join(' '))}</p>);
   }
-  return <div className="space-y-1">{blocks}</div>;
+  /* Spacing and heading sizes for these blocks live in .shop-desc (app/magzin-shop.css). */
+  return <div className="shop-desc">{blocks}</div>;
 }
 
 /* Price comparison bar chart — pure SVG-free CSS implementation. Each row
@@ -854,29 +865,29 @@ function PriceComparisonChart({
   const minPrice = Math.min(...rows.filter((r) => r.available).map((r) => r.price as number));
   return (
     <div
-      className="rounded-md border border-ink/10 bg-paper p-6"
+      className="price-compare"
       data-testid="price-comparison-chart"
     >
-      <ul className="space-y-5">
+      <ul className="list-unstyled ps-0 m-0 d-flex flex-column gap-3">
         {rows.map((r, i) => {
           const pct = maxPrice > 0 ? ((r.price as number) / maxPrice) * 100 : 0;
           const isBest = r.available && r.price === minPrice;
           return (
-            <li key={i} className="grid grid-cols-[140px_minmax(0,1fr)_120px] items-center gap-4">
-              <span className="flex items-center gap-2 text-sm font-medium text-ink/80">
+            <li key={i} className="price-compare-row">
+              <span className="d-flex align-items-center gap-2 fs-7 fw-medium text-700" style={{ minWidth: 0 }}>
                 <MerchantLogo merchant={r.merchant} />
-                <span className="truncate">{r.merchant.replace(/\.com$/, '')}</span>
+                <span className="text-truncate-1">{r.merchant.replace(/\.com$/, '')}</span>
               </span>
-              <span className="relative h-5 overflow-hidden rounded-full bg-ink/5">
+              <span className="price-compare-track">
                 <span
-                  className={`absolute inset-y-0 left-0 rounded-full transition-[width] duration-700 ${isBest ? 'bg-primary' : 'bg-ink/30'}`}
+                  className={`price-compare-bar ${isBest ? 'is-best' : ''}`}
                   style={{ width: `${pct}%` }}
                 />
               </span>
-              <span className="flex items-center justify-end gap-2 text-right text-sm">
-                <span className="font-bold text-ink">{formatPrice(r.price as number, currency)}</span>
+              <span className="d-flex align-items-center justify-content-end gap-2 fs-7 text-end">
+                <span className="fw-semi-bold text-dark">{formatPrice(r.price as number, currency)}</span>
                 {isBest && (
-                  <span className="rounded-sm bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                  <span className="shop-pill text-uppercase">
                     best
                   </span>
                 )}

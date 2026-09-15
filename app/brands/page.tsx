@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { SITE } from '@/lib/site';
 import { listProductBrands } from '@/lib/strapi';
+import Breadcrumb from '@/components/magzin/Breadcrumb';
 
 export const revalidate = 60;
 
@@ -16,47 +17,54 @@ export default async function BrandsPage() {
   const groups = groupBrands(brands);
 
   return (
-    <section className="bg-paper py-12 sm:py-16" data-testid="brands-page">
-      <div className="mx-auto max-w-7xl px-6">
-        <header className="max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Brands</p>
-          <h1 className="mt-3 font-display font-bold tracking-tight text-ink">
-            Skincare Brands
-          </h1>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-ink/70 sm:text-lg">
-            Browse every brand in the product catalog and jump straight to matching products.
-          </p>
-        </header>
+    <div data-testid="brands-page">
+      <section className="sec-breadcumb">
+        <div className="container">
+          <Breadcrumb items={[{ label: 'Brands' }]} />
+          <div className="row align-items-end">
+            <div className="col-lg-8 col-12">
+              <div className="title">
+                <h1 className="h4 mb-0 ds-4">Skincare Brands</h1>
+                <p className="fs-7 mb-0 mt-3">
+                  Browse every brand in the product catalog and jump straight to matching products.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        {brands.length === 0 ? (
-          <div className="mt-10 rounded-3xl border border-dashed border-ink/15 bg-white px-6 py-16 text-center text-ink/55">
-            <p className="text-base">No product brands are available yet.</p>
-          </div>
-        ) : (
-          <div className="mt-10 space-y-8">
-            {groups.map((group) => (
-              <section key={group.letter} className="grid gap-4 border-t border-ink/10 pt-6 sm:grid-cols-[4rem_minmax(0,1fr)]">
-                <h2 className="font-display text-2xl font-semibold text-primary">
-                  {group.letter}
-                </h2>
-                <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  {group.brands.map((brand) => (
-                    <li key={brand.slug}>
-                      <Link
-                        href={`/brands/${encodeURIComponent(brand.slug)}`}
-                        className="block rounded-md bg-white px-4 py-3 text-sm font-medium text-ink transition hover:bg-forest-100 hover:text-primary"
-                      >
-                        {brand.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ))}
-          </div>
-        )}
-      </div>
-    </section>
+      <section className="pt-5 pb-70">
+        <div className="container">
+          {brands.length === 0 ? (
+            <div className="shop-empty">
+              <p className="mb-0">No product brands are available yet.</p>
+            </div>
+          ) : (
+            <div>
+              {groups.map((group, i) => (
+                <section key={group.letter} className={`row g-3 ${i > 0 ? 'shop-brand-letter pt-4 mt-4' : ''}`}>
+                  <div className="col-md-1 col-12">
+                    <h2 className="h5 mb-0">{group.letter}</h2>
+                  </div>
+                  <div className="col-md-11 col-12">
+                    <ul className="row g-2 list-unstyled ps-0 mb-0">
+                      {group.brands.map((brand) => (
+                        <li key={brand.slug} className="col-lg-3 col-sm-6 col-12">
+                          <Link href={`/brands/${encodeURIComponent(brand.slug)}`} className="tag-item shop-brand-link">
+                            {brand.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </section>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
   );
 }
 

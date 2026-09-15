@@ -9,12 +9,12 @@ import { useEffect, useRef } from 'react';
  * into the markup — inline <style> chunks, .gspb_* class names and a flex column
  * layout. Tailwind's `prose` class fights GSPB's layout (forces block images,
  * adds vertical margins between siblings, etc.), so we render plain HTML and
- * style only the non-GSPB elements via globals.css scoped to `.post-content`.
+ * style only the non-GSPB elements via app/article.css scoped to `.post-content`.
  *
  * Also wires GreenShift FAQ accordions: the source's vanilla JS isn't running
  * here, so on mount we collapse every `.gs-accordion-item` (add `.gsclose`)
  * and attach a click handler on its title that toggles the class. CSS in
- * globals.css hides `.gsclose > .gs-accordion-item__content`.
+ * app/article.css hides `.gsclose > .gs-accordion-item__content`.
  *
  * Affiliate-tag rewriting happens at import time (server-side, in the importer)
  * — not here.

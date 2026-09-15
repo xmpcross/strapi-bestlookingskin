@@ -28,6 +28,7 @@ export default function CommentForm({ postTitle, postUrl }: { postTitle: string;
   useEffect(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage exists only in the browser; reading it on mount avoids a hydration mismatch.
       if (saved?.name) { setName(saved.name); setEmail(saved.email || ''); setRemember(true); }
     } catch { /* storage unavailable or corrupt -- start blank */ }
   }, []);

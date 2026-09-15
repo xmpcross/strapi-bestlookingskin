@@ -3,6 +3,11 @@ import { mediaUrl, type BlsProduct } from '@/lib/strapi';
 
 type Variant = 'tile' | 'compact';
 
+/*
+ * Product tile in the Magzin card language: a white square thumbnail with a hairline border (product shots are
+ * on white, so the frame reads the same in both themes), then brand, name, price. `thumbBg="bg-transparent"`
+ * drops the frame for rows where the tiles sit on the page rather than in boxes.
+ */
 export default function ProductCard({
   product,
   variant = 'tile',
@@ -20,30 +25,29 @@ export default function ProductCard({
   const brandName = product.brandRef?.name || product.brand;
   const hasDiscount =
     product.originalPrice && product.currentPrice && product.originalPrice > product.currentPrice;
+  const thumbClass = `shop-thumb ${thumbBg === 'bg-transparent' ? 'is-plain' : ''}`;
 
   if (variant === 'compact') {
     return (
-      <article className="group" data-testid={`product-${product.slug}`}>
-        <Link href={href} className="grid grid-cols-[112px_minmax(0,1fr)] gap-4">
-          <div className={`overflow-hidden rounded-xl ${thumbBg}`}>
+      <article className="product-card" data-testid={`product-${product.slug}`}>
+        <Link href={href} className="product-compact">
+          <span className={thumbClass}>
             {img ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={img} alt={product.name} className="aspect-square h-full w-full object-contain mix-blend-multiply transition duration-500 group-hover:scale-105" />
+              <img src={img} alt={product.name} loading="lazy" />
             ) : (
-              <div className="aspect-square bg-gradient-to-br from-primary-hover to-primary" />
+              <span className="shop-thumb-empty" aria-hidden />
             )}
-          </div>
-          <div className="min-w-0">
-            {brandName && <p className="text-[14px] font-bold uppercase tracking-wider text-primary">{brandName}</p>}
-            <h6 className="mt-1 line-clamp-2 font-display text-[1rem] font-medium leading-snug text-ink transition group-hover:text-primary">
-              {product.name}
-            </h6>
+          </span>
+          <span className="d-block" style={{ minWidth: 0 }}>
+            {brandName && <span className="product-brand d-block">{brandName}</span>}
+            <span className="product-name d-block mt-1 text-truncate-2">{product.name}</span>
             {product.currentPrice !== undefined && (
-              <p className="mt-2 text-sm font-semibold text-ink">
+              <span className="product-price d-block fs-7 mt-2">
                 {formatPrice(product.currentPrice, product.currency)}
-              </p>
+              </span>
             )}
-          </div>
+          </span>
         </Link>
       </article>
     );
@@ -51,49 +55,48 @@ export default function ProductCard({
 
   // tile (default)
   return (
-    <article className="group flex flex-col" data-testid={`product-${product.slug}`}>
-      <Link href={href} className={`block overflow-hidden rounded-3xl ${thumbBg}`}>
+    <article className="product-card" data-testid={`product-${product.slug}`}>
+      <Link href={href} className={thumbClass}>
         {img ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={img} alt={product.name} className="aspect-square w-full object-contain mix-blend-multiply p-4 transition duration-500 group-hover:scale-[1.02]" />
+          <img src={img} alt={product.name} loading="lazy" />
         ) : (
-          <div className="aspect-square w-full bg-gradient-to-br from-primary-hover to-primary" />
+          <span className="shop-thumb-empty" aria-hidden />
         )}
       </Link>
-      <div className="mt-4">
-        <div className="flex items-center justify-between gap-3">
-          {brandName && <p className="text-[12px] !font-light uppercase tracking-wider text-primary">{brandName}</p>}
-          {showCategory && cat && <p className="text-[14px] text-ink/45">{cat.name}</p>}
+      <div className="d-flex flex-column flex-grow-1 mt-3">
+        <div className="d-flex flex-wrap align-items-center justify-content-between gap-2">
+          {brandName && <p className="product-brand m-0">{brandName}</p>}
+          {showCategory && cat && <p className="fs-8 text-500 m-0">{cat.name}</p>}
         </div>
-        <Link href={href}>
-          <h6 className="mt-2 line-clamp-2 font-display text-[1rem] font-semibold leading-snug tracking-[0.3px] text-ink transition group-hover:text-primary">
-            {product.name}
-          </h6>
+        <Link href={href} className="mt-2">
+          <h3 className="product-name m-0 text-truncate-2">{product.name}</h3>
         </Link>
         {product.shortDescription && (
-          <p className="mt-2 line-clamp-2 text-sm leading-6 text-ink/70">{product.shortDescription}</p>
+          <p className="fs-7 text-600 mt-2 mb-0 text-truncate-2">{product.shortDescription}</p>
         )}
-        <div className="mt-3 flex items-baseline gap-2">
+        <div className="d-flex flex-wrap align-items-baseline gap-2 mt-3">
           {product.currentPrice !== undefined && (
-            <span className="font-display text-lg font-bold text-ink">
+            <span className="product-price fs-5">
               {formatPrice(product.currentPrice, product.currency)}
             </span>
           )}
           {hasDiscount && (
-            <span className="text-sm text-ink/45 line-through">
+            <span className="fs-7 shop-was">
               {formatPrice(product.originalPrice!, product.currency)}
             </span>
           )}
           {hasDiscount && (
-            <span className="text-xs font-bold text-primary">
+            <span className="shop-discount">
               -{Math.round((1 - product.currentPrice! / product.originalPrice!) * 100)}%
             </span>
           )}
         </div>
         {product.rating !== undefined && product.rating > 0 && (
-          <p className="mt-2 text-xs text-ink/55">
-            ★ {product.rating.toFixed(1)}
-            {product.ratingCount ? ` · ${product.ratingCount} reviews` : ''}
+          <p className="fs-8 text-600 mt-2 mb-0">
+            <span className="shop-star-on" aria-hidden>★</span> {product.rating.toFixed(1)}
+            {/* Imported aggregate counts are ratings, not written reviews: the product page labels them the same way. */}
+            {product.ratingCount ? ` · ${product.ratingCount} ratings` : ''}
           </p>
         )}
       </div>

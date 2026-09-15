@@ -39,9 +39,9 @@ function buildHref(base: string, current: ShopFilterState, key: keyof ShopFilter
 
 function Widget({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="border-b border-ink/10 pb-6">
-      <h4 className="font-display text-[15px] font-bold text-ink">{title}</h4>
-      <div className="mt-4">{children}</div>
+    <div className="shop-widget">
+      <h2 className="h6 mb-3">{title}</h2>
+      <div>{children}</div>
     </div>
   );
 }
@@ -53,13 +53,11 @@ function Option({
     <li>
       <Link
         href={href}
-        className={`flex items-center justify-between gap-3 py-1.5 text-[14px] transition ${
-          active ? 'font-semibold text-primary' : 'text-ink/70 hover:text-primary'
-        }`}
+        className={`shop-filter-link ${active ? 'is-active' : ''}`}
         aria-current={active ? 'true' : undefined}
       >
-        <span className="min-w-0 truncate">{label}</span>
-        <span className="shrink-0 text-[12px] text-ink/40">({count})</span>
+        <span className="label">{label}</span>
+        <span className="count">({count})</span>
       </Link>
     </li>
   );
@@ -85,32 +83,27 @@ export default function ShopFilters({
   const anyActive = Boolean(state.brand || state.rating || state.price);
 
   return (
-    <aside className="space-y-6 lg:sticky lg:top-24" aria-label="Product filters" data-testid="shop-filters">
+    <aside className="shop-sticky" aria-label="Product filters" data-testid="shop-filters">
       {anyActive && (
-        <Link
-          href={basePath}
-          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-primary hover:underline"
-        >
-          Clear all filters
-        </Link>
+        <p className="mb-4">
+          <Link href={basePath} className="shop-link fs-7 fw-semi-bold">
+            Clear all filters
+          </Link>
+        </p>
       )}
 
       {categories.length > 0 && (
         <Widget title="Categories">
-          <ul className="space-y-0.5">
+          <ul className="list-unstyled ps-0 m-0">
             {categories.map((c) => (
               <li key={c.slug}>
                 <Link
                   href={`/categories/${c.slug}`}
-                  className={`flex items-center justify-between gap-3 py-1.5 text-[14px] transition ${
-                    c.slug === activeCategorySlug
-                      ? 'font-semibold text-primary'
-                      : 'text-ink/70 hover:text-primary'
-                  }`}
+                  className={`shop-filter-link ${c.slug === activeCategorySlug ? 'is-active' : ''}`}
                   aria-current={c.slug === activeCategorySlug ? 'page' : undefined}
                 >
-                  <span className="min-w-0 truncate">{c.name}</span>
-                  <span className="shrink-0 text-[12px] text-ink/40">({c.count})</span>
+                  <span className="label">{c.name}</span>
+                  <span className="count">({c.count})</span>
                 </Link>
               </li>
             ))}
@@ -120,7 +113,7 @@ export default function ShopFilters({
 
       {brands.length > 0 && (
         <Widget title="Brand">
-          <ul className="space-y-0.5">
+          <ul className="list-unstyled ps-0 m-0">
             {brands.map((b) => (
               <Option
                 key={b.value}
@@ -136,7 +129,7 @@ export default function ShopFilters({
 
       {ratings.length > 0 && (
         <Widget title="Rating">
-          <ul className="space-y-0.5">
+          <ul className="list-unstyled ps-0 m-0">
             {ratings.map((r) => (
               <Option
                 key={r.value}
@@ -152,7 +145,7 @@ export default function ShopFilters({
 
       {prices.length > 0 && (
         <Widget title="Price">
-          <ul className="space-y-0.5">
+          <ul className="list-unstyled ps-0 m-0">
             {prices.map((p) => (
               <Option
                 key={p.value}

@@ -1,9 +1,9 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { SITE } from '@/lib/site';
 import { listProductBrands, listProducts, mediaUrl } from '@/lib/strapi';
 import ProductCard from '@/components/ProductCard';
+import Breadcrumb from '@/components/magzin/Breadcrumb';
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -43,57 +43,57 @@ export default async function BrandPage({ params }: { params: Promise<Params> })
   const logo = mediaUrl(brand.logo ?? null);
 
   return (
-    <section className="bg-paper py-12 sm:py-16" data-testid={`brand-${brand.slug}`}>
-      <div className="mx-auto max-w-7xl px-6">
-        <nav className="text-sm text-ink/55" aria-label="Breadcrumb">
-          <Link href="/brands" className="hover:text-primary">Brands</Link>
-          <span className="px-1.5">/</span>
-          <span className="text-ink/75">{brand.name}</span>
-        </nav>
+    <div data-testid={`brand-${brand.slug}`}>
+      <section className="sec-breadcumb">
+        <div className="container">
+          <Breadcrumb items={[{ label: 'Brands', href: '/brands' }, { label: brand.name }]} />
+          <div className="row align-items-end">
+            <div className="col-lg-8 col-12">
+              <div className="title d-flex flex-column flex-sm-row align-items-sm-center gap-3">
+                {logo && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={logo} alt={`${brand.name} logo`} className="shop-logo" />
+                )}
+                <div>
+                  <h1 className="h4 mb-0 ds-4">{brand.name}</h1>
+                  {brand.websiteUrl && (
+                    <a
+                      href={brand.websiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shop-link d-inline-block fs-7 fw-medium mt-2"
+                    >
+                      Visit official site &rarr;
+                    </a>
+                  )}
+                </div>
+              </div>
+              {brand.description && <p className="fs-7 mb-0 mt-3">{brand.description}</p>}
+            </div>
+          </div>
+        </div>
+      </section>
 
-        <header className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
-          {logo && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={logo}
-              alt={`${brand.name} logo`}
-              className="h-16 w-16 shrink-0 rounded-lg bg-white object-contain p-2 ring-1 ring-ink/10"
-            />
+      <section className="pt-5 pb-70">
+        <div className="container">
+          <h2 className="h5 mb-0">
+            {products.length > 0
+              ? `${products.length} ${products.length === 1 ? 'product' : 'products'}`
+              : 'Products'}
+          </h2>
+          {products.length > 0 ? (
+            <div className="row g-3 g-md-4 mt-2">
+              {products.map((p) => (
+                <div className="col-lg-3 col-sm-6 col-12" key={p.id}>
+                  <ProductCard product={p} variant="tile" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-600 mt-4">No products yet for this brand.</p>
           )}
-          <div>
-            <h1 className="font-display font-bold tracking-tight text-ink">{brand.name}</h1>
-            {brand.websiteUrl && (
-              <a
-                href={brand.websiteUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-1 inline-block text-sm font-medium text-primary hover:underline"
-              >
-                Visit official site &rarr;
-              </a>
-            )}
-          </div>
-        </header>
-
-        {brand.description && (
-          <p className="mt-4 max-w-3xl text-base leading-7 text-ink/70">{brand.description}</p>
-        )}
-
-        <h2 className="mt-10 font-display text-xl font-bold text-ink">
-          {products.length > 0
-            ? `${products.length} ${products.length === 1 ? 'product' : 'products'}`
-            : 'Products'}
-        </h2>
-        {products.length > 0 ? (
-          <div className="mt-6 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
-            {products.map((p) => (
-              <ProductCard key={p.id} product={p} variant="tile" />
-            ))}
-          </div>
-        ) : (
-          <p className="mt-6 italic text-ink/50">No products yet for this brand.</p>
-        )}
-      </div>
-    </section>
+        </div>
+      </section>
+    </div>
   );
 }

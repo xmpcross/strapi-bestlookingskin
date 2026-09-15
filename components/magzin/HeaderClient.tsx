@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { SITE } from '@/lib/site';
 import type { NavGroup, NavItem } from '@/lib/nav';
 import { CloseIcon, MenuIcon, SearchIcon, ThemeIcon } from './icons';
@@ -17,14 +17,22 @@ export default function HeaderClient({ nav, topics }: { nav: NavItem[]; topics: 
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [openSection, setOpenSection] = useState<string | null>(null);
-  const [dark, setDark] = useState(false);
+  /* The theme lives on <html data-bs-theme> (set before paint by the inline script in app/layout.tsx). */
+  const [, rerender] = useState(0);
+  const dark = useSyncExternalStore(
+    () => () => {},
+    () => document.documentElement.getAttribute('data-bs-theme') === 'dark',
+    () => false,
+  );
   const inputRef = useRef<HTMLInputElement>(null);
 
-  /* Close panels on navigation. */
-  useEffect(() => {
+  /* Close panels on navigation (state adjusted during render, React's pattern for props-driven resets). */
+  const [lastPath, setLastPath] = useState(pathname);
+  if (pathname !== lastPath) {
+    setLastPath(pathname);
     setSearchOpen(false);
     setMenuOpen(false);
-  }, [pathname]);
+  }
 
   /* Sticky navbar after 100px; slides away while scrolling down, back when scrolling up. */
   useEffect(() => {
@@ -42,9 +50,6 @@ export default function HeaderClient({ nav, topics }: { nav: NavItem[]; topics: 
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  useEffect(() => {
-    setDark(document.documentElement.getAttribute('data-bs-theme') === 'dark');
-  }, []);
   const toggleTheme = () => {
     const next = dark ? 'light' : 'dark';
     document.documentElement.setAttribute('data-bs-theme', next);
@@ -53,7 +58,7 @@ export default function HeaderClient({ nav, topics }: { nav: NavItem[]; topics: 
     } catch {
       /* private mode */
     }
-    setDark(!dark);
+    rerender((n) => n + 1);
   };
 
   useEffect(() => {

@@ -4,6 +4,7 @@ import { listPosts, type BlsPost } from '@/lib/strapi';
 import { decodeEntities } from '@/lib/toc';
 import { postPath } from '@/lib/format';
 import { SITE } from '@/lib/site';
+import Breadcrumb from '@/components/magzin/Breadcrumb';
 
 export const revalidate = 600;
 
@@ -115,65 +116,73 @@ export default async function FaqsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-6 pb-16 pt-8" data-testid="faqs-page">
+    <div data-testid="faqs-page">
       {total > 0 && (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       )}
 
-      <nav className="flex items-center gap-2 py-0 text-[12px] font-semibold text-ink/55" aria-label="Breadcrumb">
-        <Link href="/" className="font-semibold text-primary hover:text-primary-highlight">Home</Link>
-        <span>/</span>
-        <span className="text-ink/75" aria-current="page">FAQs</span>
-      </nav>
-
-      <h1 className="mt-6 font-display text-[2rem] font-bold leading-tight tracking-tight text-ink">
-        Frequently asked questions
-      </h1>
-      <p className="mt-4 max-w-2xl text-[17px] leading-8 text-ink/60">
-        {total > 0
-          ? `${total} questions answered across our guides. Each answer links to the article it came from, where you will find the full context.`
-          : 'Questions answered across our guides, each linked to the article it came from.'}
-      </p>
-
-      {sections.length > 1 && (
-        <nav aria-label="FAQ topics" className="mt-8 flex flex-wrap gap-2">
-          {sections.map((s) => (
-            <a
-              key={s.slug}
-              href={`#faq-${s.slug}`}
-              className="rounded-full border border-ink/15 px-4 py-1.5 text-[13px] font-semibold text-ink/70 transition hover:border-primary hover:text-primary"
-            >
-              {s.name} <span className="text-ink/40">{s.entries.length}</span>
-            </a>
-          ))}
-        </nav>
-      )}
-
-      {total === 0 ? (
-        <p className="mt-10 text-ink/60">No questions have been published yet.</p>
-      ) : (
-        sections.map((s) => (
-          <section key={s.slug} id={`faq-${s.slug}`} className="mt-12 scroll-mt-24">
-            <h2 className="font-display text-[1.4rem] font-bold text-ink">{s.name}</h2>
-            <div className="mt-4 border-t border-ink/10">
-              {s.entries.map((e) => (
-                <details key={e.question} className="border-b border-ink/10">
-                  <summary className="flex cursor-pointer items-start justify-between gap-4 py-4 font-display text-[16px] font-bold text-ink transition hover:text-primary [&::-webkit-details-marker]:hidden">
-                    {e.question}
-                    <span aria-hidden className="mt-1 shrink-0 text-primary">+</span>
-                  </summary>
-                  <div className="pb-5 text-[15px] leading-7 text-ink/70">
-                    <p>{e.answer}</p>
-                    <Link href={e.href} className="mt-3 inline-block text-[14px] font-semibold text-primary hover:underline">
-                      From: {e.postTitle}
-                    </Link>
-                  </div>
-                </details>
-              ))}
+      <section className="sec-breadcumb">
+        <div className="container">
+          <Breadcrumb items={[{ label: 'FAQs' }]} />
+          <div className="row align-items-end">
+            <div className="col-lg-8 col-12">
+              <div className="title">
+                <h1 className="h3 mb-0">Frequently asked questions</h1>
+                <p className="bls-page-lead mt-3 mb-0">
+                  {total > 0
+                    ? `${total} questions answered across our guides. Each answer links to the article it came from, where you will find the full context.`
+                    : 'Questions answered across our guides, each linked to the article it came from.'}
+                </p>
+              </div>
             </div>
-          </section>
-        ))
-      )}
+          </div>
+        </div>
+      </section>
+
+      <section className="pt-5 pb-70">
+        <div className="container">
+          <div className="row">
+            <div className="col-lg-9 col-xl-8 col-12">
+              {sections.length > 1 && (
+                <nav aria-label="FAQ topics" className="block-tag d-flex flex-wrap gap-2 mb-5">
+                  {sections.map((s) => (
+                    <a key={s.slug} href={`#faq-${s.slug}`} className="tag-item bls-tag">
+                      <span>{s.name}</span>
+                      <span className="number">{s.entries.length}</span>
+                    </a>
+                  ))}
+                </nav>
+              )}
+
+              {total === 0 ? (
+                <p className="mb-0">No questions have been published yet.</p>
+              ) : (
+                sections.map((s) => (
+                  <section key={s.slug} id={`faq-${s.slug}`} className="bls-faq-section mb-5">
+                    <h2 className="h5 mb-3">{s.name}</h2>
+                    <div className="bls-faq-list">
+                      {s.entries.map((e) => (
+                        <details key={e.question} className="bls-faq-item">
+                          <summary>
+                            {e.question}
+                            <span aria-hidden className="bls-faq-toggle">+</span>
+                          </summary>
+                          <div className="bls-faq-answer">
+                            <p>{e.answer}</p>
+                            <Link href={e.href} className="bls-link fs-7 fw-semi-bold">
+                              From: {e.postTitle}
+                            </Link>
+                          </div>
+                        </details>
+                      ))}
+                    </div>
+                  </section>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

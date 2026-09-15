@@ -3,6 +3,8 @@ import { GeistSans } from 'geist/font/sans';
 import '@/public/assets/css/vendors/bootstrap-grid.min.css';
 import '@/public/assets/css/main.css';
 import './magzin.css';
+import './magzin-shop.css';
+import './magzin-pages.css';
 import SiteHeader from '@/components/magzin/SiteHeader';
 import SiteFooter from '@/components/magzin/SiteFooter';
 import BackToTop from '@/components/magzin/BackToTop';

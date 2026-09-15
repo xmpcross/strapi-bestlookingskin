@@ -32,7 +32,7 @@ export default function Page() {
         The kind of Personal Information that we collect from you will depend on how you use the
         Website. The Personal Information which we collect and hold about you may include:
       </p>
-      <ol className="list-[lower-alpha] pl-6 space-y-2">
+      <ol className="legal-list-alpha">
         <li>
           <strong>Identifiers and contact data</strong> — full name, email address, phone number,
           billing and shipping addresses.
@@ -66,7 +66,7 @@ export default function Page() {
         <strong>Personal Information</strong> means information or an opinion about an identified
         individual or an individual who is reasonably identifiable:
       </p>
-      <ol className="list-[lower-alpha] pl-6 space-y-1">
+      <ol className="legal-list-alpha">
         <li>whether the information or opinion is true or not; and</li>
         <li>whether the information or opinion is recorded in a material form or not.</li>
       </ol>
@@ -83,7 +83,7 @@ export default function Page() {
         information. Under the GDPR this is referred to as <em>special category data</em>.
       </p>
       <p>Sensitive / special category information will be used by us only:</p>
-      <ol className="list-[lower-alpha] pl-6 space-y-1">
+      <ol className="legal-list-alpha">
         <li>for the primary purpose for which it was obtained;</li>
         <li>for a secondary purpose that is directly related to the primary purpose; and</li>
         <li>with your explicit consent or where required or authorised by law.</li>
@@ -91,7 +91,7 @@ export default function Page() {
 
       {/* 3. How we collect your Personal Information */}
       <h3>3. How we collect your Personal Information</h3>
-      <ol className="list-[lower-alpha] pl-6 space-y-2">
+      <ol className="legal-list-alpha">
         <li>
           We may collect Personal Information from you whenever you input such information into the
           Website, related app or provide it to us in any other way.
@@ -116,7 +116,7 @@ export default function Page() {
 
       {/* 4. Purpose of collection (lawful bases) */}
       <h3>4. Purpose and lawful basis of collection</h3>
-      <ol className="list-[lower-alpha] pl-6 space-y-2">
+      <ol className="legal-list-alpha">
         <li>
           We collect Personal Information to provide you with the best service experience possible
           on the Website, fulfill orders for our e-commerce operations, respond to enquiries and
@@ -125,7 +125,7 @@ export default function Page() {
         <li>
           For visitors in the EEA / UK, the lawful bases on which we rely are (Article 6 GDPR / UK
           GDPR):
-          <ol className="mt-2 list-[lower-roman] pl-6 space-y-1">
+          <ol className="legal-list-roman mt-2">
             <li><strong>Consent</strong> — for non-essential cookies, marketing emails, and any optional analytics.</li>
             <li><strong>Contract</strong> — to fulfill orders and provide services you have requested.</li>
             <li><strong>Legitimate interests</strong> — for site security, fraud prevention, basic analytics, and direct marketing of our own similar products to existing customers (subject to your right to object at any time).</li>
@@ -148,7 +148,7 @@ export default function Page() {
 
       {/* 5. Security, Access and correction */}
       <h3>5. Security, retention and your rights</h3>
-      <ol className="list-[lower-alpha] pl-6 space-y-2">
+      <ol className="legal-list-alpha">
         <li>
           We store your Personal Information using industry-standard technical and organisational
           measures (encryption in transit, access controls, regular reviews) to reasonably protect it
@@ -163,7 +163,7 @@ export default function Page() {
         </li>
         <li>
           The Australian Privacy Principles permit you to:
-          <ol className="mt-2 list-[lower-roman] pl-6 space-y-1">
+          <ol className="legal-list-roman mt-2">
             <li>obtain access to the Personal Information we hold about you in certain circumstances (Australian Privacy Principle 12); and</li>
             <li>correct inaccurate Personal Information subject to certain exceptions (Australian Privacy Principle 13).</li>
           </ol>
@@ -221,7 +221,7 @@ export default function Page() {
         If you are located in the EEA, United Kingdom or Switzerland, the GDPR / UK GDPR / Swiss FADP
         give you specific rights in relation to your Personal Information:
       </p>
-      <ol className="list-[lower-alpha] pl-6 space-y-2">
+      <ol className="legal-list-alpha">
         <li><strong>Right of access</strong> — to obtain confirmation of and a copy of the Personal Information we hold about you (Art. 15).</li>
         <li><strong>Right to rectification</strong> — to have inaccurate or incomplete data corrected (Art. 16).</li>
         <li><strong>Right to erasure</strong> (&quot;right to be forgotten&quot;) — in defined circumstances (Art. 17).</li>
@@ -272,7 +272,7 @@ export default function Page() {
       <p>
         <strong>Your CCPA rights:</strong>
       </p>
-      <ol className="list-[lower-alpha] pl-6 space-y-1">
+      <ol className="legal-list-alpha">
         <li>Right to know what Personal Information we have collected about you and how it is used.</li>
         <li>Right to delete Personal Information we have collected (subject to exceptions).</li>
         <li>Right to correct inaccurate Personal Information.</li>
@@ -361,7 +361,7 @@ export default function Page() {
         <a href="mailto:privacy@bestlooking.skin">privacy@bestlooking.skin</a>.
       </p>
 
-      <p className="mt-10 text-sm text-ink/55">
+      <p className="mt-5 fs-7 text-600">
         This Privacy Policy is provided as a general template covering the Australian Privacy Act,
         the GDPR / UK GDPR, the CCPA / CPRA and other US state privacy laws. It does not constitute
         legal advice. For a fully audited document tailored to your specific operations, please

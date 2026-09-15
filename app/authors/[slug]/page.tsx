@@ -1,10 +1,11 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getAuthor, listAuthors, listPosts } from '@/lib/strapi';
 import { SITE } from '@/lib/site';
-import PostCard from '@/components/PostCard';
 import AuthorAvatar from '@/components/AuthorAvatar';
+import { toCard } from '@/lib/post-card';
+import { WideCard } from '@/components/magzin/cards';
+import Breadcrumb from '@/components/magzin/Breadcrumb';
 
 export const revalidate = 300;
 
@@ -50,35 +51,41 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-6 pb-16 pt-6" data-testid={`author-${author.slug}`}>
+    <div data-testid={`author-${author.slug}`}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }} />
 
-      <nav className="flex items-center gap-2 py-0 text-[12px] font-semibold text-ink/55" aria-label="Breadcrumb">
-        <Link href="/" className="shrink-0 font-semibold text-primary hover:text-primary-highlight">Home</Link>
-        <span className="shrink-0">/</span>
-        <span className="min-w-0 truncate text-ink/75" aria-current="page">{author.name}</span>
-      </nav>
+      <div className="container">
+        <Breadcrumb items={[{ label: author.name }]} />
 
-      <header className="mt-8 flex gap-5">
-        <AuthorAvatar name={author.name} src={author.avatarUrl} size={64} />
-        <div className="min-w-0">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-ink/45">Author</p>
-          <h1 className="font-display text-[2rem] font-bold leading-tight tracking-tight text-ink">{author.name}</h1>
-          {author.bio && <p className="mt-3 max-w-2xl text-base leading-7 text-ink/70">{author.bio}</p>}
-        </div>
-      </header>
-
-      <section className="mt-12">
-        <h2 className="font-display text-xl font-bold text-ink">
-          {posts.length > 0 ? `Articles by ${author.name}` : 'No articles yet'}
-        </h2>
-        {posts.length > 0 && (
-          <div className="mt-6 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-            {posts.map((p) => (
-              <PostCard key={p.slug} post={p} />
-            ))}
+        {/* Magzin "Author" header: a centred card with the avatar, name and bio. bls-author has no social
+            profiles, so the template's social icons are left out. */}
+        <div className="row pt-4">
+          <div className="col-lg-8 col-xl-7 col-12 mx-auto">
+            <header className="author-card bls-author-hero text-center">
+              <div className="d-flex justify-content-center mb-4">
+                <AuthorAvatar name={author.name} src={author.avatarUrl} size={120} />
+              </div>
+              <p className="bls-eyebrow mb-2">Author</p>
+              <h1 className="h3 mb-0">{author.name}</h1>
+              {author.bio && <p className="fs-7 mt-3 mb-0">{author.bio}</p>}
+            </header>
           </div>
-        )}
+        </div>
+      </div>
+
+      <section className="sec-1-author pt-70 pb-70">
+        <div className="container">
+          <h2 className="h5 mb-0">{posts.length > 0 ? `Articles by ${author.name}` : 'No articles yet'}</h2>
+          {posts.length > 0 && (
+            <div className="row mt-2 g-4">
+              {posts.map((p) => (
+                <div className="col-12" key={p.slug}>
+                  <WideCard card={toCard(p)} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </section>
     </div>
   );

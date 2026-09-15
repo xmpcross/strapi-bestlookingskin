@@ -14,7 +14,7 @@ function escapeXml(s: string): string {
 }
 
 export async function GET() {
-  const res = await listPosts({ pageSize: 30 }).catch(() => ({ data: [] as any[] }));
+  const res = await listPosts({ pageSize: 30 }).catch(() => ({ data: [] as Awaited<ReturnType<typeof listPosts>>['data'] }));
   const posts = res.data ?? [];
 
   const items = posts

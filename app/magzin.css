@@ -155,3 +155,23 @@ body {
   padding-top: 8px;
   padding-bottom: 32px;
 }
+
+/*
+ * Readability on small screens. The template drops every <p> to 12px below 992px, which is too small for
+ * long-form reading; article bodies and standfirsts stay at a comfortable size.
+ */
+@media screen and (max-width: 991.98px) {
+  p {
+    font-size: 14px;
+  }
+  .post-content p,
+  .post-content li,
+  .post-standfirst {
+    font-size: 16px;
+    line-height: 1.65;
+  }
+  .sec-1-single-3 h1.h3,
+  .sec-breadcumb h1.h4 {
+    font-size: 30px;
+  }
+}

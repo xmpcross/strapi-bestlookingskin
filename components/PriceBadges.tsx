@@ -18,6 +18,7 @@ export default function PriceBadges({
 }) {
   if (!current || !Number.isFinite(current) || !history?.length) return null;
 
+  // eslint-disable-next-line react-hooks/purity -- a server-rendered badge; "now" is the render time, revalidated with the page.
   const cutoff = Date.now() - windowDays * 86400000;
   const recent = history.filter((p) => p.date && new Date(p.date).getTime() >= cutoff);
   const series = recent.length >= 2 ? recent : history;
@@ -42,9 +43,9 @@ export default function PriceBadges({
   if (!items.length) return null;
 
   return (
-    <ul className="mt-4 space-y-2" data-testid="price-badges">
+    <ul className="shop-checks list-unstyled ps-0 mt-4 mb-0" data-testid="price-badges">
       {items.map((it) => (
-        <li key={it.strong} className="flex items-center gap-2.5 text-sm text-ink/75">
+        <li key={it.strong}>
           <svg
             width="16"
             height="16"
@@ -55,12 +56,12 @@ export default function PriceBadges({
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden="true"
-            className={`shrink-0 ${it.warn ? 'text-amber-500' : 'text-[#3aae5c]'}`}
+            className={it.warn ? 'shop-check-warn' : 'shop-check-ok'}
           >
             <polyline points="20 6 9 17 4 12" />
           </svg>
           <span>
-            <strong className="font-semibold text-ink">{it.strong}</strong>
+            <strong className="fw-semi-bold text-dark">{it.strong}</strong>
             {it.rest}
           </span>
         </li>

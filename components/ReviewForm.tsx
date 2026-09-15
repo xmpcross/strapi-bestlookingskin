@@ -48,19 +48,19 @@ export default function ReviewForm({ productDocumentId }: { productDocumentId: s
 
   if (state === 'done') {
     return (
-      <div className="mt-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+      <div className="shop-success mt-4" role="status">
         {message}
       </div>
     );
   }
 
   return (
-    <form onSubmit={submit} className="mt-5 rounded-xl border border-ink/12 bg-[#f5f7fd] p-5 sm:p-6">
-      <h3 className="font-display text-lg font-bold text-ink">Write a review</h3>
-      <p className="mt-1 text-sm text-ink/60">Share your experience to help other shoppers.</p>
+    <form onSubmit={submit} className="review-form mt-4 p-4">
+      <h3 className="h6 mb-1">Write a review</h3>
+      <p className="fs-7 text-600 mb-0">Share your experience to help other shoppers.</p>
 
       {/* Star picker */}
-      <div className="mt-4 flex items-center gap-1" role="radiogroup" aria-label="Your rating">
+      <div className="d-flex align-items-center gap-1 mt-3" role="radiogroup" aria-label="Your rating">
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
@@ -71,52 +71,70 @@ export default function ReviewForm({ productDocumentId }: { productDocumentId: s
             onClick={() => setRating(n)}
             onMouseEnter={() => setHover(n)}
             onMouseLeave={() => setHover(0)}
-            className="p-0.5 text-2xl leading-none transition"
+            className="review-star-btn"
           >
-            <span className={(hover || rating) >= n ? 'text-amber-400' : 'text-ink/25'}>★</span>
+            <span className={(hover || rating) >= n ? 'shop-star-on' : 'shop-star-off'}>★</span>
           </button>
         ))}
       </div>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <input
-          type="text"
-          required
-          value={authorName}
-          onChange={(e) => setAuthorName(e.target.value)}
-          placeholder="Your name"
-          className="rounded-md border border-ink/20 bg-white px-3 py-2 text-sm outline-none focus:border-primary"
-        />
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email (optional, not shown)"
-          className="rounded-md border border-ink/20 bg-white px-3 py-2 text-sm outline-none focus:border-primary"
-        />
+      <div className="row g-3 mt-1">
+        <div className="col-sm-6 col-lg-12 col-12">
+          <label htmlFor="review-name" className="fs-8 fw-semi-bold text-dark mb-1 d-block">Name *</label>
+          <input
+            id="review-name"
+            type="text"
+            required
+            value={authorName}
+            onChange={(e) => setAuthorName(e.target.value)}
+            placeholder="Your name"
+            autoComplete="name"
+            className="form-control shop-input mw-100"
+          />
+        </div>
+        <div className="col-sm-6 col-lg-12 col-12">
+          <label htmlFor="review-email" className="fs-8 fw-semi-bold text-dark mb-1 d-block">Email</label>
+          <input
+            id="review-email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email (optional, not shown)"
+            autoComplete="email"
+            className="form-control shop-input mw-100"
+          />
+        </div>
+        <div className="col-12">
+          <label htmlFor="review-title" className="fs-8 fw-semi-bold text-dark mb-1 d-block">Review title</label>
+          <input
+            id="review-title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Review title (optional)"
+            className="form-control shop-input mw-100"
+          />
+        </div>
+        <div className="col-12">
+          <label htmlFor="review-body" className="fs-8 fw-semi-bold text-dark mb-1 d-block">Review *</label>
+          <textarea
+            id="review-body"
+            required
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            placeholder="What did you think of this product?"
+            rows={4}
+            className="form-control shop-input mw-100"
+          />
+        </div>
       </div>
-      <input
-        type="text"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Review title (optional)"
-        className="mt-3 w-full rounded-md border border-ink/20 bg-white px-3 py-2 text-sm outline-none focus:border-primary"
-      />
-      <textarea
-        required
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
-        placeholder="What did you think of this product?"
-        rows={4}
-        className="mt-3 w-full resize-y rounded-md border border-ink/20 bg-white px-3 py-2 text-sm outline-none focus:border-primary"
-      />
 
-      {state === 'error' && <p className="mt-2 text-xs text-red-600">{message}</p>}
+      {state === 'error' && <p className="fs-8 shop-error mt-2 mb-0" role="alert">{message}</p>}
 
       <button
         type="submit"
         disabled={state === 'sending'}
-        className="mt-4 inline-flex items-center justify-center rounded-md bg-primary px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-emphasis disabled:opacity-60"
+        className="btn btn-dark shop-btn mt-3"
       >
         {state === 'sending' ? 'Submitting…' : 'Submit review'}
       </button>

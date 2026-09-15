@@ -44,74 +44,82 @@ export default function ContactForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-5"
+      className="bls-form"
       data-testid="contact-form"
       aria-label="Contact form"
     >
-      <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Your name" id="contact-name" required>
-          <input
-            id="contact-name"
-            type="text"
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            autoComplete="name"
-            className={inputClass}
-          />
-        </Field>
-        <Field label="Email" id="contact-email" required>
-          <input
-            id="contact-email"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
-            className={inputClass}
-          />
-        </Field>
+      <div className="row g-3">
+        <div className="col-md-6 col-12">
+          <Field label="Your name" id="contact-name" required>
+            <input
+              id="contact-name"
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoComplete="name"
+              className={inputClass}
+            />
+          </Field>
+        </div>
+        <div className="col-md-6 col-12">
+          <Field label="Email" id="contact-email" required>
+            <input
+              id="contact-email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              className={inputClass}
+            />
+          </Field>
+        </div>
+        <div className="col-12">
+          <Field label="Subject" id="contact-subject">
+            <input
+              id="contact-subject"
+              type="text"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="What’s this about?"
+              className={inputClass}
+            />
+          </Field>
+        </div>
+        <div className="col-12">
+          <Field label="Message" id="contact-message" required>
+            <textarea
+              id="contact-message"
+              required
+              rows={6}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Tell us a bit more…"
+              className={inputClass}
+            />
+          </Field>
+        </div>
       </div>
-      <Field label="Subject" id="contact-subject">
-        <input
-          id="contact-subject"
-          type="text"
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-          placeholder="What’s this about?"
-          className={inputClass}
-        />
-      </Field>
-      <Field label="Message" id="contact-message" required>
-        <textarea
-          id="contact-message"
-          required
-          rows={6}
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Tell us a bit more…"
-          className={`${inputClass} resize-y`}
-        />
-      </Field>
 
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="d-flex flex-wrap align-items-center gap-3 mt-4">
         <button
           type="submit"
-          className="inline-flex items-center rounded-full bg-primary px-6 py-3 font-display text-sm font-bold uppercase tracking-wider text-white transition hover:bg-primary-emphasis disabled:opacity-50"
+          className="btn btn-dark bls-btn"
           disabled={status === 'sending' || !name || !email || !message}
         >
           {status === 'sending' ? 'Sending...' : 'Send message'}
         </button>
         {statusMessage && (
           <p
-            className={`text-sm ${status === 'sent' ? 'text-primary' : 'text-secondary-emphasis'}`}
+            className={`fs-7 mb-0 ${status === 'sent' ? 'text-dark' : 'bls-text-danger'}`}
             role="status"
           >
             {statusMessage}{' '}
             {status === 'error' && (
               <>
                 You can also write to{' '}
-                <a href={`mailto:${CONTACT_EMAIL}`} className="font-medium text-primary hover:underline">
+                <a href={`mailto:${CONTACT_EMAIL}`} className="bls-link fw-medium">
                   {CONTACT_EMAIL}
                 </a>
                 .
@@ -120,9 +128,9 @@ export default function ContactForm() {
           </p>
         )}
       </div>
-      <p className="text-xs leading-5 text-ink/45">
+      <p className="fs-8 text-600 mt-4 mb-0">
         Your message is sent securely to our editorial inbox. Prefer email?{' '}
-        <a href={`mailto:${CONTACT_EMAIL}`} className="font-medium text-primary hover:underline">
+        <a href={`mailto:${CONTACT_EMAIL}`} className="bls-link fw-medium">
           {CONTACT_EMAIL}
         </a>
         .
@@ -131,8 +139,7 @@ export default function ContactForm() {
   );
 }
 
-const inputClass =
-  'block w-full rounded border border-ink/15 bg-[#f5f7fd] px-4 py-3 text-base text-ink placeholder:text-ink/40 transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20';
+const inputClass = 'form-control';
 
 function Field({
   label,
@@ -146,10 +153,10 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label htmlFor={id} className="block">
-      <span className="mb-2 block text-sm font-medium text-ink/80">
+    <label htmlFor={id} className="d-block">
+      <span className="d-block fs-7 fw-semi-bold text-dark mb-2">
         {label}
-        {required && <span aria-hidden className="ml-1 text-primary">*</span>}
+        {required && <span aria-hidden className="ms-1">*</span>}
       </span>
       {children}
     </label>

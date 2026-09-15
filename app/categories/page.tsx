@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { SITE } from '@/lib/site';
 import { listProductCategories, mediaUrl } from '@/lib/strapi';
+import Breadcrumb from '@/components/magzin/Breadcrumb';
 
 export const revalidate = 60;
 
@@ -17,51 +18,61 @@ export default async function CategoriesPage() {
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || a.name.localeCompare(b.name));
 
   return (
-    <section className="bg-paper py-12 sm:py-16" data-testid="categories-page">
-      <div className="mx-auto max-w-7xl px-6">
-        <header className="max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Categories</p>
-          <h1 className="mt-3 font-display font-bold tracking-tight text-ink">Product Categories</h1>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-ink/70 sm:text-lg">
-            Browse skincare by category and compare prices across merchants.
-          </p>
-        </header>
-
-        {categories.length === 0 ? (
-          <div className="mt-10 rounded-3xl border border-dashed border-ink/15 bg-white px-6 py-16 text-center text-ink/55">
-            <p className="text-base">No product categories are available yet.</p>
+    <div data-testid="categories-page">
+      <section className="sec-breadcumb">
+        <div className="container">
+          <Breadcrumb items={[{ label: 'Product categories' }]} />
+          <div className="row align-items-end">
+            <div className="col-lg-8 col-12">
+              <div className="title">
+                <h1 className="h4 mb-0 ds-4">Product Categories</h1>
+                <p className="fs-7 mb-0 mt-3">
+                  Browse skincare by category and compare prices across merchants.
+                </p>
+              </div>
+            </div>
           </div>
-        ) : (
-          <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {categories.map((c) => {
-              const image = mediaUrl(c.image ?? null);
-              return (
-                <li key={c.slug}>
-                  <Link
-                    href={`/categories/${c.slug}`}
-                    className="flex items-center gap-4 rounded-xl bg-white p-4 ring-1 ring-ink/10 transition hover:ring-primary/40"
-                  >
-                    <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-paper">
-                      {image ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={image} alt={c.name} className="h-full w-full object-contain p-1.5" />
-                      ) : (
-                        <span className="text-xl">{c.icon ?? '🧴'}</span>
-                      )}
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block font-display font-semibold text-ink">{c.name}</span>
-                      {c.description && (
-                        <span className="mt-0.5 line-clamp-1 block text-sm text-ink/60">{c.description}</span>
-                      )}
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
-    </section>
+        </div>
+      </section>
+
+      <section className="pt-5 pb-70">
+        <div className="container">
+          {categories.length === 0 ? (
+            <div className="shop-empty">
+              <p className="mb-0">No product categories are available yet.</p>
+            </div>
+          ) : (
+            <ul className="row g-3 list-unstyled ps-0 mb-0">
+              {categories.map((c) => {
+                const image = mediaUrl(c.image ?? null);
+                return (
+                  <li key={c.slug} className="col-lg-4 col-md-6 col-12">
+                    <Link
+                      href={`/categories/${c.slug}`}
+                      className="shop-cat-card d-flex align-items-center gap-3 rounded-16 p-3 h-100"
+                    >
+                      <span className="shop-cat-icon">
+                        {image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={image} alt={c.name} />
+                        ) : (
+                          <span aria-hidden>{c.icon ?? '🧴'}</span>
+                        )}
+                      </span>
+                      <span className="d-block" style={{ minWidth: 0 }}>
+                        <span className="d-block fs-6 fw-semi-bold text-dark">{c.name}</span>
+                        {c.description && (
+                          <span className="d-block fs-8 text-600 mt-1 text-truncate-1">{c.description}</span>
+                        )}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </section>
+    </div>
   );
 }

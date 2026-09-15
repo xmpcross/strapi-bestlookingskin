@@ -5,6 +5,24 @@ import { postPath, firstImageUrl } from '@/lib/format';
 
 type Tag = { label: string; href?: string };
 
+function Card({ post, side }: { post: BlsPost; side: 'prev' | 'next' }) {
+  const img = mediaUrl(post.coverImage ?? null) ?? firstImageUrl(post.content ?? '');
+  return (
+    <Link href={postPath(post)} className={`d-flex align-items-center gap-3 ${side === 'next' ? 'flex-sm-row-reverse text-sm-end' : ''}`}>
+      {img ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={img} alt="" className="rounded-8" style={{ width: 64, height: 64, objectFit: 'cover', flexShrink: 0 }} loading="lazy" />
+      ) : (
+        <span className="rounded-8 bg-100" style={{ width: 64, height: 64, flexShrink: 0 }} />
+      )}
+      <span>
+        <span className="d-block fs-8 text-600">{side === 'prev' ? 'Previous article' : 'Next article'}</span>
+        <span className="d-block fs-6 fw-semi-bold text-dark mt-1 text-truncate-2">{post.title}</span>
+      </span>
+    </Link>
+  );
+}
+
 /**
  * End-of-article furniture: tags and share buttons, then previous/next posts.
  *
@@ -40,23 +58,6 @@ export default function PostFooterNav({
       path: 'M6.94 5a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM3.2 8.5h3.5V21H3.2V8.5Zm5.8 0h3.35v1.7h.05c.47-.85 1.6-1.75 3.3-1.75 3.53 0 4.2 2.2 4.2 5.06V21h-3.5v-6.1c0-1.46-.03-3.34-2.1-3.34-2.1 0-2.42 1.6-2.42 3.24V21H9V8.5Z' },
   ];
 
-  const Card = ({ post, side }: { post: BlsPost; side: 'prev' | 'next' }) => {
-    const img = mediaUrl(post.coverImage ?? null) ?? firstImageUrl(post.content ?? '');
-    return (
-      <Link href={postPath(post)} className={`d-flex align-items-center gap-3 ${side === 'next' ? 'flex-sm-row-reverse text-sm-end' : ''}`}>
-        {img ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={img} alt="" className="rounded-8" style={{ width: 64, height: 64, objectFit: 'cover', flexShrink: 0 }} loading="lazy" />
-        ) : (
-          <span className="rounded-8 bg-100" style={{ width: 64, height: 64, flexShrink: 0 }} />
-        )}
-        <span>
-          <span className="d-block fs-8 text-600">{side === 'prev' ? 'Previous article' : 'Next article'}</span>
-          <span className="d-block fs-6 fw-semi-bold text-dark mt-1 text-truncate-2">{post.title}</span>
-        </span>
-      </Link>
-    );
-  };
 
   return (
     <div data-testid="post-footer-nav">

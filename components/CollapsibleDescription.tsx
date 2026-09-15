@@ -39,22 +39,21 @@ export default function CollapsibleDescription({ children }: { children: React.R
     <div>
       <div
         ref={ref}
-        className="relative overflow-hidden transition-[max-height] duration-300"
+        className="shop-collapse"
         style={clamp ? { maxHeight: maxH } : undefined}
       >
         {children}
-        {clamp && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white to-transparent" />
-        )}
+        {clamp && <div className="shop-collapse-fade" />}
       </div>
       {overflows && (
         <button
           type="button"
           onClick={() => setCollapsed((c) => !c)}
-          className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
+          aria-expanded={!collapsed}
+          className="shop-more-btn mt-3"
         >
           {collapsed ? 'View more' : 'View less'}
-          <span aria-hidden className={collapsed ? '' : 'rotate-180'}>▾</span>
+          <span aria-hidden className={`caret ${collapsed ? '' : 'is-flipped'}`}>▾</span>
         </button>
       )}
     </div>

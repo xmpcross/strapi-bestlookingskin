@@ -28,7 +28,7 @@ export default function Page() {
 
       {/* 1. Why */}
       <h3>1. Why do we use &quot;cookies&quot; and other web-use tracking technologies?</h3>
-      <ol className="list-[lower-alpha] pl-6 space-y-3">
+      <ol className="legal-list-alpha">
         <li>
           When you access our Website, small files containing a unique identification (ID) number
           may be downloaded by your web browser and stored in the cache of your computer. The purpose
@@ -44,7 +44,7 @@ export default function Page() {
         <li>
           We collect information using &quot;cookies&quot; and other tracking technologies for the
           following reasons:
-          <ol className="mt-2 list-[lower-roman] pl-6 space-y-1">
+          <ol className="legal-list-roman mt-2">
             <li>to help us monitor the performance of our Website so that we can improve the operation of the Website and the services we offer;</li>
             <li>to provide personalised services to each user of our Website to make their navigation easier and more rewarding;</li>
             <li>to sell advertising on the Website in order to meet some of the costs of operating the Website and improve the content; and</li>
@@ -78,7 +78,7 @@ export default function Page() {
         non-essential cookies, only Strictly Necessary cookies are set before you make a choice.
         Other categories load only after you grant consent through our cookie banner.
       </p>
-      <ol className="list-[lower-alpha] pl-6 space-y-3">
+      <ol className="legal-list-alpha">
         <li>
           <strong>Strictly necessary.</strong> Required for the Website to function — session
           handling, security, load balancing and remembering your cookie-consent choice itself.
@@ -110,7 +110,7 @@ export default function Page() {
         We may use cookies set by the following categories of third parties (full list available on
         request):
       </p>
-      <ol className="list-[lower-alpha] pl-6 space-y-1">
+      <ol className="legal-list-alpha">
         <li>Hosting and content delivery (CDN) providers.</li>
         <li>Analytics providers (e.g. Google Analytics, Plausible, Cloudflare Web Analytics).</li>
         <li>Affiliate-program platforms (e.g. Amazon Associates).</li>
@@ -125,7 +125,7 @@ export default function Page() {
 
       {/* 5. Managing your consent */}
       <h3>5. How to manage your consent</h3>
-      <ol className="list-[lower-alpha] pl-6 space-y-2">
+      <ol className="legal-list-alpha">
         <li>
           <strong>Cookie banner.</strong> If you are visiting from the EEA, UK, Switzerland, or a
           jurisdiction with similar requirements, our cookie banner asks for your consent before any
@@ -153,7 +153,7 @@ export default function Page() {
 
       {/* 6. Per-browser instructions */}
       <h3>6. Browser-specific opt-out</h3>
-      <ol className="list-[lower-alpha] pl-6 space-y-1">
+      <ol className="legal-list-alpha">
         <li>
           <a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener noreferrer">
             Google Chrome
@@ -204,7 +204,7 @@ export default function Page() {
         <a href="mailto:privacy@bestlooking.skin">privacy@bestlooking.skin</a>.
       </p>
 
-      <p className="mt-10 text-sm text-ink/55">
+      <p className="mt-5 fs-7 text-600">
         This Cookie Policy is provided as a general template covering ePrivacy/GDPR (EU/UK) and CCPA
         (US) requirements. It does not constitute legal advice and assumes a working cookie-consent
         banner is deployed on the Website. For a fully audited document tailored to your specific

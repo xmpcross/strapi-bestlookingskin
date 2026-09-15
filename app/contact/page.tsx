@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { SITE } from '@/lib/site';
 import ContactForm from '@/components/ContactForm';
+import Breadcrumb from '@/components/magzin/Breadcrumb';
 
 export const metadata: Metadata = {
   title: 'Contact Us',
@@ -11,60 +12,75 @@ export const metadata: Metadata = {
 
 const CONTACT_EMAIL = 'hello@bestlooking.skin';
 
+/*
+ * Magzin "Contact" layout, minus the template's map, street address, phone numbers and opening hours:
+ * the site has none of those, so only the real inbox and the form are shown.
+ */
 export default function ContactPage() {
   return (
     <div data-testid="contact-page">
-      <section className="bg-paper">
-        <div className="mx-auto max-w-7xl py-16 lg:py-24">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Contact</p>
-          <h1 className="mt-4 font-display font-bold leading-[1.05] tracking-tight text-ink">
-            Get in touch.
-          </h1>
-          <p className="mt-6 max-w-2xl text-base leading-7 text-ink/70 sm:text-lg">
-            Story tips, partnership questions, corrections, or just hello — we read everything that
-            comes through. Pick the channel that fits.
-          </p>
+      <section className="sec-breadcumb">
+        <div className="container">
+          <Breadcrumb items={[{ label: 'Contact' }]} />
+          <div className="row align-items-end">
+            <div className="col-lg-8 col-12">
+              <div className="title">
+                <p className="bls-eyebrow mb-3">Contact</p>
+                <h1 className="h3 mb-0">Get in touch.</h1>
+                <p className="bls-page-lead mt-3 mb-0">
+                  Story tips, partnership questions, corrections, or just hello — we read everything that
+                  comes through. Pick the channel that fits.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="bg-white py-16 sm:py-20">
-        <div className="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-[1fr_1.4fr] lg:gap-16">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Send a message</p>
-            <h2 className="mt-3 font-display font-bold tracking-tight text-ink">
-              Tell us what’s on your mind.
-            </h2>
-            <p className="mt-4 text-base leading-7 text-ink/70">
-              Fill in the form and we’ll get back to you. Your message goes straight to our
-              editorial inbox so we can reply from the right place.
-            </p>
-            <p className="mt-6 text-sm text-ink/55">
-              Prefer email?{' '}
-              <a href="mailto:hello@bestlooking.skin" className="font-medium text-primary hover:underline">
-                hello@bestlooking.skin
-              </a>
-            </p>
-          </div>
-          <div className="rounded border border-ink/10 bg-white p-6 sm:p-10">
-            <ContactForm />
+      <section className="sec-padding">
+        <div className="container">
+          <div className="row g-5">
+            <div className="col-lg-5 col-12">
+              <p className="bls-eyebrow mb-2">Send a message</p>
+              <h2 className="h4 mb-3">Tell us what’s on your mind.</h2>
+              <p>
+                Fill in the form and we’ll get back to you. Your message goes straight to our
+                editorial inbox so we can reply from the right place.
+              </p>
+              <p className="fs-7 text-600 mt-4 mb-0">
+                Prefer email?{' '}
+                <a href="mailto:hello@bestlooking.skin" className="bls-link fw-medium">
+                  hello@bestlooking.skin
+                </a>
+              </p>
+            </div>
+            <div className="col-lg-7 col-12">
+              <div className="bls-panel p-4 p-md-5">
+                <ContactForm />
+              </div>
+            </div>
           </div>
         </div>
+      </section>
 
-        <div className="mx-auto mt-16 max-w-3xl px-6 text-center">
-          <h2 className="font-display font-bold tracking-tight text-ink">Looking for something specific?</h2>
-          <p className="mx-auto mt-3 max-w-xl text-base leading-7 text-ink/70">
-            Browse the full archive or jump to a section.
-          </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link href="/" className="inline-flex items-center rounded-full bg-primary px-5 py-2.5 font-display text-sm font-bold uppercase tracking-wider text-white transition hover:bg-primary-emphasis">
-              Home
-            </Link>
-            <Link href="/sitemap" className="inline-flex items-center rounded-full border border-ink/15 px-5 py-2.5 font-display text-sm font-bold uppercase tracking-wider text-ink transition hover:border-primary hover:text-primary">
-              Site map
-            </Link>
-            <Link href="/about" className="inline-flex items-center rounded-full border border-ink/15 px-5 py-2.5 font-display text-sm font-bold uppercase tracking-wider text-ink transition hover:border-primary hover:text-primary">
-              About us
-            </Link>
+      <section className="pb-70">
+        <div className="container">
+          <div className="row">
+            <div className="col-lg-8 col-12 text-center mx-auto">
+              <h2 className="h5 mb-2">Looking for something specific?</h2>
+              <p className="mb-0">Browse the full archive or jump to a section.</p>
+              <div className="d-flex flex-wrap justify-content-center gap-2 mt-4">
+                <Link href="/" className="btn btn-dark bls-btn">
+                  Home
+                </Link>
+                <Link href="/sitemap" className="btn bls-btn bls-btn-outline">
+                  Site map
+                </Link>
+                <Link href="/about" className="btn bls-btn bls-btn-outline">
+                  About us
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>

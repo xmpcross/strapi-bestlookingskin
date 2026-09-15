@@ -62,23 +62,19 @@ export default function PriceAlertForm({
   }
 
   // Shared sizing so the two buttons are identical in width + height.
-  const btnBase =
-    'inline-flex flex-1 basis-0 min-w-[130px] items-center justify-center gap-1.5 rounded-md px-3 py-2 font-display text-[11px] font-bold uppercase tracking-wider transition';
+  const btnBase = 'btn shop-btn';
+  const btnSize = { flex: '1 1 0', minWidth: 130 };
 
   return (
     <div className="mt-4">
-      <div className="flex flex-wrap gap-2">
+      <div className="d-flex flex-wrap gap-2">
         {productDocumentId && (
           <button
             type="button"
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
-            className={
-              `${btnBase} border ` +
-              (open
-                ? 'border-primary text-primary'
-                : 'border-ink/20 text-ink/80 hover:border-primary hover:text-primary')
-            }
+            className={`${btnBase} shop-btn-outline`}
+            style={btnSize}
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -92,7 +88,8 @@ export default function PriceAlertForm({
             href={buyHref}
             target="_blank"
             rel="noopener noreferrer sponsored"
-            className={`${btnBase} bg-primary text-white hover:bg-primary-emphasis`}
+            className={`${btnBase} btn-dark`}
+            style={btnSize}
           >
             Buy For Best Price
           </a>
@@ -100,28 +97,34 @@ export default function PriceAlertForm({
       </div>
 
       {state === 'done' ? (
-        <div className="mt-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+        <div className="shop-success mt-3" role="status">
           {message}
         </div>
       ) : (
         open && productDocumentId && (
-          <form onSubmit={submit} className="mt-3 rounded-lg border border-ink/15 bg-paper/50 p-4">
-            <p className="text-sm font-medium text-ink">Get notified when the price drops</p>
-            <p className="mt-1 text-xs text-ink/60">
+          <form onSubmit={submit} className="review-form mt-3 p-3">
+            <p className="fs-7 fw-semi-bold text-dark mb-1">Get notified when the price drops</p>
+            <p className="fs-8 text-600 mb-3">
               We&rsquo;ll email you once when this product reaches your target price.
             </p>
-            <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <div className="d-flex flex-column flex-sm-row gap-2">
+              <label htmlFor="price-alert-email" className="visually-hidden">Email address</label>
               <input
+                id="price-alert-email"
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@email.com"
-                className="min-w-0 flex-1 rounded-md border border-ink/20 px-3 py-2 text-sm outline-none focus:border-primary"
+                autoComplete="email"
+                className="form-control shop-input mw-100 flex-grow-1"
+                style={{ minWidth: 0 }}
               />
-              <div className="flex items-center rounded-md border border-ink/20 px-3 py-2 focus-within:border-primary">
-                {symbol && <span className="text-sm text-ink/50">{symbol}</span>}
+              <label htmlFor="price-alert-target" className="visually-hidden">Target price{symbol ? ` (${currency})` : ''}</label>
+              <div className="form-control shop-input d-flex align-items-center gap-1" style={{ width: 'auto' }}>
+                {symbol && <span className="fs-7 text-500" aria-hidden>{symbol}</span>}
                 <input
+                  id="price-alert-target"
                   type="number"
                   required
                   min="0"
@@ -129,18 +132,19 @@ export default function PriceAlertForm({
                   value={target}
                   onChange={(e) => setTarget(e.target.value)}
                   placeholder="Target"
-                  className="w-24 min-w-0 bg-transparent text-sm outline-none"
+                  className="fs-7 border-0 bg-transparent"
+                  style={{ width: '6rem', minWidth: 0, outline: 'none' }}
                 />
               </div>
               <button
                 type="submit"
                 disabled={state === 'sending'}
-                className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+                className="btn btn-dark shop-btn"
               >
                 {state === 'sending' ? 'Saving…' : 'Notify me'}
               </button>
             </div>
-            {state === 'error' && <p className="mt-2 text-xs text-red-600">{message}</p>}
+            {state === 'error' && <p className="fs-8 shop-error mt-2 mb-0" role="alert">{message}</p>}
           </form>
         )
       )}

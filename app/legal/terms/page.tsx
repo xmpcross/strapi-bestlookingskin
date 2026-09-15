@@ -15,7 +15,7 @@ export default function Page() {
     <LegalArticle pageKey="terms" title="Website Terms and Conditions of Use" modified={MODIFIED}>
       {/* 1. About the Website */}
       <h3>1. About the Website</h3>
-      <ol className="list-[lower-alpha] pl-6 space-y-3">
+      <ol className="legal-list-alpha">
         <li>
           Welcome to <a href="https://www.bestlooking.skin">www.bestlooking.skin</a> (<strong>Website</strong>).
           The Website provides product comparisons, reviews, how-to guides, top-rated products and
@@ -48,7 +48,7 @@ export default function Page() {
 
       {/* 3. Copyright and Intellectual Property */}
       <h3>3. Copyright and Intellectual Property</h3>
-      <ol className="list-[lower-alpha] pl-6 space-y-3">
+      <ol className="legal-list-alpha">
         <li>
           The Website, the content and all of the related products of FXN Holdings are subject to
           copyright. The material on the Website is protected by copyright under the laws of
@@ -62,7 +62,7 @@ export default function Page() {
           All trademarks, service marks and trade names are owned, registered and/or licensed by FXN
           Holdings, who grants to you a worldwide, non-exclusive, royalty-free, revocable license
           whilst you are a Member to:
-          <ol className="mt-2 list-[lower-roman] pl-6 space-y-1">
+          <ol className="legal-list-roman mt-2">
             <li>use the Website pursuant to the Terms;</li>
             <li>copy and store the Website and the material contained in the Website in your device&apos;s cache memory; and</li>
             <li>print pages from the Website for your own personal and non-commercial use.</li>
@@ -75,7 +75,7 @@ export default function Page() {
         <li>
           FXN Holdings retains all rights, title and interest in and to the Website and all related
           content. Nothing you do on or in relation to the Website will transfer any:
-          <ol className="mt-2 list-[lower-roman] pl-6 space-y-1">
+          <ol className="legal-list-roman mt-2">
             <li>business name, trading name, domain name, trade mark, industrial design, patent, registered design or copyright, or</li>
             <li>a right to use or exploit a business name, trading name, domain name, trade mark or industrial design, or</li>
             <li>a thing, system or process that is the subject of a patent, registered design or copyright (or an adaptation or modification of such a thing, system or process),</li>
@@ -102,7 +102,7 @@ export default function Page() {
 
       {/* 5. General Disclaimer */}
       <h3>5. General Disclaimer</h3>
-      <ol className="list-[lower-alpha] pl-6 space-y-3">
+      <ol className="legal-list-alpha">
         <li>
           Nothing in the Terms limits or excludes any guarantees, warranties, representations or
           conditions implied or imposed by law, including the Australian Consumer Law (or any
@@ -110,7 +110,7 @@ export default function Page() {
         </li>
         <li>
           Subject to this clause 5, and to the extent permitted by law:
-          <ol className="mt-2 list-[lower-roman] pl-6 space-y-1">
+          <ol className="legal-list-roman mt-2">
             <li>all terms, guarantees, warranties, representations or conditions which are not expressly stated in the Terms are excluded; and</li>
             <li>FXN Holdings will not be liable for any special, indirect or consequential loss or damage (unless such loss or damage is reasonably foreseeable resulting from our failure to meet an applicable Consumer Guarantee), loss of profit or opportunity, or damage to goodwill arising out of or in connection with the content or these Terms (including as a result of not being able to use the content or the late supply of the content), whether at common law, under contract, tort (including negligence), in equity, pursuant to statute or otherwise.</li>
           </ol>
@@ -123,7 +123,7 @@ export default function Page() {
           warranty about the content or any products or content (including the products or content of
           FXN Holdings) referred to on the Website. This includes (but is not restricted to) loss or
           damage you might suffer as a result of any of the following:
-          <ol className="mt-2 list-[lower-roman] pl-6 space-y-1">
+          <ol className="legal-list-roman mt-2">
             <li>failure of performance, error, omission, interruption, deletion, defect, failure to correct defects, delay in operation or transmission, computer virus or other harmful component, loss of data, communication line failure, unlawful third party conduct, or theft, destruction, alteration or unauthorised access to records;</li>
             <li>the accuracy, suitability or currency of any information on the Website, the content, or any of its content related products (including third party material and advertisements on the Website);</li>
             <li>costs incurred as a result of you using the Website, the content or any of the products of FXN Holdings; and</li>
@@ -134,7 +134,7 @@ export default function Page() {
 
       {/* 6. Limitation of liability */}
       <h3>6. Limitation of liability</h3>
-      <ol className="list-[lower-alpha] pl-6 space-y-3">
+      <ol className="legal-list-alpha">
         <li>
           FXN Holdings&apos;s total liability arising out of or in connection with the content or
           these Terms, however arising, including under contract, tort (including negligence), in
@@ -157,7 +157,7 @@ export default function Page() {
 
       {/* 7. Termination of Contract */}
       <h3>7. Termination of Contract</h3>
-      <ol className="list-[lower-alpha] pl-6 space-y-3">
+      <ol className="legal-list-alpha">
         <li>
           If you want to terminate the Terms, you may do so by providing FXN Holdings with days&apos;
           notice of your intention to terminate by sending notice of your intention to terminate to
@@ -165,7 +165,7 @@ export default function Page() {
         </li>
         <li>
           FXN Holdings may at any time, terminate the Terms with you if:
-          <ol className="mt-2 list-[lower-roman] pl-6 space-y-1">
+          <ol className="legal-list-roman mt-2">
             <li>you have breached any provision of the Terms or intend to breach any provision;</li>
             <li>FXN Holdings is required to do so by law;</li>
             <li>FXN Holdings is transitioning to no longer providing the Services to Members in the country in which you are resident or from which you use the service; or</li>
@@ -194,7 +194,7 @@ export default function Page() {
         You agree to indemnify FXN Holdings, its affiliates, employees, agents, contributors, third
         party content providers and licensors from and against:
       </p>
-      <ol className="list-[lower-alpha] pl-6 space-y-2">
+      <ol className="legal-list-alpha">
         <li>all actions, suits, claims, demands, liabilities, costs, expenses, loss and damage (including legal fees on a full indemnity basis) incurred, suffered or arising out of or in connection with your content;</li>
         <li>any direct or indirect consequences of you accessing, using or transacting on the Website or attempts to do so; and/or</li>
         <li>any breach of the Terms.</li>
@@ -221,7 +221,7 @@ export default function Page() {
         On receipt of that notice (<strong>Notice</strong>) by that other party, the parties to the
         Terms (<strong>Parties</strong>) must:
       </p>
-      <ol className="list-[lower-alpha] pl-6 space-y-2">
+      <ol className="legal-list-alpha">
         <li>Within 28 days of the Notice endeavour in good faith to resolve the Dispute expeditiously by negotiation or such other means upon which they may mutually agree;</li>
         <li>If for any reason whatsoever, 28 days after the date of the Notice, the Dispute has not been resolved, the Parties must either agree upon selection of a mediator or request that an appropriate mediator be appointed by the Resolution Institute;</li>
         <li>The Parties are equally liable for the fees and reasonable expenses of a mediator and the cost of the venue of the mediation and without limiting the foregoing undertake to pay any amounts requested by the mediator as a precondition to the mediation commencing. The Parties must each pay their own costs associated with the mediation;</li>

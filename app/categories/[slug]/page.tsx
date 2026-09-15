@@ -5,6 +5,7 @@ import { SITE } from '@/lib/site';
 import { listProductCategories, listProductCategoryCounts, listProducts, mediaUrl } from '@/lib/strapi';
 import ProductCard from '@/components/ProductCard';
 import ShopFilters, { type Facet, type ShopFilterState } from '@/components/ShopFilters';
+import Breadcrumb from '@/components/magzin/Breadcrumb';
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -127,90 +128,88 @@ export default async function CategoryPage({
     .filter((f) => f.count > 0);
 
   return (
-    <section className="bg-paper py-12 sm:py-16" data-testid={`category-page-${category.slug}`}>
-      <div className="mx-auto max-w-7xl px-6">
-        <nav className="text-sm text-ink/55" aria-label="Breadcrumb">
-          <Link href="/products" className="hover:text-primary">Products</Link>
-          <span className="px-1.5">/</span>
-          <span className="text-ink/75">{category.name}</span>
-        </nav>
+    <div data-testid={`category-page-${category.slug}`}>
+      <section className="sec-breadcumb">
+        <div className="container">
+          <Breadcrumb items={[{ label: 'Products', href: '/products' }, { label: category.name }]} />
+          <div className="row align-items-end">
+            <div className="col-lg-8 col-12">
+              <div className="title d-flex flex-column flex-sm-row align-items-sm-center gap-3">
+                {image && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={image} alt={category.name} className="shop-logo" />
+                )}
+                <h1 className="h4 mb-0 ds-4">{category.name}</h1>
+              </div>
+              {category.description && <p className="fs-7 mb-0 mt-3">{category.description}</p>}
+              {category.children && category.children.length > 0 && (
+                <ul className="list-unstyled ps-0 d-flex flex-wrap gap-2 mt-3 mb-0">
+                  {category.children.map((c) => (
+                    <li key={c.slug}>
+                      <Link href={`/categories/${c.slug}`} className="tag-item shop-chip">
+                        <span>{c.name}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
 
-        <header className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
-          {image && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={image}
-              alt={category.name}
-              className="h-16 w-16 shrink-0 rounded-lg bg-white object-contain p-2 ring-1 ring-ink/10"
-            />
-          )}
-          <h1 className="font-display font-bold tracking-tight text-ink">{category.name}</h1>
-        </header>
+      <section className="pt-5 pb-70">
+        <div className="container">
+          {/* shop2 arrangement: a narrow filter rail left, the grid right. Three
+              across at xl and two from sm, matching the template's 4/12 tiles --
+              four across left the cards too narrow for a full product name once
+              the rail took its quarter. */}
+          <div className="row g-5">
+            <div className="col-lg-3 col-12">
+              <ShopFilters
+                basePath={basePath}
+                state={state}
+                categories={categoryCounts}
+                brands={brands}
+                ratings={ratings}
+                prices={prices}
+                activeCategorySlug={category.slug}
+              />
+            </div>
 
-        {category.description && (
-          <p className="mt-4 max-w-3xl text-base leading-7 text-ink/70">{category.description}</p>
-        )}
+            <div className="col-lg-9 col-12">
+              <div className="shop-toolbar d-flex flex-wrap align-items-baseline justify-content-between gap-3 pb-3">
+                <h2 className="h5 mb-0">
+                  {products.length > 0
+                    ? `${products.length} ${products.length === 1 ? 'product' : 'products'}`
+                    : 'Products'}
+                </h2>
+                {products.length !== all.length && (
+                  <p className="fs-7 text-600 m-0">
+                    filtered from {all.length}
+                  </p>
+                )}
+              </div>
 
-        {category.children && category.children.length > 0 && (
-          <ul className="mt-5 flex flex-wrap gap-2">
-            {category.children.map((c) => (
-              <li key={c.slug}>
-                <Link
-                  href={`/categories/${c.slug}`}
-                  className="rounded-full bg-white px-3 py-1 text-xs font-medium text-ink/75 ring-1 ring-ink/10 transition hover:text-primary"
-                >
-                  {c.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        {/* shop2 arrangement: a narrow filter rail left, the grid right. Three
-            across at xl and two from sm, matching the template's 4/12 tiles --
-            four across left the cards too narrow for a full product name once
-            the rail took its quarter. */}
-        <div className="mt-10 grid gap-10 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-12">
-          <ShopFilters
-            basePath={basePath}
-            state={state}
-            categories={categoryCounts}
-            brands={brands}
-            ratings={ratings}
-            prices={prices}
-            activeCategorySlug={category.slug}
-          />
-
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-ink/10 pb-4">
-              <h2 className="font-display text-xl font-bold text-ink">
-                {products.length > 0
-                  ? `${products.length} ${products.length === 1 ? 'product' : 'products'}`
-                  : 'Products'}
-              </h2>
-              {products.length !== all.length && (
-                <p className="text-[13px] text-ink/55">
-                  filtered from {all.length}
+              {products.length > 0 ? (
+                <div className="row g-3 g-md-4 mt-2">
+                  {products.map((p) => (
+                    <div className="col-xl-4 col-sm-6 col-12" key={p.id}>
+                      <ProductCard product={p} variant="tile" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-600 mt-4">
+                  {all.length > 0
+                    ? 'No products match these filters.'
+                    : 'No products yet in this category.'}
                 </p>
               )}
             </div>
-
-            {products.length > 0 ? (
-              <div className="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-3">
-                {products.map((p) => (
-                  <ProductCard key={p.id} product={p} variant="tile" />
-                ))}
-              </div>
-            ) : (
-              <p className="mt-6 italic text-ink/50">
-                {all.length > 0
-                  ? 'No products match these filters.'
-                  : 'No products yet in this category.'}
-              </p>
-            )}
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }

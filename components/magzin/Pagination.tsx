@@ -1,5 +1,21 @@
 import Link from 'next/link';
 
+const Arrow = ({ dir }: { dir: 'prev' | 'next' }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={22} height={22} viewBox="0 0 22 22" fill="none" aria-hidden>
+    {dir === 'prev' ? (
+      <>
+        <path d="M9.49993 6.5L4.78564 11L9.49993 15.5" stroke="#0E0E0F" strokeWidth="1.28571" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M17.2143 11H5" stroke="#0E0E0F" strokeWidth="1.28571" strokeLinecap="round" strokeLinejoin="round" />
+      </>
+    ) : (
+      <>
+        <path d="M12.5 6.5L17.2143 11L12.5 15.5" stroke="#0E0E0F" strokeWidth="1.28571" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M16.9999 11H4.78564" stroke="#0E0E0F" strokeWidth="1.28571" strokeLinecap="round" strokeLinejoin="round" />
+      </>
+    )}
+  </svg>
+);
+
 /* Server-rendered numbered pagination (Magzin style). Page 1 links to the bare path. */
 export default function Pagination({ basePath, page, pageCount }: { basePath: string; page: number; pageCount: number }) {
   if (pageCount <= 1) return null;
@@ -9,21 +25,6 @@ export default function Pagination({ basePath, page, pageCount }: { basePath: st
     if (n === 1 || n === pageCount || Math.abs(n - page) <= 1) items.push(n);
     else if (items.at(-1) !== '…') items.push('…');
   }
-  const Arrow = ({ dir }: { dir: 'prev' | 'next' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={22} height={22} viewBox="0 0 22 22" fill="none" aria-hidden>
-      {dir === 'prev' ? (
-        <>
-          <path d="M9.49993 6.5L4.78564 11L9.49993 15.5" stroke="#0E0E0F" strokeWidth="1.28571" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M17.2143 11H5" stroke="#0E0E0F" strokeWidth="1.28571" strokeLinecap="round" strokeLinejoin="round" />
-        </>
-      ) : (
-        <>
-          <path d="M12.5 6.5L17.2143 11L12.5 15.5" stroke="#0E0E0F" strokeWidth="1.28571" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M16.9999 11H4.78564" stroke="#0E0E0F" strokeWidth="1.28571" strokeLinecap="round" strokeLinejoin="round" />
-        </>
-      )}
-    </svg>
-  );
   return (
     <nav aria-label="Pages">
       <ul className="pagination gap-2">

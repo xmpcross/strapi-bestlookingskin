@@ -55,6 +55,7 @@ export default function CookieConsent() {
   useEffect(() => {
     const existing = readStoredConsent();
     if (!existing) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- stored consent is browser-only, read once on mount.
       setOpen(true);
       setView('banner');
     } else {
@@ -98,24 +99,24 @@ export default function CookieConsent() {
       role="dialog"
       aria-modal="true"
       aria-labelledby="cookie-consent-title"
-      className="fixed inset-x-0 bottom-0 z-[100] px-4 pb-4 sm:px-6 sm:pb-6"
+      className="bls-cookie"
       data-testid="cookie-consent"
     >
-      <div className="mx-auto max-w-4xl rounded-2xl border border-ink/15 bg-paper p-5 shadow-2xl shadow-ink/15 sm:p-6">
+      <div className="bls-cookie-panel">
         {view === 'banner' ? (
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
-            <div className="flex-1 text-sm text-ink">
-              <p id="cookie-consent-title" className="font-semibold">We use cookies</p>
-              <p className="mt-1 text-ink/75">
+          <div className="d-flex flex-column flex-md-row align-items-md-center gap-3">
+            <div className="flex-grow-1">
+              <p id="cookie-consent-title" className="fw-semi-bold text-dark">We use cookies</p>
+              <p className="bls-cookie-muted mt-1">
                 BestLooking.Skin uses essential cookies to run the site. With your permission we may also use cookies for analytics and personalised advertising.
-                Read our <Link href="/legal/cookies" className="underline hover:text-primary">Cookie Policy</Link> for details.
+                Read our <Link href="/legal/cookies">Cookie Policy</Link> for details.
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+            <div className="bls-cookie-actions d-flex flex-wrap flex-md-nowrap align-items-center gap-2 flex-shrink-0">
               <button
                 type="button"
                 onClick={() => setView('settings')}
-                className="inline-flex h-10 items-center rounded-full border border-ink/20 bg-white px-4 text-sm font-medium text-ink transition hover:border-ink/40"
+                className="btn bls-btn-sm bls-btn-outline"
                 data-testid="cookie-consent-settings"
               >
                 Settings
@@ -123,7 +124,7 @@ export default function CookieConsent() {
               <button
                 type="button"
                 onClick={rejectAll}
-                className="inline-flex h-10 items-center rounded-full border border-ink/20 bg-white px-4 text-sm font-medium text-ink transition hover:border-ink/40"
+                className="btn bls-btn-sm bls-btn-outline"
                 data-testid="cookie-consent-reject"
               >
                 Reject all
@@ -131,7 +132,7 @@ export default function CookieConsent() {
               <button
                 type="button"
                 onClick={acceptAll}
-                className="inline-flex h-10 items-center rounded-full bg-primary px-4 text-sm font-semibold text-white transition hover:bg-primary-emphasis"
+                className="btn btn-dark bls-btn-sm"
                 data-testid="cookie-consent-accept"
               >
                 Accept all
@@ -139,80 +140,77 @@ export default function CookieConsent() {
             </div>
           </div>
         ) : (
-          <div className="text-sm text-ink">
-            <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="d-flex align-items-start justify-content-between gap-3">
               <div>
-                <p id="cookie-consent-title" className="font-semibold">Cookie settings</p>
-                <p className="mt-1 text-ink/75">
+                <p id="cookie-consent-title" className="fw-semi-bold text-dark">Cookie settings</p>
+                <p className="bls-cookie-muted mt-1">
                   Choose which categories of cookies you allow. You can change these any time.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setView('banner')}
-                className="text-xs uppercase tracking-widest text-ink/60 hover:text-ink"
+                className="bls-cookie-back flex-shrink-0"
                 aria-label="Back"
               >
                 Back
               </button>
             </div>
 
-            <ul className="mt-4 space-y-3">
-              <li className="flex items-start justify-between gap-4 rounded-xl border border-ink/10 bg-white p-3">
+            <ul className="list-unstyled d-flex flex-column gap-2 m-0 mt-3 p-0">
+              <li className="bls-cookie-option d-flex align-items-start justify-content-between gap-3">
                 <div>
-                  <p className="font-medium">Essential</p>
-                  <p className="mt-1 text-ink/70">Required for the site to function (security, navigation, consent storage). Always on.</p>
+                  <p className="fw-medium text-dark">Essential</p>
+                  <p className="bls-cookie-muted mt-1">Required for the site to function (security, navigation, consent storage). Always on.</p>
                 </div>
                 <input
                   type="checkbox"
                   checked
                   disabled
                   aria-label="Essential cookies (required)"
-                  className="mt-1 h-4 w-4 accent-primary"
                 />
               </li>
-              <li className="flex items-start justify-between gap-4 rounded-xl border border-ink/10 bg-white p-3">
+              <li className="bls-cookie-option d-flex align-items-start justify-content-between gap-3">
                 <div>
-                  <p className="font-medium">Analytics</p>
-                  <p className="mt-1 text-ink/70">Help us understand how readers use the site so we can improve content and navigation.</p>
+                  <p className="fw-medium text-dark">Analytics</p>
+                  <p className="bls-cookie-muted mt-1">Help us understand how readers use the site so we can improve content and navigation.</p>
                 </div>
                 <input
                   type="checkbox"
                   checked={categories.analytics}
                   onChange={() => toggle('analytics')}
                   aria-label="Analytics cookies"
-                  className="mt-1 h-4 w-4 accent-primary"
                   data-testid="cookie-consent-analytics"
                 />
               </li>
-              <li className="flex items-start justify-between gap-4 rounded-xl border border-ink/10 bg-white p-3">
+              <li className="bls-cookie-option d-flex align-items-start justify-content-between gap-3">
                 <div>
-                  <p className="font-medium">Advertising / Personalisation</p>
-                  <p className="mt-1 text-ink/70">Used by ad partners (including Google AdSense) to show more relevant advertising and measure performance.</p>
+                  <p className="fw-medium text-dark">Advertising / Personalisation</p>
+                  <p className="bls-cookie-muted mt-1">Used by ad partners (including Google AdSense) to show more relevant advertising and measure performance.</p>
                 </div>
                 <input
                   type="checkbox"
                   checked={categories.marketing}
                   onChange={() => toggle('marketing')}
                   aria-label="Advertising cookies"
-                  className="mt-1 h-4 w-4 accent-primary"
                   data-testid="cookie-consent-marketing"
                 />
               </li>
             </ul>
 
-            <div className="mt-5 flex flex-wrap items-center justify-end gap-2">
+            <div className="bls-cookie-actions d-flex flex-wrap align-items-center justify-content-end gap-2 mt-3">
               <button
                 type="button"
                 onClick={rejectAll}
-                className="inline-flex h-10 items-center rounded-full border border-ink/20 bg-white px-4 text-sm font-medium text-ink transition hover:border-ink/40"
+                className="btn bls-btn-sm bls-btn-outline"
               >
                 Reject all
               </button>
               <button
                 type="button"
                 onClick={saveChoices}
-                className="inline-flex h-10 items-center rounded-full bg-primary px-4 text-sm font-semibold text-white transition hover:bg-primary-emphasis"
+                className="btn btn-dark bls-btn-sm"
                 data-testid="cookie-consent-save"
               >
                 Save choices
@@ -220,7 +218,7 @@ export default function CookieConsent() {
               <button
                 type="button"
                 onClick={acceptAll}
-                className="inline-flex h-10 items-center rounded-full bg-ink px-4 text-sm font-semibold text-white transition hover:bg-ink/85"
+                className="btn btn-dark bls-btn-sm"
               >
                 Accept all
               </button>
@@ -234,7 +232,7 @@ export default function CookieConsent() {
 
 /** Tiny button you can drop in any footer/legal page so users can re-open consent settings. */
 export function CookieSettingsButton({ className }: { className?: string }) {
-  const cls = className ?? 'hover:text-primary';
+  const cls = className ?? 'hover-dark';
   return (
     <button
       type="button"

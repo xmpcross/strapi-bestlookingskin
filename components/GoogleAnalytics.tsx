@@ -39,6 +39,7 @@ export default function GoogleAnalytics() {
     // Read on mount rather than during render: localStorage does not exist
     // during the server pass, and reading it in render would desynchronise
     // hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- consent lives in localStorage, read on mount (see comment above).
     setAllowed(analyticsAllowed());
 
     const onDecision = () => setAllowed(analyticsAllowed());
