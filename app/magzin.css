@@ -706,3 +706,18 @@ html .sec-1-single-3 .post-layout-main h3 {
   outline: 2px solid #1d6ae5;
   outline-offset: 2px;
 }
+
+/* In-article blocks sit on their own row between sections: nothing floats beside them. */
+.post-insert {
+  clear: both;
+  margin: 2rem 0;
+}
+.post-figure.post-figure-wide {
+  float: none;
+  width: 100%;
+  margin: 0;
+}
+.post-figure-wide img {
+  max-height: 460px;
+  object-fit: cover;
+}

@@ -142,22 +142,33 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
      the second half would be numbered as if the first half did not exist. */
   const { html: bodyWithIds, toc } = withHeadingIds(postBodyHtml);
 
-  /* Split the body at two heading boundaries, giving three parts, so the
-     in-article blocks land between sections rather than inside one. Headings
-     are preferred over paragraph ends because a block dropped mid-argument
-     reads as an interruption; falls back to a paragraph end so HTML is never
-     cut open. */
-  const [bodyFirst, bodySecond] = (() => {
-    const html = bodyWithIds;
-    if (html.length < 600) return [html, ''] as const;
-    const mid = Math.floor(html.length / 2);
-    const nearest = (positions: number[]) =>
-      positions.reduce((best, i) => (Math.abs(i - mid) < Math.abs(best - mid) ? i : best), -1);
-    let cut = nearest([...html.matchAll(/<h[23]\b/gi)].map((m) => m.index ?? -1).filter((i) => i > 0));
-    if (cut < 0 || Math.abs(cut - mid) > html.length * 0.35) {
-      cut = nearest([...html.matchAll(/<\/p>/gi)].map((m) => (m.index ?? -1) + 4).filter((i) => i > 0));
+  /* The FAQ is the last section of these posts; it is split off so nothing is placed underneath it. */
+  const [bodyMain, faqSection] = (() => {
+    const m = bodyWithIds.match(/<h[23]\b[^>]*>(?:(?!<\/h[23]>).)*(?:FAQ|Frequently\s+Asked)(?:(?!<\/h[23]>).)*<\/h[23]>/i);
+    if (!m || m.index === undefined || m.index === 0) return [bodyWithIds, ''] as const;
+    return [bodyWithIds.slice(0, m.index), bodyWithIds.slice(m.index)] as const;
+  })();
+
+  /*
+   * Top-level positions in the body: where each h2 starts and each paragraph ends, counted only outside block
+   * elements. Imported WordPress posts nest content in divs, tables and lists; cutting inside one would split its
+   * markup across two renders.
+   */
+  const topLevel = (() => {
+    const h2: number[] = [];
+    const paragraphEnds: number[] = [];
+    let depth = 0;
+    for (const m of bodyMain.matchAll(/<(\/?)(div|section|article|table|figure|ul|ol|blockquote|details|aside)\b[^>]*>|<\/p>|<h2\b/gi)) {
+      const tag = m[0].toLowerCase();
+      if (tag === '</p>') {
+        if (depth === 0) paragraphEnds.push((m.index ?? 0) + 4);
+      } else if (tag.startsWith('<h2')) {
+        if (depth === 0) h2.push(m.index ?? 0);
+      } else if (!tag.endsWith('/>')) {
+        depth = Math.max(0, depth + (m[1] ? -1 : 1));
+      }
     }
-    return cut > 0 ? ([html.slice(0, cut), html.slice(cut)] as const) : ([html, ''] as const);
+    return { h2, paragraphEnds };
   })();
 
   /* Gallery images, excluding anything that duplicates the cover. */
@@ -173,7 +184,8 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
        glues a heading onto the sentence that follows it -- the first run
        produced "Combination Skin Combination skin - oily through the T-zone
        ...", which reads as a transcription error. */
-    const prose = bodyFirst
+    const prose = bodyMain
+      .slice(0, Math.floor(bodyMain.length / 2))
       .replace(/<h[1-6][^>]*>[\s\S]*?<\/h[1-6]>/gi, ' ')
       .replace(/<(figure|figcaption|table)[\s\S]*?<\/\1>/gi, ' ');
     /* Decoded, not deleted: the earlier pass replaced entities with a space,
@@ -190,54 +202,21 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
   const inlineProducts = await listProductsForPost(post.title, category, 3).catch(() => []);
   const readAlsoRows = recentRows.filter((r) => r.href !== postPath(post)).slice(0, 2);
 
-  /* Read Also goes after the fourth paragraph rather than at the end of the
-     article: by then the reader has committed, and a related link is a next
-     step instead of an interruption. Split on a paragraph close, so the cut is
-     always between elements and never inside one. */
-  const [bodyIntro, bodyAfterIntro] = (() => {
-    const closes = [...bodyFirst.matchAll(/<\/p>/gi)].map((m) => (m.index ?? 0) + m[0].length);
-    if (closes.length < 5) return [bodyFirst, ''] as const;
-    const cut = closes[3];
-    return [bodyFirst.slice(0, cut), bodyFirst.slice(cut)] as const;
-  })();
+  /* The contents box goes after the first top-level paragraph (on Tier A posts, the direct-answer paragraph). */
+  const leadCut = topLevel.paragraphEnds[0] !== undefined && (topLevel.h2.length < 2 || topLevel.paragraphEnds[0] < topLevel.h2[1]) ? topLevel.paragraphEnds[0] : 0;
 
-  /* The contents box goes after the first paragraph (on Tier A posts, the direct-answer paragraph). */
-  const [bodyLead, bodyIntroRest] = (() => {
-    /* Only a top-level paragraph: cutting inside an imported WordPress block (div, table, list…) would split
-       its markup across two renders. Walk the block tags and stop at the first </p> at depth 0. */
-    let depth = 0;
-    for (const m of bodyIntro.matchAll(/<(\/?)(div|section|article|table|figure|ul|ol|blockquote|details|aside)\b[^>]*>|<\/p>/gi)) {
-      if (m[0].toLowerCase() === '</p>') {
-        if (depth === 0) {
-          const cut = (m.index ?? 0) + 4;
-          return [bodyIntro.slice(0, cut), bodyIntro.slice(cut)] as const;
-        }
-      } else if (!m[0].endsWith('/>')) {
-        depth += m[1] ? -1 : 1;
-      }
-    }
-    return ['', bodyIntro] as const;
-  })();
-
-  /* The FAQ is the last section of every one of these posts, so anything
-     rendered after the body lands underneath it. Split it off, and the second
-     gallery image can sit in the article where it belongs rather than stranded
-     below a list of questions. */
-  const [bodyBeforeFaq, faqSection] = (() => {
-    const m = bodySecond.match(/<h[23]\b[^>]*>(?:(?!<\/h[23]>).)*(?:FAQ|Frequently\s+Asked)(?:(?!<\/h[23]>).)*<\/h[23]>/i);
-    if (!m || m.index === undefined) return [bodySecond, ''] as const;
-    return [bodySecond.slice(0, m.index), bodySecond.slice(m.index)] as const;
-  })();
-
-  /* Two paragraphs held back so the products block is never flush against the
-     right-floated image: text sits above it and below it. Asked for as "move it
-     up 2 paragraphs", and the split is on a paragraph close so the cut lands
-     between elements. */
-  const [bodyMid, bodyBeforeImage] = (() => {
-    const closes = [...bodyAfterIntro.matchAll(/<\/p>/gi)].map((m) => (m.index ?? 0) + m[0].length);
-    if (closes.length < 3) return [bodyAfterIntro, ''] as const;
-    const cut = closes[closes.length - 3];
-    return [bodyAfterIntro.slice(0, cut), bodyAfterIntro.slice(cut)] as const;
+  /*
+   * Where the in-article blocks go. They sit only at section boundaries -- just before an h2, never beside other
+   * content or floated next to text -- spread one per section in order, with the last one (the second image)
+   * above the final section before the FAQ. The first h2 is skipped: the contents box already sits right above
+   * it. Posts without enough top-level headings fall back to top-level paragraph ends, still full width.
+   */
+  const boundaries = (() => {
+    const sections = topLevel.h2.slice(1).filter((i) => i > leadCut);
+    if (sections.length) return sections;
+    const paras = topLevel.paragraphEnds.filter((i) => i > leadCut && i < bodyMain.length - 20);
+    const want = Math.min(5, paras.length);
+    return Array.from({ length: want }, (_, i) => paras[Math.floor(((i + 1) * paras.length) / (want + 1))]).filter((v, i, a) => v !== undefined && a.indexOf(v) === i);
   })();
 
   const { prev: prevPost, next: nextPost } = await getAdjacentPosts(category, slug);
@@ -265,14 +244,51 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
   };
 
   const catName = cat?.name ?? categoryName(category);
-  const figure = (i: 0 | 1, side: 'start' | 'end') =>
+  const figure = (i: 0 | 1) =>
     galleryImages[i] ? (
-      <figure className={`post-figure post-figure-${side}`}>
+      <figure className="post-figure post-figure-wide">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={galleryImages[i]} alt={post.gallery?.[i]?.alternativeText || post.title} className="rounded-8 w-100" loading="lazy" />
         {post.gallery?.[i]?.alternativeText && <figcaption className="fs-8 text-600 mt-2">{post.gallery[i].alternativeText}</figcaption>}
       </figure>
     ) : null;
+
+  /* In-article blocks in reading order, each assigned to a boundary (see `boundaries`). */
+  const inserts = [
+    figure(0),
+    readAlsoRows.length === 2 ? <ReadAlso rows={readAlsoRows} /> : null,
+    inlineProducts.length >= 2 ? <InlineProducts products={inlineProducts} /> : null,
+    pullQuote ? <PullQuote text={pullQuote} /> : null,
+    figure(1),
+  ].filter(Boolean) as React.ReactNode[];
+  const slotOf = (i: number) => {
+    const n = inserts.length;
+    const b = boundaries.length;
+    if (!b) return -1;
+    if (n <= b) return i === n - 1 ? b - 1 : i;
+    return n === 1 ? 0 : Math.round((i * (b - 1)) / (n - 1));
+  };
+  const bodyParts: React.ReactNode[] = [];
+  {
+    let from = 0;
+    if (leadCut) {
+      bodyParts.push(<PostContent key="lead" html={bodyMain.slice(0, leadCut)} />);
+      from = leadCut;
+    }
+    bodyParts.push(<ArticleContents key="contents" toc={toc} />);
+    boundaries.forEach((cut, bi) => {
+      const html = bodyMain.slice(from, cut);
+      if (html.trim()) bodyParts.push(<PostContent key={`part-${bi}`} html={html} />);
+      from = cut;
+      inserts.forEach((node, i) => {
+        if (slotOf(i) === bi) bodyParts.push(<div key={`insert-${i}`} className="post-insert">{node}</div>);
+      });
+    });
+    const tail = bodyMain.slice(from);
+    if (tail.trim()) bodyParts.push(<PostContent key="tail" html={tail} />);
+    if (!boundaries.length) inserts.forEach((node, i) => bodyParts.push(<div key={`insert-${i}`} className="post-insert">{node}</div>));
+    if (faqSection) bodyParts.push(<PostContent key="faq" html={faqSection} />);
+  }
 
   return (
     <>
@@ -353,18 +369,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
               </p>
 
               <div id="article-body" className="post-body">
-                {bodyLead && <PostContent html={bodyLead} />}
-                <ArticleContents toc={toc} />
-                {bodyIntroRest && <PostContent html={bodyIntroRest} />}
-                {figure(0, 'start')}
-                {readAlsoRows.length === 2 && <ReadAlso rows={readAlsoRows} />}
-                {bodyMid && <PostContent html={bodyMid} />}
-                {inlineProducts.length >= 2 && <InlineProducts products={inlineProducts} />}
-                {bodyBeforeImage && <PostContent html={bodyBeforeImage} />}
-                {figure(1, 'end')}
-                {pullQuote && <PullQuote text={pullQuote} />}
-                {bodyBeforeFaq ? <PostContent html={bodyBeforeFaq} /> : null}
-                {faqSection && <PostContent html={faqSection} />}
+                {bodyParts}
               </div>
 
               <NextUp
