@@ -72,11 +72,12 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
   const post = await getPost(slug).catch(() => null);
   if (!post) notFound();
 
-  // If the URL category doesn't match the post's primary category, send them to the canonical URL.
+  // If the URL category doesn't match the post's primary category, send them to the canonical URL. Permanent
+  // (308), so a post moved to another category passes its old URL's search standing to the new one.
   const canonicalCat = primaryCategorySlug(post);
   if (canonicalCat !== category) {
-    const { redirect } = await import('next/navigation');
-    redirect(postPath(post));
+    const { permanentRedirect } = await import('next/navigation');
+    permanentRedirect(postPath(post));
   }
 
   // Related posts (same category, excluding this one), recent guides across the site, and the topic hubs.
