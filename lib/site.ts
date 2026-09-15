@@ -32,6 +32,8 @@ export type Section = {
   seoTitle?: string;
   /** Meta description, 150-160 characters; defaults to the blurb, clipped. */
   metaDescription?: string;
+  /** The archive lists every post rather than its own category (the "All Articles" page). */
+  allPosts?: boolean;
 };
 
 export const SECTIONS: Section[] = [
@@ -72,10 +74,16 @@ export const SECTIONS: Section[] = [
   },
   {
     slug: 'informative-articles',
-    title: 'Informative Articles',
-    short: 'Explainers',
-    subtitle: 'The science behind the bottle, explained in plain English.',
+    /* The old "Informative Articles" category: its posts moved into the topic hubs (Sep 2026), and the URL, which
+       the home page, footer and menu link to, now lists every article. */
+    title: 'All Articles',
+    short: 'All',
+    subtitle: 'Every guide, review and explainer, newest first.',
     blurb:
-      'Background reading for anyone who wants to make smarter skincare choices. Plain-English explainers on how active ingredients like retinol, niacinamide, hyaluronic acid and AHAs/BHAs work on skin — and which marketing claims are worth trusting.',
+      'Browse every article on BestLooking.Skin in one place, from ingredient explainers and routine guides to product reviews, comparisons and top-rated roundups. Use the topic filter to narrow the list to the skin concerns and product types you care about.',
+    seoTitle: 'All Skincare Articles and Guides',
+    metaDescription:
+      'Every skincare article on BestLooking.Skin in one place: ingredient explainers, routines, product reviews, comparisons and top-rated roundups, newest first.',
+    allPosts: true,
   },
 ];

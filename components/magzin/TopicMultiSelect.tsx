@@ -50,11 +50,13 @@ export default function TopicMultiSelect({
     router.push(extra.length ? `${basePath}?topics=${extra.map(encodeURIComponent).join(',')}` : basePath);
   };
   const extraCount = picked.filter((s) => s !== current).length;
+  /* On the All Articles page there is no archive topic of its own (current is ''). */
+  const selectedCount = current ? extraCount + 1 : extraCount;
 
   return (
     <div className="topic-select" ref={wrapRef}>
       <button type="button" className="topic-select-button" aria-haspopup="true" aria-expanded={open} aria-controls={`${id}-panel`} onClick={() => setOpen((o) => !o)}>
-        <span>{extraCount ? `${extraCount + 1} topics selected` : 'Select topics'}</span>
+        <span>{extraCount ? `${selectedCount} ${selectedCount === 1 ? 'topic' : 'topics'} selected` : 'Select topics'}</span>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden className={open ? 'is-flipped' : ''}>
           <path d="m6 9 6 6 6-6" />
         </svg>

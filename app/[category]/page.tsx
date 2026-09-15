@@ -67,20 +67,29 @@ export default async function CategoryPage({ params, searchParams }: { params: P
 
   /* Topics picked in the Browse Topics dropdown, on top of this archive's own (only known hub / format slugs). */
   const groups = await getTopicGroups();
-  const knownSlugs = new Set([...groups.flatMap((g) => g.items.map((t) => t.href.replace(/^\//, ''))), ...SECTIONS.map((sec) => sec.slug)]);
+  /* The All Articles page lists every post; the topic filter then narrows it instead of adding to it. */
+  const isAll = Boolean(SECTIONS.find((sec) => sec.slug === category)?.allPosts);
+  const knownSlugs = new Set([
+    ...groups.flatMap((g) => g.items.map((t) => t.href.replace(/^\//, ''))),
+    ...SECTIONS.filter((sec) => !sec.allPosts).map((sec) => sec.slug),
+  ]);
   const extraTopics = Array.from(new Set((topicsRaw ?? '').split(',').map((t) => t.trim()).filter((t) => t && t !== category && knownSlugs.has(t))));
-  const selectedTopics = [category, ...extraTopics];
+  const selectedTopics = isAll ? extraTopics : [category, ...extraTopics];
 
-  const start = (page - 1) * PAGE_SIZE;
+  /* Paged by the CMS, so an archive (or a combined or all-posts listing) of any size is complete. */
   const [c, res, latestRes] = await Promise.all([
     resolveCategory(category),
-    (extraTopics.length ? listPostSummaries({ categories: selectedTopics, pageSize: 100, page: 1 }) : listPostSummaries({ category, pageSize: 100, page: 1 })).catch(() => null),
+    (extraTopics.length
+      ? listPostSummaries({ categories: selectedTopics, pageSize: PAGE_SIZE, page })
+      : isAll
+        ? listPostSummaries({ pageSize: PAGE_SIZE, page })
+        : listPostSummaries({ category, pageSize: PAGE_SIZE, page })
+    ).catch(() => null),
     listPostSummaries({ authored: true, withCover: true, pageSize: 12 }).catch(() => null),
   ]);
-  const all = res?.data ?? [];
-  const total = res?.meta.pagination.total ?? all.length;
+  const total = res?.meta.pagination.total ?? 0;
   if (!c.known && total === 0) notFound();
-  const posts = all.slice(start, start + PAGE_SIZE).map(toCard);
+  const posts = (res?.data ?? []).map(toCard);
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
   if (page > 1 && posts.length === 0) notFound();
 
@@ -102,9 +111,9 @@ export default async function CategoryPage({ params, searchParams }: { params: P
     ),
   );
   const topicTags = hubs.map((h, i) => ({ ...h, count: hubCounts[i] })).filter((t) => t.count > 0);
-  const formatTags = SECTIONS.filter((sec) => sec.slug !== category).map((sec) => ({ label: sec.title, href: `/${sec.slug}` }));
+  const formatTags = SECTIONS.filter((sec) => sec.slug !== category && !sec.allPosts).map((sec) => ({ label: sec.title, href: `/${sec.slug}` }));
   const topicOptions = [
-    { slug: category, label: c.name },
+    ...(isAll ? [] : [{ slug: category, label: c.name }]),
     ...topicTags.map((t) => ({ slug: t.href.replace(/^\//, ''), label: t.label, count: t.count })),
     ...formatTags.map((t) => ({ slug: t.href.replace(/^\//, ''), label: t.label })),
   ];
@@ -203,7 +212,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
               {topicOptions.length > 1 && (
                 <div className="mb-5">
                   <SidebarTitle>Browse Topics</SidebarTitle>
-                  <TopicMultiSelect basePath={`/${category}`} current={category} options={topicOptions} selected={selectedTopics} />
+                  <TopicMultiSelect basePath={`/${category}`} current={isAll ? '' : category} options={topicOptions} selected={selectedTopics} />
                 </div>
               )}
             </aside>
