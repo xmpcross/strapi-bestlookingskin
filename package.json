@@ -9,6 +9,7 @@
     "start": "next start -p 3002",
     "lint": "eslint .",
     "check:scope": "node scripts/check-commerce-scope.mjs",
+    "images:normalize": "node scripts/normalize-product-images.mjs",
     "prebuild": "node scripts/check-commerce-scope.mjs"
   },
   "dependencies": {
