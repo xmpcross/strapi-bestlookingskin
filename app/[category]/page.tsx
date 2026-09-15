@@ -96,7 +96,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
           ? listPostSummaries({ postType: formatType, pageSize: PAGE_SIZE, page })
           : listPostSummaries({ category, pageSize: PAGE_SIZE, page })
     ).catch(() => null),
-    listPostSummaries({ authored: true, withCover: true, pageSize: 12 }).catch(() => null),
+    listPostSummaries({ authored: true, withCover: true, pageSize: 20 }).catch(() => null),
   ]);
   const total = res?.meta.pagination.total ?? 0;
   if (!c.known && total === 0) notFound();
@@ -122,10 +122,10 @@ export default async function CategoryPage({ params, searchParams }: { params: P
      authored guides outside this archive; "Browse Topics" (its "Popular tags") lists every hub with its post count,
      then the article formats. */
   const outsideArchive = (latestRes?.data ?? []).map(toCard).filter((card) => card.image && !card.href.startsWith(`/${category}/`));
-  const latest = outsideArchive.slice(0, 3);
-  /* Featured Posts slider above Latest guides: the next three authored guides with a cover (no editorial flag exists). */
+  const latest = outsideArchive.slice(0, 5);
+  /* Featured Posts slider: the next three authored guides with a cover (no editorial flag exists). */
   const featured = outsideArchive
-    .slice(3, 6)
+    .slice(5, 8)
     .map((card) => ({ href: card.href, title: card.title, image: card.image as string, imageAlt: card.imageAlt, author: card.author?.name ?? null, date: card.date }));
   /* "Browse Topics": every hub, then the article formats, each with its live post count (the "Browse by category"
      widget from the product pages); the current archive is highlighted. */
