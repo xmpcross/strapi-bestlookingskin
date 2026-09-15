@@ -127,7 +127,7 @@ export default async function FaqsPage() {
           <div className="row align-items-end">
             <div className="col-lg-8 col-12">
               <div className="title">
-                <h1 className="h3 mb-0">Frequently asked questions</h1>
+                <h1 className="h3 mb-0">FAQs</h1>
                 <p className="bls-page-lead mt-3 mb-0">
                   {total > 0
                     ? `${total} questions answered across our guides. Each answer links to the article it came from, where you will find the full context.`
@@ -160,16 +160,16 @@ export default async function FaqsPage() {
                 sections.map((s) => (
                   <section key={s.slug} id={`faq-${s.slug}`} className="bls-faq-section mb-5">
                     <h2 className="h5 mb-3">{s.name}</h2>
-                    <div className="bls-faq-list">
+                    <div className="faq-accordion">
                       {s.entries.map((e) => (
-                        <details key={e.question} className="bls-faq-item">
-                          <summary>
+                        <details key={e.question} className="faq-item">
+                          <summary className="faq-question">
                             {e.question}
-                            <span aria-hidden className="bls-faq-toggle">+</span>
+                            <span className="faq-icon" aria-hidden />
                           </summary>
-                          <div className="bls-faq-answer">
+                          <div className="faq-answer">
                             <p>{e.answer}</p>
-                            <Link href={e.href} className="bls-link fs-7 fw-semi-bold">
+                            <Link href={e.href} className="bls-link fs-7 fw-semi-bold faq-source">
                               From: {e.postTitle}
                             </Link>
                           </div>

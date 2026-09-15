@@ -17,9 +17,13 @@ const Arrow = ({ dir }: { dir: 'prev' | 'next' }) => (
 );
 
 /* Server-rendered numbered pagination (Magzin style). Page 1 links to the bare path. */
-export default function Pagination({ basePath, page, pageCount }: { basePath: string; page: number; pageCount: number }) {
+export default function Pagination({ basePath, page, pageCount, query = '' }: { basePath: string; page: number; pageCount: number; query?: string }) {
   if (pageCount <= 1) return null;
-  const href = (n: number) => (n <= 1 ? basePath : `${basePath}?page=${n}`);
+  /* `query` carries other listing parameters (e.g. "topics=a,b") onto every page link. */
+  const href = (n: number) => {
+    const qs = [query, n > 1 ? `page=${n}` : ''].filter(Boolean).join('&');
+    return qs ? `${basePath}?${qs}` : basePath;
+  };
   const items: (number | '…')[] = [];
   for (let n = 1; n <= pageCount; n++) {
     if (n === 1 || n === pageCount || Math.abs(n - page) <= 1) items.push(n);

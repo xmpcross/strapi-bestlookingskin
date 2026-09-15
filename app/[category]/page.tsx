@@ -9,6 +9,8 @@ import { TextCard } from '@/components/magzin/cards';
 import SidebarTitle from '@/components/magzin/SidebarTitle';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
 import Pagination from '@/components/magzin/Pagination';
+import TopicMultiSelect from '@/components/magzin/TopicMultiSelect';
+import FeaturedPostsSlider from '@/components/FeaturedPostsSlider';
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -21,7 +23,7 @@ const PAGE_SIZE = 12;
 const RESERVED = new Set(['about', 'brands', 'search', 'newhome', 'feed.xml', 'sitemap.xml', 'robots.txt']);
 
 type Params = { category: string };
-type SearchParams = { page?: string };
+type SearchParams = { page?: string; topics?: string };
 
 async function resolveCategory(slug: string) {
   const fromCms = await getCategory(slug).catch(() => null);
@@ -40,7 +42,7 @@ const clip = (s: string, n = 158) => (s.length <= n ? s : `${s.slice(0, s.lastIn
 export async function generateMetadata({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<SearchParams> }): Promise<Metadata> {
   const { category } = await params;
   if (RESERVED.has(category)) return {};
-  const { page: pageRaw } = await searchParams;
+  const { page: pageRaw, topics } = await searchParams;
   const page = Math.max(1, Number(pageRaw) || 1);
   const c = await resolveCategory(category);
   const description = c.description ? clip(c.description) : `${c.name}: guides and reviews from ${SITE.name}.`;
@@ -49,21 +51,28 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
     description,
     alternates: { canonical: page > 1 ? `/${category}?page=${page}` : `/${category}` },
     openGraph: { title: c.name, description, url: `${SITE.url}/${category}` },
+    /* A combined-topics view is a filter of existing archives: keep it out of the index. */
+    ...(topics ? { robots: { index: false, follow: true } } : {}),
   };
 }
 
 export default async function CategoryPage({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<SearchParams> }) {
   const { category } = await params;
   if (RESERVED.has(category)) notFound();
-  const { page: pageRaw } = await searchParams;
+  const { page: pageRaw, topics: topicsRaw } = await searchParams;
   const page = Math.max(1, Number(pageRaw) || 1);
 
+  /* Topics picked in the Browse Topics dropdown, on top of this archive's own (only known hub / format slugs). */
+  const groups = await getTopicGroups();
+  const knownSlugs = new Set([...groups.flatMap((g) => g.items.map((t) => t.href.replace(/^\//, ''))), ...SECTIONS.map((sec) => sec.slug)]);
+  const extraTopics = Array.from(new Set((topicsRaw ?? '').split(',').map((t) => t.trim()).filter((t) => t && t !== category && knownSlugs.has(t))));
+  const selectedTopics = [category, ...extraTopics];
+
   const start = (page - 1) * PAGE_SIZE;
-  const [c, res, groups, latestRes] = await Promise.all([
+  const [c, res, latestRes] = await Promise.all([
     resolveCategory(category),
-    listPostSummaries({ category, pageSize: 100, page: 1 }).catch(() => null),
-    getTopicGroups(),
-    listPostSummaries({ authored: true, withCover: true, pageSize: 6 }).catch(() => null),
+    (extraTopics.length ? listPostSummaries({ categories: selectedTopics, pageSize: 100, page: 1 }) : listPostSummaries({ category, pageSize: 100, page: 1 })).catch(() => null),
+    listPostSummaries({ authored: true, withCover: true, pageSize: 12 }).catch(() => null),
   ]);
   const all = res?.data ?? [];
   const total = res?.meta.pagination.total ?? all.length;
@@ -75,10 +84,12 @@ export default async function CategoryPage({ params, searchParams }: { params: P
   /* Sidebar. "Latest guides" (the template's "Weekly trending": the site has no traffic data) lists the newest
      authored guides outside this archive; "Browse Topics" (its "Popular tags") lists every hub with its post count,
      then the article formats. */
-  const latest = (latestRes?.data ?? [])
-    .map(toCard)
-    .filter((card) => card.image && !card.href.startsWith(`/${category}/`))
-    .slice(0, 3);
+  const outsideArchive = (latestRes?.data ?? []).map(toCard).filter((card) => card.image && !card.href.startsWith(`/${category}/`));
+  const latest = outsideArchive.slice(0, 3);
+  /* Featured Posts slider above Latest guides: the next three authored guides with a cover (no editorial flag exists). */
+  const featured = outsideArchive
+    .slice(3, 6)
+    .map((card) => ({ href: card.href, title: card.title, image: card.image as string, imageAlt: card.imageAlt, author: card.author?.name ?? null, date: card.date }));
   const hubs = groups.flatMap((g) => g.items).filter((t) => t.href !== `/${category}`);
   const hubCounts = await Promise.all(
     hubs.map((h) =>
@@ -89,6 +100,12 @@ export default async function CategoryPage({ params, searchParams }: { params: P
   );
   const topicTags = hubs.map((h, i) => ({ ...h, count: hubCounts[i] })).filter((t) => t.count > 0);
   const formatTags = SECTIONS.filter((sec) => sec.slug !== category).map((sec) => ({ label: sec.title, href: `/${sec.slug}` }));
+  const topicOptions = [
+    { slug: category, label: c.name },
+    ...topicTags.map((t) => ({ slug: t.href.replace(/^\//, ''), label: t.label, count: t.count })),
+    ...formatTags.map((t) => ({ slug: t.href.replace(/^\//, ''), label: t.label })),
+  ];
+  const topicLabel = (slug: string) => topicOptions.find((o) => o.slug === slug)?.label ?? slug.replace(/-/g, ' ');
 
   return (
     <div data-testid={`category-${category}`}>
@@ -119,6 +136,19 @@ export default async function CategoryPage({ params, searchParams }: { params: P
         <div className="container">
           <div className="row g-5">
             <div className="col-lg-9 col-12">
+              {extraTopics.length > 0 && (
+                <div className="archive-selected d-flex flex-wrap align-items-center gap-2 mb-4">
+                  <span className="fs-7 text-600">Showing posts from:</span>
+                  {selectedTopics.map((t) => (
+                    <span key={t} className="shop-pill">
+                      {topicLabel(t)}
+                    </span>
+                  ))}
+                  <Link href={`/${category}`} className="fs-7 text-dark text-decoration-underline ms-1">
+                    Clear
+                  </Link>
+                </div>
+              )}
               {posts.length > 0 ? (
                 <div className="row g-4">
                   {posts.map((card) => (
@@ -133,13 +163,19 @@ export default async function CategoryPage({ params, searchParams }: { params: P
               {pageCount > 1 && (
                 <div className="row mt-5">
                   <div className="col-12 d-flex justify-content-start align-items-center">
-                    <Pagination basePath={`/${category}`} page={page} pageCount={pageCount} />
+                    <Pagination basePath={`/${category}`} page={page} pageCount={pageCount} query={extraTopics.length ? `topics=${extraTopics.join(',')}` : ''} />
                   </div>
                 </div>
               )}
             </div>
 
             <aside className="col-lg-3 col-12 archive-sidebar" aria-label="Archive sidebar">
+              {featured.length > 0 && (
+                <div className="mb-5" data-testid="archive-featured-posts">
+                  <SidebarTitle>Featured Posts</SidebarTitle>
+                  <FeaturedPostsSlider posts={featured} />
+                </div>
+              )}
               {latest.length > 0 && (
                 <div className="mb-5">
                   <SidebarTitle>Latest guides</SidebarTitle>
@@ -161,26 +197,10 @@ export default async function CategoryPage({ params, searchParams }: { params: P
                   </div>
                 </div>
               )}
-              {(topicTags.length > 0 || formatTags.length > 0) && (
+              {topicOptions.length > 1 && (
                 <div className="mb-5">
                   <SidebarTitle>Browse Topics</SidebarTitle>
-                  <ul className="list-unstyled d-flex flex-wrap gap-2 ps-0 m-0">
-                    {topicTags.map((t) => (
-                      <li key={t.href}>
-                        <Link href={t.href} className="tag-item">
-                          <span className="fs-7">{t.label}</span>
-                          <span className="number">{t.count}</span>
-                        </Link>
-                      </li>
-                    ))}
-                    {formatTags.map((t) => (
-                      <li key={t.href}>
-                        <Link href={t.href} className="tag-item">
-                          <span className="fs-7">{t.label}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+                  <TopicMultiSelect basePath={`/${category}`} current={category} options={topicOptions} selected={selectedTopics} />
                 </div>
               )}
             </aside>
