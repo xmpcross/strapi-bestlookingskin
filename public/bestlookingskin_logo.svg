@@ -1,41 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  BestLooking.Skin — pure wordmark.
-
-  "BESTLOOKING" on top in Outfit Bold (currentColor — flips with parent
-  text color). "— SKIN" right-aligned underneath in primary red, tracked
-  uppercase. Both wordmarks share the same right edge so the N of SKIN
-  lines up directly under the G of BESTLOOKING.
+  BestLooking.Skin — Master Vector Logo.
+  Features a radiant serum droplet icon with internal sparkle, paired with
+  bold geometric typography ("BESTLOOKING") and a vibrant coral-rose accent (".SKIN").
+  Text uses currentColor for seamless dark/light theme switching without color inversion artifacts.
 -->
 <svg
   xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 320 100"
+  viewBox="0 0 350 72"
   role="img"
   aria-label="BestLooking.Skin"
   preserveAspectRatio="xMinYMid meet"
 >
-  <style>
-    .top { font-family: 'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-           font-weight: 700; font-size: 40px; letter-spacing: 1.2px; }
-    .bot { font-family: 'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-           font-weight: 600; font-size: 20px; letter-spacing: 4px; }
-  </style>
+  <defs>
+    <linearGradient id="bls-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FB7185" />
+      <stop offset="50%" stop-color="#E11D48" />
+      <stop offset="100%" stop-color="#BE123C" />
+    </linearGradient>
+    <linearGradient id="bls-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF5A5F" />
+      <stop offset="100%" stop-color="#E11D48" />
+    </linearGradient>
+  </defs>
 
-  <!-- "BESTLOOKING" — top row, right-edge at x=310. textLength locks the
-       rendered width so the B doesn't clip when fallback fonts are used. -->
-  <text
-    x="310"
-    y="52"
-    class="top"
-    fill="currentColor"
-    text-anchor="end"
-    textLength="290"
-    lengthAdjust="spacingAndGlyphs"
-  >BESTLOOKING</text>
+  <!-- Serum Droplet + Radiant Sparkle Icon -->
+  <g transform="translate(4, 6)">
+    <!-- Droplet outer contour -->
+    <path
+      d="M30 4C30 4 10 28 10 40C10 51.0457 18.9543 60 30 60C41.0457 60 50 51.0457 50 40C50 28 30 4 30 4Z"
+      fill="url(#bls-gradient)"
+    />
+    <!-- Inner soft light reflection -->
+    <path
+      d="M22 36C22 43 26 49 32 51C28 51 18 46 18 38C18 31 25 21 27 18C25 22 22 30 22 36Z"
+      fill="#FFFFFF"
+      opacity="0.4"
+    />
+    <!-- 4-point radiant star sparkle inside droplet -->
+    <path
+      d="M35 25C35 29.2 39.2 33.4 43.4 33.4C39.2 33.4 35 37.6 35 41.8C35 37.6 30.8 33.4 26.6 33.4C30.8 33.4 35 29.2 35 25Z"
+      fill="#FFFFFF"
+    />
+    <!-- Small accent sparkle dot -->
+    <circle cx="23" cy="24" r="2.2" fill="#FFFFFF" opacity="0.9" />
+  </g>
 
-  <!-- "— SKIN" — bottom row, also right-aligned to x=310 -->
-  <g transform="translate(310, 72)">
-    <line x1="-130" y1="0" x2="-100" y2="0" stroke="#e33333" stroke-width="1.6" stroke-linecap="round"/>
-    <text x="0" y="5" class="bot" fill="#e33333" text-anchor="end">SKIN</text>
+  <!-- Typography -->
+  <g fill="currentColor" font-family="'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+    <!-- BESTLOOKING -->
+    <text x="66" y="44" font-weight="800" font-size="28" letter-spacing="-0.2">BESTLOOKING</text>
+    <!-- .SKIN accent text -->
+    <text x="274" y="44" font-weight="900" font-size="28" fill="url(#bls-glow)" letter-spacing="0">.SKIN</text>
+
+    <!-- Tagline / Sub-descriptor -->
+    <text x="67" y="58" font-weight="700" font-size="8.5" fill="url(#bls-glow)" letter-spacing="2.6" opacity="0.95">REVIEWS &amp; SCIENCE</text>
   </g>
 </svg>

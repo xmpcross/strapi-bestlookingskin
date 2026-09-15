@@ -49,7 +49,7 @@ export default async function SiteFooter() {
               <div className="d-flex gap-2 align-items-center">
                 <Link href="/" aria-label={`${SITE.name} home`}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img className="dark-mode-invert" src="/bestlookingskin_logo.svg" width={143} height={45} alt={SITE.name} />
+                  <img src="/bestlookingskin_logo.svg" width={170} height={35} alt={SITE.name} />
                 </Link>
               </div>
               <p className="fs-7 text-dark mt-4">

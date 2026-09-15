@@ -1,27 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Favicon — square monogram for BestLooking.Skin.
-  Brand-blue rounded square background with a white "B" centered, plus a
-  small red dot accent that mirrors the wordmark's red accent on "— SKIN".
-  Designed to stay legible from 16x16 up to 512x512.
+  Favicon — modern brand mark icon for BestLooking.Skin.
+  Dark slate squircle background featuring the radiant serum droplet and internal 4-point sparkle star.
+  Designed for maximum visual legibility from 16x16 up to 512x512.
 -->
 <svg
   xmlns="http://www.w3.org/2000/svg"
   viewBox="0 0 64 64"
   role="img"
-  aria-label="BestLooking.Skin"
+  aria-label="BestLooking.Skin Icon"
 >
-  <rect width="64" height="64" rx="12" ry="12" fill="#014fd3" />
-  <text
-    x="50%"
-    y="54%"
-    font-family="'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
-    font-weight="800"
-    font-size="42"
-    fill="#ffffff"
-    text-anchor="middle"
-    dominant-baseline="middle"
-    letter-spacing="-1"
-  >B</text>
-  <circle cx="49" cy="48" r="4.5" fill="#e33333" />
+  <defs>
+    <linearGradient id="bls-fav-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FB7185" />
+      <stop offset="50%" stop-color="#E11D48" />
+      <stop offset="100%" stop-color="#BE123C" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" ry="16" fill="#0F172A" />
+  <g transform="translate(1, 1)">
+    <!-- Droplet outer contour -->
+    <path
+      d="M31 8C31 8 13 28 13 39C13 48.9411 21.0589 57 31 57C40.9411 57 49 48.9411 49 39C49 28 31 8 31 8Z"
+      fill="url(#bls-fav-gradient)"
+    />
+    <!-- Inner reflection curve -->
+    <path
+      d="M24 35C24 41 28 46 33 48C30 48 21 44 21 37C21 31 27 23 28 20C26 23 24 30 24 35Z"
+      fill="#FFFFFF"
+      opacity="0.4"
+    />
+    <!-- 4-point radiant star sparkle inside droplet -->
+    <path
+      d="M36 26C36 29.8 39.8 33.6 43.6 33.6C39.8 33.6 36 37.4 36 41.2C36 37.4 32.2 33.6 28.4 33.6C32.2 33.6 36 29.8 36 26Z"
+      fill="#FFFFFF"
+    />
+    <!-- Small accent sparkle dot -->
+    <circle cx="24" cy="25" r="2.2" fill="#FFFFFF" opacity="0.9" />
+  </g>
 </svg>

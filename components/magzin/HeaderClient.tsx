@@ -118,7 +118,7 @@ export default function HeaderClient({
               <div className="d-flex align-items-center">
                 <Link className="navbar-brand" href="/" aria-label={`${SITE.name} home`} data-testid="logo-link">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img className="dark-mode-invert" src="/bestlookingskin_logo.svg" width={150} height={47} alt={SITE.name} />
+                  <img src="/bestlookingskin_logo.svg" width={175} height={36} alt={SITE.name} />
                 </Link>
               </div>
               <div className="navbar-collapse d-none d-lg-block">{menu}</div>
@@ -240,7 +240,7 @@ export default function HeaderClient({
         <div className="header-sidebar d-flex align-items-center justify-content-between py-3">
           <Link href="/" className="sidebar-brand" aria-label={`${SITE.name} home`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="dark-mode-invert" src="/bestlookingskin_logo.svg" width={130} height={41} alt={SITE.name} />
+            <img src="/bestlookingskin_logo.svg" width={150} height={31} alt={SITE.name} />
           </Link>
           <button type="button" className="close-sidebar border-0 bg-transparent" onClick={() => setMenuOpen(false)} aria-label="Close menu">
             <CloseIcon />
