@@ -561,14 +561,33 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
           </div>
 
           {SHOW_PRODUCT_SIDEBAR && (
-            /* Right column. Topic browsing first -- it is useful on every
-               product, where the specs panel is only useful when a product has
-               spec rows. Latest guides close the column: Tier A posts with their
-               own cover, as on the post page's aside. */
+            /* Right column: Latest guides first (Tier A posts with their own cover, as on the post page's aside),
+               then topic browsing. */
             <aside className="col-lg-4 col-12" aria-label="Product sidebar">
+              {recentRows.length > 0 && (
+                <div className="mb-5">
+                  <SidebarTitle>Latest guides</SidebarTitle>
+                  <div className="d-flex flex-column gap-3">
+                    {recentRows.map((row) => (
+                      <div className="article card-10 style-1" key={row.href}>
+                        <Link href={row.href} className="card-img">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          {row.img ? <img className="w-100 rounded-8" src={row.img} alt="" width={96} height={96} loading="lazy" /> : null}
+                        </Link>
+                        <div className="card-body">
+                          <Link href={row.href}>
+                            <span className="h6 mb-2 text-truncate-2 product-side-guide-title">{row.title}</span>
+                          </Link>
+                          <span className="fs-8 text-600">{row.date}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {topicRows.length > 0 && (
                 <div className="mb-5" data-testid="browse-by-topic">
-                  <SidebarTitle>Browse by topic</SidebarTitle>
+                  <SidebarTitle>Categories</SidebarTitle>
                   <ul className="list-unstyled ps-0 d-flex flex-wrap gap-2 m-0">
                     {topicRows.map((row) => (
                       <li key={row.slug}>
@@ -583,27 +602,6 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                       </li>
                     ))}
                   </ul>
-                </div>
-              )}
-              {recentRows.length > 0 && (
-                <div className="mb-5">
-                  <SidebarTitle>Latest guides</SidebarTitle>
-                  <div className="d-flex flex-column gap-3">
-                    {recentRows.map((row) => (
-                      <div className="article card-10 style-1" key={row.href}>
-                        <Link href={row.href} className="card-img">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          {row.img ? <img className="w-100 rounded-8" src={row.img} alt="" width={96} height={96} loading="lazy" /> : null}
-                        </Link>
-                        <div className="card-body">
-                          <Link href={row.href}>
-                            <span className="h6 fs-6 mb-2 text-truncate-2 d-block">{row.title}</span>
-                          </Link>
-                          <span className="fs-8 text-600">{row.date}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 </div>
               )}
             </aside>
