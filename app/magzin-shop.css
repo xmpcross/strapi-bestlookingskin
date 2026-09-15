@@ -629,6 +629,14 @@
   padding: 6px;
   background: #fff;
 }
+/* "More in {category}" row under the product: 14px product names, 40px around each product image. */
+html .product-page [data-testid='related-products'] .product-name {
+  font-size: 14px !important;
+  line-height: 1.4;
+}
+.product-page [data-testid='related-products'] .shop-thumb img {
+  padding: 40px;
+}
 /* Product sidebar row titles (Featured Products). */
 html .product-page .product-side-guide-title {
   font-size: 14px !important;

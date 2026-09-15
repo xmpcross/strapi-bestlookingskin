@@ -633,7 +633,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
 
         {related.length > 0 && (
           <aside className="mt-5 pt-4" data-testid="related-products">
-            <h2 className="h4 mb-4">More in {cat?.name ?? 'this category'}</h2>
+            <h3 className="h4 mb-4">More in {cat?.name ?? 'this category'}</h3>
             {/* 15px between cards, and no card background: the tiles sit on the
                 page rather than in boxes. thumbBg is the knob ProductCard already
                 exposes for this, so nothing needs overriding with !important. */}
