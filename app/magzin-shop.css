@@ -560,38 +560,22 @@
   margin-bottom: 0;
 }
 
-/* Collapsible description. */
-.shop-collapse {
-  position: relative;
-  overflow: hidden;
-  transition: max-height 0.3s;
+/* Sidebar widget titles keep the post page's size (the product h2 rule would make them 1.7rem). */
+html .product-page .sidebar-heading {
+  font-size: 1.2rem !important;
 }
-.shop-collapse-fade {
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 80px;
-  pointer-events: none;
-  background: linear-gradient(to top, var(--tc-neutral-50), transparent);
+
+/* Description / Specifications / Additional Info tabs, and the lead under the product title. */
+.product-info-panel {
+  margin-top: 28px;
 }
-.shop-more-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0;
-  border: 0;
-  background: none;
-  font-size: var(--tc-fs-7);
-  font-weight: var(--tc-fw-semi-bold);
-  color: var(--tc-neutral-900);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+.product-info-tabs .shop-tabs button {
+  font-size: var(--tc-fs-6);
 }
-.shop-more-btn .caret {
-  display: inline-block;
-  transition: transform 0.2s;
-}
-.shop-more-btn .caret.is-flipped {
-  transform: rotate(180deg);
+.shop-lead {
+  color: var(--tc-neutral-700);
+  line-height: 1.6;
+  max-width: 62ch;
 }
 
 /* Specifications table and pros list. */
@@ -613,7 +597,6 @@
   padding-right: 16px;
   font-weight: var(--tc-fw-semi-bold);
   color: var(--tc-neutral-900);
-  text-transform: capitalize;
 }
 .shop-spec-table td {
   color: var(--tc-neutral-600);
