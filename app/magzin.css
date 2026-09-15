@@ -36,3 +36,41 @@ header .navbar-toggler,
   height: 42px;
   width: auto;
 }
+
+/*
+ * Heading-size utilities. The template sizes by element (h5 for card titles, h6 for small cards); pages here
+ * keep a correct outline (h1 → h2 → h3) and borrow the size with a class instead.
+ */
+.h1 { font-size: 60px; }
+.h2 { font-size: 48px; }
+.h3 { font-size: 38px; }
+.h4 { font-size: 31px; }
+.h5 { font-size: 25px; }
+.h6 { font-size: 18px; }
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: var(--tc-heading-font-family);
+  color: var(--tc-neutral-900);
+  font-weight: var(--tc-fw-semi-bold);
+  line-height: var(--tc-heading-line-height);
+  margin-top: 0;
+}
+@media screen and (max-width: 991.98px) {
+  .h4 { font-size: 25px; }
+}
+@media screen and (max-width: 474.98px) {
+  .h4 { font-size: 20px; }
+  .h6 { font-size: 16px; }
+}
+
+/* The off-canvas side menu waits beyond the right edge; without this the page scrolls sideways. */
+html,
+body {
+  overflow-x: clip;
+}
+
+/* Dark section titles (the template's TitleDark set these colours on the demo's own markup). */
+.section-title.dark .h5,
+.section-title.dark h2,
+.section-title.dark p {
+  color: #fff;
+}

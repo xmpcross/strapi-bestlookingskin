@@ -298,6 +298,35 @@ export async function listPosts(
   return { ...res, data: res.data.map(localizePost) };
 }
 
+/**
+ * Card-sized posts: everything a listing card shows, without the body. The full list query carries every
+ * post's HTML (pages of 5-10 MB that Next cannot cache), which listings never render.
+ */
+export type BlsPostSummary = Omit<BlsPost, 'content' | 'gallery' | 'ogImage'>;
+export async function listPostSummaries(
+  opts: { page?: number; pageSize?: number; category?: string; categories?: string[]; authored?: boolean; withCover?: boolean; exclude?: string[] } = {},
+) {
+  const filters: Record<string, unknown> = {};
+  if (opts.category) filters.categories = { slug: { $eqi: opts.category } };
+  if (opts.categories?.length) filters.categories = { slug: { $in: opts.categories } };
+  /* Tier A posts are the ones with a named author (see CLAUDE.md): the listing lead should be one of them. */
+  if (opts.authored) filters.author = { id: { $notNull: true } };
+  if (opts.exclude?.length) filters.slug = { $notIn: opts.exclude };
+  if (opts.withCover) filters.coverImage = { id: { $notNull: true } };
+  const res = await strapiFetch<ListResponse<BlsPostSummary>>('bls-posts', {
+    sort: ['publishedAt:desc'],
+    fields: ['title', 'slug', 'excerpt', 'publishedAt', 'updatedAt', 'readingTimeMinutes', 'postType', 'seoDescription'],
+    populate: {
+      coverImage: { fields: ['url', 'alternativeText', 'width', 'height'] },
+      categories: { fields: ['name', 'slug'] },
+      author: { fields: ['name', 'slug', 'avatarUrl'] },
+    },
+    pagination: { page: opts.page ?? 1, pageSize: opts.pageSize ?? 12 },
+    filters,
+  });
+  return { ...res, data: res.data.map((p) => ({ ...p, title: cleanDashes(p.title), excerpt: p.excerpt ? cleanDashes(p.excerpt) : p.excerpt })) };
+}
+
 export async function getPost(slug: string): Promise<BlsPost | null> {
   const res = await strapiFetch<ListResponse<BlsPost>>('bls-posts', {
     filters: { slug: { $eq: slug } },
