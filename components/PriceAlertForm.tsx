@@ -61,8 +61,8 @@ export default function PriceAlertForm({
     }
   }
 
-  // Shared sizing so the two buttons are identical in width + height.
-  const btnBase = 'btn shop-btn';
+  // Shared sizing so the two buttons are identical in width + height (small buttons, 8px corners).
+  const btnBase = 'btn shop-btn shop-btn-sm shop-btn-square';
   const btnSize = { flex: '1 1 0', minWidth: 130 };
 
   return (

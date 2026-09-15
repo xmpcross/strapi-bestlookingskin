@@ -634,14 +634,11 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
         {related.length > 0 && (
           <aside className="mt-5 pt-4" data-testid="related-products">
             <h3 className="h4 mb-4">More in {cat?.name ?? 'this category'}</h3>
-            {/* 15px between cards, and no card background: the tiles sit on the
-                page rather than in boxes. thumbBg is the knob ProductCard already
-                exposes for this, so nothing needs overriding with !important. */}
-            <div className="row row-cols-lg-5 row-cols-sm-2 row-cols-1 g-3">
+            {/* 20px between cards; each card carries the border, background and shadow (see .related-products-grid),
+                so the thumbnail inside drops its own frame. */}
+            <div className="related-products-grid">
               {related.map((r) => (
-                <div className="col" key={r.id}>
-                  <ProductCard product={r} variant="tile" thumbBg="bg-transparent" />
-                </div>
+                <ProductCard key={r.id} product={r} variant="tile" thumbBg="bg-transparent" />
               ))}
             </div>
           </aside>
