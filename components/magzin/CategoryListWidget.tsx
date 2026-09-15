@@ -23,6 +23,8 @@ export default function CategoryListWidget({
   total,
   rows,
   current,
+  allActive = false,
+  rowHref = (slug: string) => `/categories/${slug}`,
 }: {
   title: string;
   allHref: string;
@@ -30,6 +32,10 @@ export default function CategoryListWidget({
   total: number | null;
   rows: { slug: string; name: string; count: number }[];
   current?: string;
+  /** Highlight the "All products" row (e.g. the /products listing with no category selected). */
+  allActive?: boolean;
+  /** Where a category row links; defaults to its category page. */
+  rowHref?: (slug: string) => string;
 }) {
   if (!rows.length) return null;
   return (
@@ -37,7 +43,7 @@ export default function CategoryListWidget({
       <SidebarTitle className="category-widget-title">{title}</SidebarTitle>
       <ul className="list-unstyled m-0 p-0">
         <li>
-          <Link href={allHref} className="category-widget-row">
+          <Link href={allHref} className={`category-widget-row${allActive ? ' is-active' : ''}`} aria-current={allActive ? 'page' : undefined}>
             <span className="category-widget-name">{allLabel}</span>
             {total !== null && <span className="category-widget-count">{total}</span>}
           </Link>
@@ -47,7 +53,7 @@ export default function CategoryListWidget({
           return (
             <li key={row.slug}>
               <Link
-                href={`/categories/${row.slug}`}
+                href={rowHref(row.slug)}
                 className={`category-widget-row${active ? ' is-active' : ''}`}
                 aria-current={active ? 'page' : undefined}
               >

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { listProducts, listProductCategories, listProductBrands, type BlsProduct } from '@/lib/strapi';
+import { listProducts, listProductCategories, listProductCategoryCounts, listProductBrands, type BlsProduct } from '@/lib/strapi';
+import CategoryListWidget from '@/components/magzin/CategoryListWidget';
 import ProductCard from '@/components/ProductCard';
 import { SITE } from '@/lib/site';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
@@ -71,6 +72,13 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     listProductCategories().catch(() => []),
     listProductBrands().catch(() => []),
   ]);
+  /* Category list widget (same as the product page's "Browse by category"): live counts and the catalogue total. */
+  const [categoryCounts, catalogueTotal] = await Promise.all([
+    listProductCategoryCounts().catch(() => []),
+    listProducts({ pageSize: 1 })
+      .then((r) => r.meta.pagination.total)
+      .catch(() => null),
+  ]);
 
   const products: BlsProduct[] = res?.data ?? [];
   const total = res?.meta?.pagination?.total ?? 0;
@@ -116,26 +124,19 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
           <div className="row g-5">
             {/* Filters sidebar */}
             <aside className="col-lg-3 col-12" aria-label="Filters">
-              {categories.length > 0 && (
+              {categoryCounts.length > 0 && (
                 <div className="shop-widget">
-                  <h2 className="h6 mb-3">Category</h2>
-                  <ul className="list-unstyled ps-0 m-0">
-                    <li>
-                      <FilterLink active={!category} href={withoutKey(baseQs, 'category')}>
-                        All categories
-                      </FilterLink>
-                    </li>
-                    {categories.map((c) => (
-                      <li key={c.id}>
-                        <FilterLink
-                          active={category === c.slug}
-                          href={withParam(baseQs, 'category', c.slug)}
-                        >
-                          {c.name}
-                        </FilterLink>
-                      </li>
-                    ))}
-                  </ul>
+                  {/* Filters this listing (keeps search, brand and sort), so rows link back to /products. */}
+                  <CategoryListWidget
+                    title="Browse by category"
+                    allHref={productsHref(withoutKey(baseQs, 'category'))}
+                    allLabel="All products"
+                    allActive={!category}
+                    total={catalogueTotal}
+                    rows={categoryCounts}
+                    current={category}
+                    rowHref={(slug) => productsHref(withParam(baseQs, 'category', slug))}
+                  />
                 </div>
               )}
 
@@ -360,4 +361,9 @@ function withoutKey(qs: URLSearchParams, key: string): string {
   next.delete(key);
   next.delete('page');
   return next.toString();
+}
+
+/* /products URL for a query string built by withParam / withoutKey. */
+function productsHref(qs: string): string {
+  return qs ? `/products?${qs}` : '/products';
 }
