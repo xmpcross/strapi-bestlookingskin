@@ -3,8 +3,8 @@
  * Keep template files untouched; put site-specific adjustments here.
  */
 :root {
-  /* Site primary colour (the brand green used before the Magzin redesign). */
-  --bls-primary: #478162;
+  /* Site primary colour: the Magzin template's dark neutral (flips to the light neutral in the dark theme). */
+  --bls-primary: var(--tc-neutral-900);
   /* Geist is self-hosted through the `geist` package (next/font/local): no request to Google Fonts. */
   --tc-body-font-family: var(--font-geist-sans), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --tc-heading-font-family: var(--font-geist-sans), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -429,7 +429,7 @@ body {
 
 /* ---- In-article "Contents" box (after the first paragraph) ---- */
 .article-contents {
-  background: #f7f7fd;
+  background: var(--tc-bg-4);
   border-radius: 12px;
   padding: 24px 28px 22px;
   margin: 1.5rem 0 2rem;
@@ -437,7 +437,7 @@ body {
 .article-contents-title {
   font-size: 1.35rem !important;
   font-weight: var(--tc-fw-semi-bold);
-  color: #22223b;
+  color: var(--tc-neutral-900);
   margin: 0 0 14px;
   line-height: 1.2;
 }
@@ -447,7 +447,7 @@ body {
   list-style: disc;
 }
 .article-contents li {
-  color: #4a5ba5;
+  color: var(--tc-neutral-900);
   margin: 0 0 10px;
   font-size: 16px;
   line-height: 1.45;
@@ -456,24 +456,14 @@ body {
   margin-bottom: 0;
 }
 .article-contents a {
-  color: #4a5ba5;
+  color: var(--tc-neutral-900);
   font-weight: var(--tc-fw-semi-bold);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 5px;
 }
 .article-contents a:hover {
-  color: #2f3d80;
-}
-[data-bs-theme='dark'] .article-contents {
-  background: #1e1c25;
-}
-[data-bs-theme='dark'] .article-contents-title {
-  color: #f3f4f6;
-}
-[data-bs-theme='dark'] .article-contents li,
-[data-bs-theme='dark'] .article-contents a {
-  color: #aab6f0;
+  color: var(--tc-neutral-600);
 }
 
 /*
@@ -677,7 +667,7 @@ html .sec-1-single-3 .post-layout-main h3 {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #3b6fd9;
+  color: var(--tc-neutral-900);
   font-size: 14px;
   font-weight: var(--tc-fw-semi-bold);
   width: fit-content;
@@ -725,11 +715,8 @@ html .sec-1-single-3 .post-layout-main h3 {
   font-size: 12px;
   color: var(--tc-neutral-600);
 }
-[data-bs-theme='dark'] .next-up-category {
-  color: #8fb0ff;
-}
 
-/* ---- Comments toggle (label + blue "Add a comment" button) ---- */
+/* ---- Comments toggle (label + "Add a comment" button in the template's dark button colours) ---- */
 .comments-label {
   font-size: 12px;
   font-weight: var(--tc-fw-bold);
@@ -744,8 +731,8 @@ html .sec-1-single-3 .post-layout-main h3 {
   padding: 9px 16px 9px 18px;
   border: 0;
   border-radius: 10px;
-  background: #1d6ae5;
-  color: #fff;
+  background: var(--tc-neutral-900);
+  color: var(--tc-system-white);
   font-size: 16px;
   font-weight: var(--tc-fw-semi-bold);
   line-height: 1.2;
@@ -753,10 +740,10 @@ html .sec-1-single-3 .post-layout-main h3 {
   transition: background 0.2s;
 }
 .comments-toggle:hover {
-  background: #1557c2;
+  background: var(--tc-neutral-700);
 }
 .comments-toggle:focus-visible {
-  outline: 2px solid #1d6ae5;
+  outline: 2px solid var(--tc-neutral-900);
   outline-offset: 2px;
 }
 

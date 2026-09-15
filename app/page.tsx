@@ -18,10 +18,9 @@ export const revalidate = 60;
  *   5. Latest guides: five wide cards                (card-12)
  *   6. More to read: dark title bar, overlap feature, two tiles, two rows (card-1, card-5, card-6)
  *   7. Recommended: author avatars and eight cards   (card-recommend)
- *   8. Become an author                              (sec-8-home-2)
  * Headings keep the template's style and length but say what each block really shows: the demo's "Staff Picks",
  * "Handpicked Just for You" and "Most Popular Topics" would claim curation, personalisation and traffic data the
- * site does not have. No view or comment counters are shown. The two email forms reach the editors by email.
+ * site does not have. No view or comment counters are shown. The newsletter form reaches the editors by email.
  * Tier A guides (named author, CMS cover) fill every block; each post appears once.
  */
 const none = { data: [] as BlsPostSummary[], meta: { pagination: { page: 1, pageSize: 0, pageCount: 0, total: 0 } } };
@@ -39,9 +38,9 @@ export default async function HomePage() {
 
   const cards = guides.data.map(toCard).filter((c) => c.image);
   /* Each block takes the next run of guides, so no post appears twice on the page. */
-  const blocks = [1, 4, 3, 6, 5, 1, 2, 2, 8, 3];
+  const blocks = [1, 4, 3, 6, 5, 1, 2, 2, 8];
   const starts = blocks.map((_, i) => blocks.slice(0, i).reduce((n, b) => n + b, 0));
-  const [[feature], heroTiles, pickCards, pickRows, latest, [forYouFeature], forYouTiles, forYouRows, recommended, authorImages] = blocks.map((n, i) =>
+  const [[feature], heroTiles, pickCards, pickRows, latest, [forYouFeature], forYouTiles, forYouRows, recommended] = blocks.map((n, i) =>
     cards.slice(starts[i], starts[i] + n),
   );
 
@@ -232,49 +231,6 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 8. Become an author */}
-      <section className="sec-8-home-2 bg-white">
-        <div className="decorate-1">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/imgs/template/decorate-4.png" alt="" width={250} height={250} />
-        </div>
-        <div className="container position-relative z-1">
-          <div className="row g-4 align-items-center">
-            <div className="col-lg-6 col-12">
-              <div className="block-title d-flex align-items-center gap-1 fs-7 text-600">
-                <svg className="dark-mode-invert" xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <path d="M12 11.25C13.7949 11.25 15.25 9.79493 15.25 8C15.25 6.20507 13.7949 4.75 12 4.75C10.2051 4.75 8.75 6.20507 8.75 8C8.75 9.79493 10.2051 11.25 12 11.25Z" stroke="#0E0E0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M6.84747 19.25H17.1525C18.2944 19.25 19.174 18.2681 18.6408 17.2584C17.8563 15.7731 16.068 14 12 14C7.93198 14 6.14364 15.7731 5.35921 17.2584C4.82594 18.2681 5.70555 19.25 6.84747 19.25Z" stroke="#0E0E0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span className="fs-7 fw-regular">Start your writing journey today.</span>
-              </div>
-              <h2 className="h4 mb-4 ds-5">Become an author</h2>
-              <EmailSignup purpose="author" button="Send" />
-            </div>
-            {authorImages.length > 0 && (
-              <div className="col-lg-5 col-12 ms-lg-auto position-relative z-1">
-                <div className="d-flex align-items-center justify-content-center gap-1">
-                  {authorImages.map((card, i) =>
-                    card.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        key={card.key}
-                        className={`rounded-16 cover-image ${i === 0 ? 'mb-3 d-none d-md-block' : ''}`}
-                        src={card.image}
-                        alt={card.imageAlt}
-                        width={[115, 170, 133][i]}
-                        height={[148, 220, 172][i]}
-                        loading="lazy"
-                        style={{ objectFit: 'cover', width: [115, 170, 133][i], height: [148, 220, 172][i], flexShrink: 0 }}
-                      />
-                    ) : null,
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

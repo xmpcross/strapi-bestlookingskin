@@ -83,8 +83,10 @@
   color: var(--tc-system-white);
 }
 .tag-item.bls-tag {
-  color: var(--tc-neutral-900);
   font-size: 14px;
+}
+.tag-item.bls-tag:not(.is-active) {
+  color: var(--tc-neutral-900);
 }
 
 /* Forms: the template's pill radius suits one-line inputs, not a message box. */

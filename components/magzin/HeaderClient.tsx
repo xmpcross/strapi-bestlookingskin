@@ -30,13 +30,30 @@ export default function HeaderClient({
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [openSection, setOpenSection] = useState<string | null>(null);
-  /* The theme lives on <html data-bs-theme> (set before paint by the inline script in app/layout.tsx). */
-  const [, rerender] = useState(0);
+  /* The theme lives on <html data-bs-theme> (set before paint by the inline script in app/layout.tsx); the
+     switch follows that attribute. */
   const dark = useSyncExternalStore(
-    () => () => {},
+    (onChange) => {
+      const observer = new MutationObserver(onChange);
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-bs-theme'] });
+      return () => observer.disconnect();
+    },
     () => document.documentElement.getAttribute('data-bs-theme') === 'dark',
     () => false,
   );
+
+  /* A client-rendered root (the 404 page) replaces <html> and drops the attribute the inline script set: put the
+     saved theme back. */
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('theme');
+      if ((saved === 'dark' || saved === 'light') && document.documentElement.getAttribute('data-bs-theme') !== saved) {
+        document.documentElement.setAttribute('data-bs-theme', saved);
+      }
+    } catch {
+      /* storage blocked */
+    }
+  }, []);
   const inputRef = useRef<HTMLInputElement>(null);
 
   /* Close panels on navigation (state adjusted during render, React's pattern for props-driven resets). */
@@ -71,7 +88,6 @@ export default function HeaderClient({
     } catch {
       /* private mode */
     }
-    rerender((n) => n + 1);
   };
 
   useEffect(() => {

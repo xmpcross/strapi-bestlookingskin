@@ -270,6 +270,7 @@
 }
 
 /* ---- Product page ---- */
+/* Product photo frames stay white in both themes: the product shots carry white backgrounds. */
 .shop-hero-img {
   position: relative;
   overflow: hidden;
@@ -318,7 +319,7 @@
   white-space: nowrap;
 }
 .shop-star-on {
-  color: #f5a524;
+  color: var(--tc-system-warning);
 }
 .shop-star-off {
   color: var(--tc-neutral-300);
@@ -335,15 +336,12 @@
   width: 40px;
   height: 36px;
   border-radius: 8px;
-  color: #fff;
+  color: var(--tc-system-white);
+  background: var(--tc-neutral-900);
 }
 .shop-share a:hover {
-  opacity: 0.85;
+  background: var(--tc-neutral-700);
 }
-.shop-share .is-facebook { background: #1877f2; }
-.shop-share .is-x { background: #000; }
-.shop-share .is-pinterest { background: #e60023; }
-.shop-share .is-email { background: #3b5998; }
 .shop-bullets {
   padding-left: 20px;
   margin: 12px 0 0;
@@ -636,7 +634,7 @@
   margin-top: 8px;
 }
 .shop-check-ok {
-  color: #22a45d;
+  color: var(--tc-system-success);
   flex-shrink: 0;
 }
 .shop-check-warn {
@@ -700,7 +698,7 @@
   margin: 0;
 }
 .price-stat-value.is-accent {
-  color: #22a45d;
+  color: var(--tc-system-success);
 }
 
 /* Reviews. */
