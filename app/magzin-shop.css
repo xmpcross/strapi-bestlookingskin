@@ -617,12 +617,12 @@
 }
 
 /* Featured Products rows: uniform 96px square thumbnails (product shots vary in shape), photo on a white tile. */
-.featured-product-row .card-img {
+.article.card-10.featured-product-row .card-img {
   min-width: 96px;
   max-width: 96px;
   min-height: 0;
 }
-.featured-product-row .card-img img {
+.article.card-10.featured-product-row .card-img img {
   width: 96px;
   height: 96px;
   object-fit: contain;

@@ -580,7 +580,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                         <div className="article card-10 style-1 featured-product-row" key={fp.slug}>
                           <Link href={`/products/${fp.slug}`} className="card-img" tabIndex={-1} aria-hidden>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            {img ? <img className="w-100 rounded-8" src={img} alt="" width={96} height={96} loading="lazy" /> : null}
+                            {img ? <img className="rounded-8" src={img} alt="" width={96} height={96} loading="lazy" /> : null}
                           </Link>
                           <div className="card-body">
                             <Link href={`/products/${fp.slug}`}>
