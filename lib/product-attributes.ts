@@ -201,3 +201,41 @@ export function productLead(shortDescription?: string, description?: string): st
   }
   return lead.trim() || null;
 }
+
+/* Highlights strip above the product description: up to eight headline facts, in this order, each taken from the
+   same attribute rows the Specifications / Additional Info sections show (so each tile can point at its section). */
+const HIGHLIGHT_KEYS: { keys: string[]; label?: string }[] = [
+  { keys: ['Product Type', 'Type', 'Formulation Form', 'Form'], label: 'Product Type' },
+  { keys: ['Skin Type'] },
+  { keys: ['Key Ingredient', 'Active Ingredients', 'Active Ingredient', 'Highlighted Ingredients'], label: 'Key Ingredient' },
+  { keys: ['Free Of'] },
+  { keys: ['Volume', 'Net Volume', 'Size', 'Net Weight', 'Item Count'], label: 'Size' },
+  { keys: ['Formulation Type', 'Texture', 'Formulation Consistency'], label: 'Texture' },
+  { keys: ['Scent'] },
+  { keys: ['Application Frequency', 'Application Time of Day', 'Application Time'], label: 'When to Use' },
+  { keys: ['Primary Skin Concern', 'Skin Concerns', 'Solution For'], label: 'Skin Concern' },
+];
+
+export type ProductHighlight = { label: string; value: string; section: 'specifications' | 'additional' };
+
+export function productHighlights(attributes: { specifications: AttributeRow[]; additional: AttributeRow[] }, limit = 7): ProductHighlight[] {
+  const find = (key: string) => {
+    const k = key.toLowerCase();
+    const spec = attributes.specifications.find(([l]) => l.toLowerCase() === k);
+    if (spec) return { value: spec[1], section: 'specifications' as const };
+    const add = attributes.additional.find(([l]) => l.toLowerCase() === k);
+    return add ? { value: add[1], section: 'additional' as const } : null;
+  };
+  const out: ProductHighlight[] = [];
+  for (const h of HIGHLIGHT_KEYS) {
+    for (const key of h.keys) {
+      const hit = find(key);
+      if (hit) {
+        out.push({ label: h.label ?? key, value: hit.value, section: hit.section });
+        break;
+      }
+    }
+    if (out.length >= limit) break;
+  }
+  return out;
+}

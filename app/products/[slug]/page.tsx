@@ -13,7 +13,8 @@ import PriceBadges from '@/components/PriceBadges';
 import ProductInfoAccordion from '@/components/ProductInfoAccordion';
 import SidebarTitle from '@/components/magzin/SidebarTitle';
 import CategoryListWidget from '@/components/magzin/CategoryListWidget';
-import { productAttributes, productLead } from '@/lib/product-attributes';
+import { productAttributes, productHighlights, productLead } from '@/lib/product-attributes';
+import ProductHighlights from '@/components/ProductHighlights';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
 
 /*
@@ -503,6 +504,12 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
               </div>
             )}
 
+            {/* Highlights: brand plus up to seven headline attributes, above the description. */}
+            <ProductHighlights
+              brand={product.brand ? { name: product.brand, href: `/brands/${encodeURIComponent(product.brandRef?.slug ?? product.brand)}` } : null}
+              items={productHighlights(attributes)}
+            />
+
             {/* Description / Specifications / Additional Info / Reviews as an accordion (Description open). The description
                 shows in full (no "View more" clamp); a section with nothing sourced for this product is left out. */}
             <ProductInfoAccordion
@@ -620,14 +627,12 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
           )}
         </div>
 
-        {priceHistory.length > 0 && (
+        {/* Price History, just above "More in {category}". Shown only with two or more recorded price snapshots: no
+            bestlooking.skin product has any yet (offers were last refreshed 11 Sep 2026), so it stays hidden until
+            real prices are recorded. */}
+        {priceHistory.length >= 2 && (
           <section className="mt-5 pt-4" data-testid="price-history">
-            <h2 className="h4 mb-3">Price history</h2>
-            <p className="fs-6 mb-4">
-              See how the price of {product.name} has changed over time. The chart below tracks every
-              price we&rsquo;ve recorded, so you can spot the typical range, catch recent drops, and judge
-              whether today&rsquo;s price is a genuine deal or worth waiting out before you buy.
-            </p>
+            <h2 className="h4 mb-4">Price History</h2>
             <PriceHistoryChart points={priceHistory} />
           </section>
         )}
@@ -789,21 +794,11 @@ function ProductDescription({ markdown }: { markdown: string }) {
   while (i < lines.length) {
     const line = lines[i];
     if (!line.trim()) { i += 1; continue; }
-    if (line.startsWith('### ')) {
-      blocks.push(
-        <h4 key={key++}>
-          {inline(line.slice(4).trim())}
-        </h4>,
-      );
-      i += 1;
-      continue;
-    }
-    if (line.startsWith('## ')) {
-      blocks.push(
-        <h2 key={key++}>
-          {inline(line.slice(3).trim())}
-        </h2>,
-      );
+    /* Markdown headings: ## h2, ### h3, #### h4 (one level each, no skipping). */
+    const heading = line.match(/^(#{2,4})\s+(.*)$/);
+    if (heading) {
+      const Tag = (['h2', 'h3', 'h4'] as const)[heading[1].length - 2];
+      blocks.push(<Tag key={key++}>{inline(heading[2].trim())}</Tag>);
       i += 1;
       continue;
     }
@@ -825,8 +820,7 @@ function ProductDescription({ markdown }: { markdown: string }) {
     while (
       i < lines.length
       && lines[i].trim()
-      && !lines[i].startsWith('### ')
-      && !lines[i].startsWith('## ')
+      && !/^#{2,4}\s/.test(lines[i])
       && !/^\s*[-*]\s+/.test(lines[i])
     ) {
       para.push(lines[i]);

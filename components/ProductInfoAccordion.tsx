@@ -10,7 +10,7 @@ export default function ProductInfoAccordion({ sections }: { sections: ProductIn
   return (
     <div className="product-accordion" data-testid="product-info-accordion">
       {sections.map((s, i) => (
-        <details key={s.key} className="product-accordion-item" open={i === 0} data-section={s.key}>
+        <details key={s.key} id={`product-section-${s.key}`} className="product-accordion-item" open={i === 0} data-section={s.key}>
           <summary className="product-accordion-summary">
             <h2 className="product-accordion-title">{s.label}</h2>
             <span className="product-accordion-icon" aria-hidden />
