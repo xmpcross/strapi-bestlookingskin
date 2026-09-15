@@ -1,0 +1,188 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import { SITE } from '@/lib/site';
+import type { NavGroup, NavItem } from '@/lib/nav';
+import { CloseIcon, MenuIcon, SearchIcon, ThemeIcon } from './icons';
+
+/*
+ * The header's interactive parts: sticky/hide-on-scroll, the search panel, the theme switch and the
+ * off-canvas side menu. Plain React state (the template drove these with document.querySelector).
+ */
+export default function HeaderClient({ nav, topics }: { nav: NavItem[]; topics: NavGroup[] }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [openSection, setOpenSection] = useState<string | null>(null);
+  const [dark, setDark] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  /* Close panels on navigation. */
+  useEffect(() => {
+    setSearchOpen(false);
+    setMenuOpen(false);
+  }, [pathname]);
+
+  /* Sticky navbar after 100px; slides away while scrolling down, back when scrolling up. */
+  useEffect(() => {
+    const navbar = document.querySelector<HTMLElement>('header .navbar');
+    if (!navbar) return;
+    navbar.style.transition = 'transform 0.3s ease';
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      ['navbar-stick', 'top-0', 'position-fixed', 'w-100'].forEach((c) => navbar.classList.toggle(c, y > 100));
+      navbar.style.transform = y > 100 && y > last ? 'translateY(-100%)' : 'translateY(0)';
+      last = y;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    setDark(document.documentElement.getAttribute('data-bs-theme') === 'dark');
+  }, []);
+  const toggleTheme = () => {
+    const next = dark ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-bs-theme', next);
+    try {
+      localStorage.setItem('theme', next);
+    } catch {
+      /* private mode */
+    }
+    setDark(!dark);
+  };
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen || searchOpen ? 'hidden' : '';
+    if (searchOpen) setTimeout(() => inputRef.current?.focus(), 50);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMenuOpen(false);
+        setSearchOpen(false);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [menuOpen, searchOpen]);
+
+  const submitSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const q = String(new FormData(e.currentTarget).get('q') ?? '').trim();
+    if (q) router.push(`/search?q=${encodeURIComponent(q)}`);
+  };
+  const popular = topics.flatMap((g) => g.items).slice(0, 9);
+
+  return (
+    <>
+      <div className="d-flex align-items-center ms-auto gap-4">
+        <button type="button" className="search-btn fs-7 d-none d-md-flex link-effect-2 border-0 bg-transparent" onClick={() => setSearchOpen(true)} aria-label={`Search ${SITE.name}`}>
+          <SearchIcon />
+          Search
+        </button>
+        <div className="group-btn-right d-flex align-items-center">
+          <button type="button" className="dark-light-switcher border-0 bg-transparent" onClick={toggleTheme} aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}>
+            <ThemeIcon dark={dark} />
+          </button>
+          <button type="button" className="navbar-toggler border-0 bg-transparent" onClick={() => setMenuOpen(true)} aria-label="Open menu" aria-expanded={menuOpen}>
+            <MenuIcon />
+          </button>
+        </div>
+      </div>
+
+      {/* Search panel */}
+      <div className={`popup-search ${searchOpen ? 'show' : ''}`} role="dialog" aria-modal="true" aria-label="Search" aria-hidden={!searchOpen}>
+        <div className="container">
+          <div className="row">
+            <div className="col-lg-10 col-12 mx-auto">
+              <div className="popup-search-content position-relative">
+                <button type="button" className="close-popup position-absolute top-0 end-0 m-3 border-0 bg-transparent" onClick={() => setSearchOpen(false)} aria-label="Close search">
+                  <CloseIcon />
+                </button>
+                <h5 className="mb-4">Search {SITE.name}</h5>
+                <form onSubmit={submitSearch} className="d-flex flex-wrap flex-lg-nowrap gap-2" role="search">
+                  <label htmlFor="site-search" className="visually-hidden">
+                    Search
+                  </label>
+                  <input ref={inputRef} id="site-search" name="q" className="form-control" type="search" placeholder="Ingredients, products, skin concerns…" />
+                  <button className="btn btn-dark" type="submit">
+                    Search
+                  </button>
+                </form>
+                {popular.length > 0 && (
+                  <div className="block-tag mt-5">
+                    {popular.map((t) => (
+                      <Link key={t.href} href={t.href} className="tag-item">
+                        <span>{t.label}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className={`popup-search-overlay ${searchOpen ? 'active' : ''}`} onClick={() => setSearchOpen(false)} />
+
+      {/* Off-canvas side menu (all widths; the only menu on mobile) */}
+      <div className={`sidebar-left ${menuOpen ? 'active' : ''}`} aria-hidden={!menuOpen}>
+        <div className="header-sidebar d-flex align-items-center justify-content-between py-3">
+          <Link href="/" className="sidebar-brand" aria-label={`${SITE.name} home`}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="dark-mode-invert" src="/bestlookingskin_logo.svg" width={130} height={41} alt={SITE.name} />
+          </Link>
+          <button type="button" className="close-sidebar border-0 bg-transparent" onClick={() => setMenuOpen(false)} aria-label="Close menu">
+            <CloseIcon />
+          </button>
+        </div>
+        <form onSubmit={submitSearch} className="d-flex gap-2 mb-4 d-md-none" role="search">
+          <input name="q" className="form-control fs-7" type="search" placeholder="Search" aria-label="Search" />
+          <button className="btn btn-dark px-3" type="submit">
+            Go
+          </button>
+        </form>
+        <ul className="sidebar-nav list-unstyled ps-0">
+          {nav.map((item) => {
+            const children = item.groups ? item.groups.flatMap((g) => g.items) : item.children;
+            if (!children) {
+              return (
+                <li className="nav-item" key={item.label}>
+                  <Link className="nav-link mb-2" href={item.href!}>
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            }
+            const open = openSection === item.label;
+            return (
+              <li className={`nav-item collapse ${open ? 'active' : ''}`} key={item.label}>
+                <button type="button" className="nav-link mb-2 collapse-toggle border-0 bg-transparent w-100 text-start" onClick={() => setOpenSection(open ? null : item.label)} aria-expanded={open}>
+                  {item.label}
+                </button>
+                <ul className="collapse-menu d-flex flex-column gap-1 list-unstyled" style={{ maxHeight: open ? `${children.length * 44}px` : undefined }}>
+                  {children.map((c) => (
+                    <li key={c.href}>
+                      <Link className="collapse-item" href={c.href}>
+                        {c.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            );
+          })}
+        </ul>
+        <div className="text-center mt-4">
+          <p className="fs-7">
+            © {new Date().getFullYear()} <span className="text-dark">{SITE.name}</span>
+          </p>
+        </div>
+      </div>
+      <div className={`sidebar-overlay ${menuOpen ? 'active' : ''}`} onClick={() => setMenuOpen(false)} />
+    </>
+  );
+}

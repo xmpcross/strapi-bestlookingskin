@@ -1,14 +1,18 @@
 import type { Metadata } from 'next';
-import './globals.css';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import { GeistSans } from 'geist/font/sans';
+import '@/public/assets/css/vendors/bootstrap-grid.min.css';
+import '@/public/assets/css/main.css';
+import './magzin.css';
+import SiteHeader from '@/components/magzin/SiteHeader';
+import SiteFooter from '@/components/magzin/SiteFooter';
+import BackToTop from '@/components/magzin/BackToTop';
 import CookieConsent from '@/components/CookieConsent';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import { SITE } from '@/lib/site';
 
-// Fonts are self-hosted via @font-face in globals.css (public/fonts/InterVariable*.woff2).
-// No next/font/google fetch — keeps the build offline-friendly and lands the
-// font on our own origin so pageload makes zero requests to fonts.gstatic.com.
+// Magzin template (header style 2, Home 2 / Archive 3 / Single 3). Geist is self-hosted through the
+// `geist` package — no next/font/google fetch, so the build stays offline-friendly and pageload makes
+// zero requests to fonts.gstatic.com.
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -39,8 +43,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={GeistSans.variable} suppressHydrationWarning>
       <head>
+        {/* Apply the saved light/dark theme before paint (Magzin's data-bs-theme switch). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-bs-theme',t)}catch(e){}",
+          }}
+        />
         {/* Impact.com site verification — verbatim <meta name=… value=…> tag.
             Using `value` (not Next's metadata `content`) exactly as Impact provides. */}
         <meta {...({ name: 'impact-site-verification', value: '5018c6dc-98d5-4dd1-84ac-32c80d7fd16f' } as Record<string, string>)} />
@@ -50,10 +60,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin="anonymous"
         />
       </head>
-      <body className="min-h-screen flex flex-col font-sans" data-testid="app-shell">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+      <body className={GeistSans.className} data-testid="app-shell">
+        <div id="top" />
+        <SiteHeader />
+        <main>{children}</main>
+        <SiteFooter />
+        <BackToTop />
         <CookieConsent />
         <GoogleAnalytics />
       </body>

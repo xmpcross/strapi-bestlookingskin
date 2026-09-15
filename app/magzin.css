@@ -1,0 +1,38 @@
+/*
+ * bestlooking.skin layer over the Magzin template CSS (public/assets/css/main.css).
+ * Keep template files untouched; put site-specific adjustments here.
+ */
+:root {
+  /* Geist is self-hosted through the `geist` package (next/font/local): no request to Google Fonts. */
+  --tc-body-font-family: var(--font-geist-sans), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tc-heading-font-family: var(--font-geist-sans), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* The template used <a href="#"> for these controls; they are buttons here. */
+header .search-btn,
+header .dark-light-switcher,
+header .navbar-toggler,
+.close-popup,
+.close-sidebar,
+.sidebar-nav .collapse-toggle {
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+}
+.navbar.style-2 .navbar-brand img {
+  height: 42px;
+  width: auto;
+}
