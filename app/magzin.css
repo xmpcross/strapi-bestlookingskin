@@ -559,3 +559,11 @@ html body .card-title.fw-normal {
   line-height: 1.35;
   max-height: none;
 }
+
+/* Single post page: headings in the article column (body, FAQ, comments) at h2 1.7rem / h3 1.3rem. */
+html .sec-1-single-3 .post-layout-main h2 {
+  font-size: 1.7rem !important;
+}
+html .sec-1-single-3 .post-layout-main h3 {
+  font-size: 1.3rem !important;
+}
