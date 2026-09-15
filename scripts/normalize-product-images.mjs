@@ -86,10 +86,17 @@ if (OUT) mkdirSync(OUT, { recursive: true });
 
 const UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 
+/*
+ * Reads go out without the token, on the public role the storefront itself reads
+ * with. A token is checked against its own permission list, not the public one,
+ * so a write-only token rejects the `site` filter as "Invalid key site" unless it
+ * was also granted find on commerce-site. Only writes need to authenticate.
+ */
 async function strapi(path, init = {}) {
+  const write = init.method && init.method !== 'GET';
   const res = await fetch(`${STRAPI}/api/${path}`, {
     ...init,
-    headers: { 'Content-Type': 'application/json', ...(TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {}), ...(init.headers || {}) },
+    headers: { 'Content-Type': 'application/json', ...(write && TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {}), ...(init.headers || {}) },
   });
   const text = await res.text();
   if (!res.ok) throw new Error(`Strapi ${res.status} ${path}: ${text.slice(0, 200)}`);
