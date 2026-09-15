@@ -5,16 +5,17 @@ import { getCategory, listPostSummaries } from '@/lib/strapi';
 import { SECTIONS, SITE } from '@/lib/site';
 import { getTopicGroups } from '@/lib/nav';
 import { toCard } from '@/lib/post-card';
-import { FeatureCard, TileCard } from '@/components/magzin/cards';
+import { TextCard } from '@/components/magzin/cards';
+import SidebarTitle from '@/components/magzin/SidebarTitle';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
 import Pagination from '@/components/magzin/Pagination';
 
 export const revalidate = 60;
 export const dynamicParams = true;
 
-/* Archive in the Magzin "Archive 3" layout: a feature and four tiles, then a grid of four per row. */
-const FIRST_PAGE = 17; // 1 feature + 4 tiles + 12 in the grid
-const PAGE_SIZE = 16;
+/* Archive in the Magzin category layout (magzin.alithemes.net/category/lifestyle): archive header, a three-column
+   grid of card-7 posts beside a sidebar, then pagination. Twelve posts a page (four rows). */
+const PAGE_SIZE = 12;
 
 // Reserved top-level routes that aren't categories — keep them out of this segment.
 const RESERVED = new Set(['about', 'brands', 'search', 'newhome', 'feed.xml', 'sitemap.xml', 'robots.txt']);
@@ -57,115 +58,135 @@ export default async function CategoryPage({ params, searchParams }: { params: P
   const { page: pageRaw } = await searchParams;
   const page = Math.max(1, Number(pageRaw) || 1);
 
-  /* Page 1 holds 17 posts, later pages 16: fetch by offset so no post is skipped or repeated. */
-  const start = page === 1 ? 0 : FIRST_PAGE + (page - 2) * PAGE_SIZE;
-  const size = page === 1 ? FIRST_PAGE : PAGE_SIZE;
-  const [c, res, groups] = await Promise.all([
+  const start = (page - 1) * PAGE_SIZE;
+  const [c, res, groups, latestRes] = await Promise.all([
     resolveCategory(category),
     listPostSummaries({ category, pageSize: 100, page: 1 }).catch(() => null),
     getTopicGroups(),
+    listPostSummaries({ authored: true, withCover: true, pageSize: 6 }).catch(() => null),
   ]);
   const all = res?.data ?? [];
   const total = res?.meta.pagination.total ?? all.length;
   if (!c.known && total === 0) notFound();
-  const posts = all.slice(start, start + size).map(toCard);
-  const pageCount = total <= FIRST_PAGE ? 1 : 1 + Math.ceil((total - FIRST_PAGE) / PAGE_SIZE);
+  const posts = all.slice(start, start + PAGE_SIZE).map(toCard);
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
   if (page > 1 && posts.length === 0) notFound();
 
-  const lead = page === 1 ? posts.slice(0, 5) : [];
-  const grid = page === 1 ? posts.slice(5) : posts;
-  const [feature, ...tiles] = lead;
-  const otherTopics = groups.flatMap((g) => g.items).filter((t) => t.href !== `/${category}`);
+  /* Sidebar. "Latest guides" (the template's "Weekly trending": the site has no traffic data) lists the newest
+     authored guides outside this archive; "Browse Topics" (its "Popular tags") lists every hub with its post count,
+     then the article formats. */
+  const latest = (latestRes?.data ?? [])
+    .map(toCard)
+    .filter((card) => card.image && !card.href.startsWith(`/${category}/`))
+    .slice(0, 3);
+  const hubs = groups.flatMap((g) => g.items).filter((t) => t.href !== `/${category}`);
+  const hubCounts = await Promise.all(
+    hubs.map((h) =>
+      listPostSummaries({ category: h.href.replace(/^\//, ''), pageSize: 1, withCover: true })
+        .then((r) => r.meta.pagination.total)
+        .catch(() => 0),
+    ),
+  );
+  const topicTags = hubs.map((h, i) => ({ ...h, count: hubCounts[i] })).filter((t) => t.count > 0);
+  const formatTags = SECTIONS.filter((sec) => sec.slug !== category).map((sec) => ({ label: sec.title, href: `/${sec.slug}` }));
 
   return (
     <div data-testid={`category-${category}`}>
-      <section className="sec-breadcumb">
+      <div className="container">
+        <Breadcrumb items={[{ label: c.name }]} />
+      </div>
+
+      <section className="archive-header-area py-5">
         <div className="container">
-          <Breadcrumb items={[{ label: c.name }]} />
           <div className="row align-items-end">
-            <div className="col-lg-8 col-12">
+            <div className="col-12">
               <div className="title">
                 <h1 className="h4 mb-0 ds-4">
-                  {c.name}
-                  <span className="text-600 fw-regular fs-6 bg-white rounded-8 p-2 ms-2 align-middle">
+                  {c.name}{' '}
+                  <span className="text-600 fw-regular fs-6 bg-white rounded-8 p-2 align-middle">
                     {total} {total === 1 ? 'article' : 'articles'}
                   </span>
                 </h1>
                 {c.subtitle && <p className="fs-6 text-dark mt-3 mb-1">{c.subtitle}</p>}
-                {c.description && <p className="fs-7 mb-0 mt-2">{c.description}</p>}
+                {c.description && <p className="fs-7 mb-0 mt-2 archive-description">{c.description}</p>}
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="sec-1-archive-3 pt-5 pb-70">
-        {feature && (
-          <div className="container">
-            <div className="row mt-2 g-4">
-              <div className="col-lg-6">
-                <FeatureCard card={feature} priority />
-              </div>
-              {[tiles.slice(0, 2), tiles.slice(2, 4)].map((col, i) =>
-                col.length ? (
-                  <div className="col-lg-3" key={i}>
-                    <div className="row g-4">
-                      {col.map((card) => (
-                        <div className="col-lg-12 col-md-6" key={card.key}>
-                          <TileCard card={card} />
-                        </div>
-                      ))}
+      <section className="pb-70">
+        <div className="container">
+          <div className="row g-5">
+            <div className="col-lg-9 col-12">
+              {posts.length > 0 ? (
+                <div className="row g-4">
+                  {posts.map((card) => (
+                    <div className="col-lg-4 col-md-6 col-12" key={card.key}>
+                      <TextCard card={card} />
                     </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-600">Articles for this topic are on the way.</p>
+              )}
+              {pageCount > 1 && (
+                <div className="row mt-5">
+                  <div className="col-12 d-flex justify-content-start align-items-center">
+                    <Pagination basePath={`/${category}`} page={page} pageCount={pageCount} />
                   </div>
-                ) : null,
+                </div>
               )}
             </div>
-          </div>
-        )}
-        {grid.length > 0 && (
-          <div className="container">
-            <div className="row g-4 mt-4">
-              {grid.map((card) => (
-                <div className="col-lg-3 col-md-6 col-12" key={card.key}>
-                  <TileCard card={card} />
+
+            <aside className="col-lg-3 col-12 archive-sidebar" aria-label="Archive sidebar">
+              {latest.length > 0 && (
+                <div className="mb-5">
+                  <SidebarTitle>Latest guides</SidebarTitle>
+                  <div className="d-flex flex-column gap-3">
+                    {latest.map((card) => (
+                      <div className="article card-10 style-2 sidebar-trending" key={card.key}>
+                        <Link href={card.href} className="card-img" tabIndex={-1} aria-hidden>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img className="w-100" src={card.image as string} alt="" width={108} height={83} loading="lazy" />
+                        </Link>
+                        <div className="card-body">
+                          <Link href={card.href}>
+                            <span className="h6 mb-2 text-truncate-2 archive-side-title">{card.title}</span>
+                          </Link>
+                          <span className="fs-8 text-600">{card.date}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-        {total === 0 && (
-          <div className="container">
-            <p className="text-600 mt-4">Articles for this topic are on the way.</p>
-          </div>
-        )}
-        <div className="container">
-          <div className="row mt-5">
-            <div className="col-12 d-flex justify-content-center align-items-center">
-              <Pagination basePath={`/${category}`} page={page} pageCount={pageCount} />
-            </div>
+              )}
+              {(topicTags.length > 0 || formatTags.length > 0) && (
+                <div className="mb-5">
+                  <SidebarTitle>Browse Topics</SidebarTitle>
+                  <ul className="list-unstyled d-flex flex-wrap gap-2 ps-0 m-0">
+                    {topicTags.map((t) => (
+                      <li key={t.href}>
+                        <Link href={t.href} className="tag-item">
+                          <span className="fs-7">{t.label}</span>
+                          <span className="number">{t.count}</span>
+                        </Link>
+                      </li>
+                    ))}
+                    {formatTags.map((t) => (
+                      <li key={t.href}>
+                        <Link href={t.href} className="tag-item">
+                          <span className="fs-7">{t.label}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </aside>
           </div>
         </div>
       </section>
-
-      {otherTopics.length > 0 && (
-        <section className="pb-70">
-          <div className="container">
-            <h2 className="h5 mb-4">Browse other topics</h2>
-            <div className="block-tag d-flex flex-wrap gap-2">
-              {otherTopics.map((t) => (
-                <Link key={t.href} href={t.href} className="tag-item">
-                  <span>{t.label}</span>
-                </Link>
-              ))}
-              {SECTIONS.filter((s) => s.slug !== category).map((s) => (
-                <Link key={s.slug} href={`/${s.slug}`} className="tag-item">
-                  <span>{s.title}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
     </div>
   );
 }

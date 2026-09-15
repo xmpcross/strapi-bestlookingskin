@@ -164,11 +164,14 @@ export function TextCard({ card }: { card: PostCardData }) {
           <Link href={card.href}>
             <h3 className="h6 card-title mb-4">{card.title}</h3>
           </Link>
-          <div className="position-relative card-img">
-            <Link href={card.href}>
-              <Cover card={card} width={420} height={280} className="rounded-16 overflow-hidden cover-image" sizes="(min-width: 1200px) 25vw, (min-width: 768px) 40vw, 90vw" />
-            </Link>
-          </div>
+          {/* Legacy posts without a cover skip the image block rather than showing an empty grey box. */}
+          {card.image && (
+            <div className="position-relative card-img">
+              <Link href={card.href} tabIndex={-1} aria-hidden>
+                <Cover card={card} width={420} height={280} className="rounded-16 overflow-hidden cover-image" sizes="(min-width: 1200px) 25vw, (min-width: 768px) 40vw, 90vw" />
+              </Link>
+            </div>
+          )}
           {card.excerpt && <p className="card-text text-600 fs-7 mb-0 mt-4 pe-5 text-truncate-3">{card.excerpt}</p>}
         </div>
       </div>

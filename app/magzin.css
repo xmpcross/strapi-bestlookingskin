@@ -814,6 +814,23 @@ html .sec-1-single-3 .post-layout-main h3 {
   line-height: 1.6;
 }
 
+/* Category archive (Magzin category layout): full-width sidebar rows in the narrow column, 14px row titles. */
+.archive-sidebar .article.card-10.style-2.sidebar-trending {
+  width: 100%;
+  max-width: 100%;
+}
+.archive-sidebar .article.card-10.style-2.sidebar-trending .card-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+html .archive-sidebar .archive-side-title {
+  font-size: 14px !important;
+  line-height: 1.4;
+}
+.archive-description {
+  max-width: 72ch;
+}
+
 /* ---- Affiliate links + tags (under Next Up) ---- */
 .post-affiliate-links {
   padding-bottom: 28px;
