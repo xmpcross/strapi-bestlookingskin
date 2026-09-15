@@ -8,8 +8,8 @@ import { FacebookIcon, RssIcon } from './icons';
 /*
  * Magzin footer style 4 (the "Personal" home): brand block with socials and copyright, two link columns, and an
  * image grid. The template's Instagram grid holds demo photos; here it shows the newest guides' covers, each
- * linking to its guide. Style 4 has no legal row, so the legal links sit under the copyright line: a dead or
- * missing policy link is worse than none on a site carrying affiliate disclosures.
+ * linking to its guide. Style 4 has no legal row, so a bottom bar below it carries the copyright (left) and the
+ * legal links (right): a dead or missing policy link is worse than none on a site carrying affiliate disclosures.
  */
 function Cover({ card, w, h }: { card?: PostCardData; w: number; h: number }) {
   if (!card?.image) return null;
@@ -65,16 +65,6 @@ export default async function SiteFooter() {
                   <RssIcon />
                 </a>
               </div>
-              <p className="fs-8 mb-0 mt-4">
-                © {new Date().getFullYear()} — {SITE.name}. All rights reserved.
-              </p>
-              <nav aria-label="Legal" className="d-flex flex-wrap gap-3 mt-2">
-                {LEGAL_LINKS.map((l) => (
-                  <Link key={l.href} href={l.href} className="fs-8 text-500 hover-dark">
-                    {l.label}
-                  </Link>
-                ))}
-              </nav>
             </div>
             <div className="col-lg-8">
               <div className="row g-4">
@@ -119,6 +109,25 @@ export default async function SiteFooter() {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+        {/* Bottom bar: copyright left, legal links right (stacked on phones). */}
+        <div className="container footer-bottom">
+          <div className="row g-2 align-items-center py-4">
+            <div className="col-md-6 col-12">
+              <p className="fs-8 mb-0">
+                © {new Date().getFullYear()} — {SITE.name}. All rights reserved.
+              </p>
+            </div>
+            <div className="col-md-6 col-12">
+              <nav aria-label="Legal" className="d-flex flex-wrap gap-3 justify-content-md-end">
+                {LEGAL_LINKS.map((l) => (
+                  <Link key={l.href} href={l.href} className="fs-8 text-500 hover-dark">
+                    {l.label}
+                  </Link>
+                ))}
+              </nav>
             </div>
           </div>
         </div>

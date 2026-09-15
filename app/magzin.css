@@ -283,6 +283,11 @@ body {
 .section-footer-4 .border-top-300 {
   border-top: 0;
 }
+/* Footer bottom bar: copyright and legal links on one baseline. */
+.footer-bottom p,
+.footer-bottom nav a {
+  line-height: 1.5;
+}
 /* Footer style 4: cover grid (in place of the template's Instagram photos). */
 .footer-cover {
   display: block;
