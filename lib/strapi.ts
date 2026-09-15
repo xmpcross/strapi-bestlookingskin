@@ -361,6 +361,13 @@ export const POST_COVER_OVERRIDES: Record<string, StrapiImage> = {
     height: 720,
     size: 41,
   },
+  'review-la-roche-posay-toleriane-hydrating-face-cleanser': {
+    url: '/cms-uploads/review_la_roche_posay_toleriane_hydrating_cleanser_cover.jpg',
+    alternativeText: 'La Roche-Posay Toleriane Hydrating Gentle Cleanser bottle, front and back',
+    width: 1280,
+    height: 720,
+    size: 29,
+  },
   'serums-cerave-vs-truskin': {
     url: '/cms-uploads/serums_cerave_vs_truskin_cover.jpg',
     alternativeText: 'CeraVe Skin Renewing Vitamin C Serum vs TruSkin Vitamin C Facial Serum',
