@@ -386,7 +386,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
                         </Link>
                         <div className="card-body">
                           <Link href={row.href}>
-                            <span className="h6 fs-6 mb-2 text-truncate-2 d-block">{row.title}</span>
+                            <span className="h6 fs-6 mb-2 text-truncate-2">{row.title}</span>
                           </Link>
                           <div className="d-flex align-items-center text-600">
                             <span className="fs-8">{row.date}</span>
