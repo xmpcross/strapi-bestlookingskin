@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Fragment } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getProduct, listProducts, getPriceHistory, listProductReviews, mediaUrl, type BlsProduct, listProductCategoryCounts } from '@/lib/strapi';
@@ -772,22 +773,35 @@ function OfferRow({
   );
 }
 
-/* Tiny markdown renderer for the product description format we generate
-   (### headings + "- " bullets + paragraphs separated by blank lines).
-   No external dependency; format is constrained so a hand-rolled parser
-   is shorter than wiring up `marked` and safer than dangerouslySetInnerHTML. */
+/* Small Markdown renderer for product descriptions (written in the CMS or generated): ## / ### / #### headings,
+   "- " bullets, "1." numbered lists, pipe tables, [links](url), **bold** and *italic*, and paragraphs where a single
+   line break is kept. Links to this site become root-relative internal links; other sites open in a new tab.
+   No dependency and no dangerouslySetInnerHTML: every block is built as React elements. */
+const SITE_LINK = /^https?:\/\/(www\.)?bestlooking\.skin(?=\/|$)/i;
+const TABLE_SEPARATOR = /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/;
+const splitRow = (row: string) => row.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => c.trim());
+
 function ProductDescription({ markdown }: { markdown: string }) {
-  // Inline emphasis: **bold** and *italic*. Returns a React fragment.
   function inline(text: string): React.ReactNode {
     const parts: React.ReactNode[] = [];
-    const re = /(\*\*[^*]+\*\*|\*[^*]+\*)/g;
+    const re = /(\[[^\]]+\]\([^)\s]+\)|\*\*[^*]+\*\*|\*[^*\s][^*]*\*)/g;
     let last = 0;
     let m: RegExpExecArray | null;
     let key = 0;
     while ((m = re.exec(text)) !== null) {
       if (m.index > last) parts.push(text.slice(last, m.index));
       const tok = m[0];
-      if (tok.startsWith('**')) {
+      if (tok.startsWith('[')) {
+        const [, label, rawHref] = tok.match(/^\[([^\]]+)\]\(([^)\s]+)\)$/) ?? [];
+        const href = rawHref.replace(SITE_LINK, '') || '/';
+        if (href.startsWith('/')) {
+          parts.push(<Link key={key++} href={href}>{inline(label)}</Link>);
+        } else if (/^https?:\/\//i.test(href)) {
+          parts.push(<a key={key++} href={href} target="_blank" rel="noopener noreferrer">{inline(label)}</a>);
+        } else {
+          parts.push(label);
+        }
+      } else if (tok.startsWith('**')) {
         parts.push(<strong key={key++}>{tok.slice(2, -2)}</strong>);
       } else {
         parts.push(<em key={key++}>{tok.slice(1, -1)}</em>);
@@ -798,6 +812,11 @@ function ProductDescription({ markdown }: { markdown: string }) {
     return parts;
   }
 
+  const isBullet = (l: string) => /^\s*[-*]\s+/.test(l);
+  const isNumbered = (l: string) => /^\s*\d+[.)]\s+/.test(l);
+  const isHeading = (l: string) => /^#{2,4}\s/.test(l);
+  const isTableStart = (idx: number) => lines[idx]?.trim().startsWith('|') && TABLE_SEPARATOR.test(lines[idx + 1] ?? '');
+
   const lines = markdown.replace(/\r\n/g, '\n').split('\n');
   const blocks: React.ReactNode[] = [];
   let i = 0;
@@ -805,7 +824,6 @@ function ProductDescription({ markdown }: { markdown: string }) {
   while (i < lines.length) {
     const line = lines[i];
     if (!line.trim()) { i += 1; continue; }
-    /* Markdown headings: ## h2, ### h3, #### h4 (one level each, no skipping). */
     const heading = line.match(/^(#{2,4})\s+(.*)$/);
     if (heading) {
       const Tag = (['h2', 'h3', 'h4'] as const)[heading[1].length - 2];
@@ -813,33 +831,64 @@ function ProductDescription({ markdown }: { markdown: string }) {
       i += 1;
       continue;
     }
-    if (/^\s*[-*]\s+/.test(line)) {
-      const items: string[] = [];
-      while (i < lines.length && /^\s*[-*]\s+/.test(lines[i])) {
-        items.push(lines[i].replace(/^\s*[-*]\s+/, ''));
+    if (isTableStart(i)) {
+      const head = splitRow(lines[i]);
+      i += 2;
+      const rows: string[][] = [];
+      while (i < lines.length && lines[i].trim().startsWith('|')) {
+        rows.push(splitRow(lines[i]));
         i += 1;
       }
       blocks.push(
-        <ul key={key++}>
-          {items.map((it, idx) => <li key={idx}>{inline(it)}</li>)}
-        </ul>,
+        <div className="shop-desc-table" key={key++}>
+          <table>
+            <thead>
+              <tr>{head.map((c, idx) => <th key={idx} scope="col">{inline(c)}</th>)}</tr>
+            </thead>
+            <tbody>
+              {rows.map((r, ri) => (
+                <tr key={ri}>{head.map((_, ci) => (ci === 0 ? <th key={ci} scope="row">{inline(r[ci] ?? '')}</th> : <td key={ci}>{inline(r[ci] ?? '')}</td>))}</tr>
+              ))}
+            </tbody>
+          </table>
+        </div>,
       );
       continue;
     }
-    // Paragraph: collect consecutive non-blank, non-special lines.
+    if (isBullet(line) || isNumbered(line)) {
+      const numbered = isNumbered(line);
+      const test = numbered ? isNumbered : isBullet;
+      const items: string[] = [];
+      while (i < lines.length && test(lines[i])) {
+        items.push(lines[i].replace(numbered ? /^\s*\d+[.)]\s+/ : /^\s*[-*]\s+/, ''));
+        i += 1;
+      }
+      const List = numbered ? 'ol' : 'ul';
+      blocks.push(
+        <List key={key++}>
+          {items.map((it, idx) => <li key={idx}>{inline(it)}</li>)}
+        </List>,
+      );
+      continue;
+    }
+    // Paragraph: consecutive lines that start no other block; single line breaks are kept (e.g. FAQ question/answer).
     const para: string[] = [];
-    while (
-      i < lines.length
-      && lines[i].trim()
-      && !/^#{2,4}\s/.test(lines[i])
-      && !/^\s*[-*]\s+/.test(lines[i])
-    ) {
-      para.push(lines[i]);
+    while (i < lines.length && lines[i].trim() && !isHeading(lines[i]) && !isBullet(lines[i]) && !isNumbered(lines[i]) && !isTableStart(i)) {
+      para.push(lines[i].trim());
       i += 1;
     }
-    blocks.push(<p key={key++}>{inline(para.join(' '))}</p>);
+    blocks.push(
+      <p key={key++}>
+        {para.map((l, li) => (
+          <Fragment key={li}>
+            {li > 0 && <br />}
+            {inline(l)}
+          </Fragment>
+        ))}
+      </p>,
+    );
   }
-  /* Spacing and heading sizes for these blocks live in .shop-desc (app/magzin-shop.css). */
+  /* Spacing, heading sizes, lists and tables for these blocks live in .shop-desc (app/magzin-shop.css). */
   return <div className="shop-desc">{blocks}</div>;
 }
 
