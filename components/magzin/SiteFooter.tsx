@@ -116,7 +116,7 @@ export default async function SiteFooter() {
         <div className="container footer-bottom">
           <div className="row g-2 align-items-center py-4">
             <div className="col-md-6 col-12">
-              <p className="fs-8 mb-0">
+              <p className="fs-8 my-0">
                 © {new Date().getFullYear()} — {SITE.name}. All rights reserved.
               </p>
             </div>
