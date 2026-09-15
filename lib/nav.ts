@@ -39,7 +39,6 @@ export async function getNav(): Promise<{ nav: NavItem[]; topics: NavGroup[] }> 
       : { label: 'Products', href: '/products' },
     { label: 'Brands', href: '/brands' },
     ...(topics.length ? [{ label: 'Topics', groups: topics }] : []),
-    { label: 'Articles', href: '/informative-articles' },
     { label: 'Contact', href: '/contact' },
   ];
   return { nav, topics };
