@@ -41,6 +41,12 @@ export type Section = {
   redirectTo?: string;
 };
 
+/**
+ * Pillar pages ("complete guides") render with the pillar template. The CMS post type `pillar` is the switch; slugs
+ * listed here get the template too, for pillars published before that option existed in Strapi.
+ */
+export const PILLAR_SLUGS = new Set<string>(['best-skin-care-routine-guide']);
+
 /** Sections still shown on the site (menus, topic lists, sitemaps): not retired, not the All Articles listing. */
 export const isListedSection = (s: Section) => !s.redirectTo && !s.allPosts;
 

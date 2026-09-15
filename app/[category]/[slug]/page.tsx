@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import '../../article.css';
 import '../../top-rated.css';
 import { getPost, listPostSummaries, listProductsForPost, getAdjacentPosts, mediaUrl, type BlsPostSummary } from '@/lib/strapi';
-import { SECTIONS, SITE } from '@/lib/site';
+import { PILLAR_SLUGS, SECTIONS, SITE } from '@/lib/site';
 import { fmtDate, primaryCategorySlug, postPath } from '@/lib/format';
 import { withHeadingIds, decodeEntities } from '@/lib/toc';
 import { cleanProductRoundupHtml } from '@/lib/legacy-product-roundup';
@@ -12,6 +12,8 @@ import { isMarkdownBody, markdownToHtml } from '@/lib/markdown';
 import { getTopicGroups } from '@/lib/nav';
 import { toCard } from '@/lib/post-card';
 import PostContent from '@/components/PostContent';
+import PillarLayout from '@/components/pillar/PillarLayout';
+import '../../pillar.css';
 import ArticleContents from '@/components/ArticleContents';
 import ShareRail from '@/components/ShareRail';
 import NextUp from '@/components/NextUp';
@@ -65,6 +67,24 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
       description,
       images: cover ? [cover] : undefined,
     },
+  };
+}
+
+/* Article structured data shared by the post and pillar templates. */
+function articleJsonLdBase(post: NonNullable<Awaited<ReturnType<typeof getPost>>>, cover: string | null, category: string) {
+  return {
+    '@context': 'https://schema.org',
+    headline: post.title,
+    description: post.seoDescription || post.excerpt,
+    image: cover ? [cover] : undefined,
+    datePublished: post.publishedAt,
+    dateModified: post.updatedAt,
+    /* A named author is one of the things reviewers and search engines look for
+       on affiliate content; without it an Article carries a publisher and no
+       human behind it. */
+    author: post.author ? { '@type': 'Person', name: post.author.name, url: `${SITE.url}/authors/${post.author.slug}` } : undefined,
+    publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+    mainEntityOfPage: `${SITE.url}/${category}/${post.slug}`,
   };
 }
 
@@ -197,6 +217,52 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
     return { h2, paragraphEnds };
   })();
 
+  /* Pillar pages ("complete guides") use their own template: chapters are the top-level h2 sections. */
+  const isPillar = post.postType === 'pillar' || PILLAR_SLUGS.has(post.slug);
+  if (isPillar) {
+    const heads = topLevel.h2;
+    const sectionAt = (i: number) => bodyMain.slice(heads[i], i + 1 < heads.length ? heads[i + 1] : bodyMain.length);
+    let intro = heads.length ? bodyMain.slice(0, heads[0]) : bodyMain;
+    let first = 0;
+    /* A body that opens with a heading restating the title (common in pushed Markdown): that section is the intro. */
+    if (!intro.replace(/<[^>]+>/g, '').trim() && heads.length >= 3) {
+      intro = sectionAt(0).replace(/^\s*<h2\b[^>]*>[\s\S]*?<\/h2>/i, '');
+      first = 1;
+    }
+    const chapters = heads.slice(first).map((_, k) => {
+      const html = sectionAt(first + k);
+      const head = html.match(/^\s*<h2\b[^>]*\bid="([^"]+)"[^>]*>([\s\S]*?)<\/h2>/i);
+      return { id: head?.[1] ?? `chapter-${k + 1}`, text: decodeEntities((head?.[2] ?? '').replace(/<[^>]+>/g, '')).trim(), html };
+    });
+    const faqId = faqSection.match(/<h[23]\b[^>]*\bid="([^"]+)"/i)?.[1] ?? null;
+    const pillarJsonLd = { ...articleJsonLdBase(post, cover, category), '@type': 'Article' };
+    const others = recentPosts.filter((p) => primaryCategorySlug(p) !== category).map(toCard).slice(0, 3);
+    return (
+      <>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pillarJsonLd) }} />
+        <PillarLayout
+          title={post.title}
+          excerpt={post.excerpt}
+          cover={cover}
+          coverAlt={post.coverImage?.alternativeText || post.title}
+          category={{ name: cat?.name ?? categoryName(category), href: `/${category}` }}
+          author={post.author ?? null}
+          publishedLabel={fmtDate(post.publishedAt)}
+          updatedAt={post.updatedAt}
+          updatedLabel={fmtDate(post.updatedAt)}
+          readMinutes={post.readingTimeMinutes ?? null}
+          introHtml={intro}
+          chapters={chapters}
+          faqHtml={faqSection}
+          faqId={faqId}
+          cluster={related.map(toCard).slice(0, 8)}
+          moreGuides={others}
+          url={`${SITE.url}/${category}/${post.slug}`}
+        />
+      </>
+    );
+  }
+
   /* Gallery images, excluding anything that duplicates the cover. */
   const galleryImages = (post.gallery ?? [])
     .map((g) => mediaUrl(g))
@@ -254,25 +320,8 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
   const { prev: prevPost, next: nextPost } = await getAdjacentPosts(category, slug);
 
   const articleJsonLd = {
-    '@context': 'https://schema.org',
+    ...articleJsonLdBase(post, cover, category),
     '@type': post.postType === 'product-review' ? 'Review' : 'Article',
-    headline: post.title,
-    description: post.seoDescription || post.excerpt,
-    image: cover ? [cover] : undefined,
-    datePublished: post.publishedAt,
-    dateModified: post.updatedAt,
-    /* A named author is one of the things reviewers and search engines look for
-       on affiliate content; without it an Article carries a publisher and no
-       human behind it. */
-    author: post.author
-      ? { '@type': 'Person', name: post.author.name, url: `${SITE.url}/authors/${post.author.slug}` }
-      : undefined,
-    publisher: {
-      '@type': 'Organization',
-      name: SITE.name,
-      url: SITE.url,
-    },
-    mainEntityOfPage: `${SITE.url}/${category}/${post.slug}`,
   };
 
   const catName = cat?.name ?? categoryName(category);

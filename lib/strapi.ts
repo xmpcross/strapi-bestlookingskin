@@ -56,6 +56,7 @@ export type BlsPostType =
   | 'how-to-guide'
   | 'informative'
   | 'top-rated'
+  | 'pillar'
   | 'other';
 
 export type BlsCategory = {
