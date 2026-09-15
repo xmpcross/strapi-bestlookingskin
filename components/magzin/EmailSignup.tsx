@@ -23,7 +23,7 @@ const PURPOSE = {
   },
 } as const;
 
-export default function EmailSignup({ purpose, button = 'Send', note }: { purpose: keyof typeof PURPOSE; button?: string; note?: boolean }) {
+export default function EmailSignup({ purpose, button = 'Send', note, centered = false }: { purpose: keyof typeof PURPOSE; button?: string; note?: React.ReactNode; centered?: boolean }) {
   const [email, setEmail] = useState('');
   const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [message, setMessage] = useState('');
@@ -52,7 +52,7 @@ export default function EmailSignup({ purpose, button = 'Send', note }: { purpos
   const id = `signup-${purpose}`;
   return (
     <form onSubmit={onSubmit} className="position-relative" data-testid={`${purpose}-form`}>
-      <div className="d-flex flex-wrap flex-md-nowrap gap-2 align-items-center mb-3">
+      <div className={`d-flex flex-wrap flex-md-nowrap gap-2 align-items-center mb-3 ${centered ? 'justify-content-center' : ''}`}>
         <label htmlFor={id} className="visually-hidden">
           Your email address
         </label>
@@ -61,15 +61,7 @@ export default function EmailSignup({ purpose, button = 'Send', note }: { purpos
           {state === 'sending' ? 'Sending…' : button}
         </button>
       </div>
-      {note && (
-        <p className="text-600 fs-8 mb-0">
-          We only use your address to reply. See our{' '}
-          <Link href="/legal/privacy" className="text-dark">
-            Privacy Policy
-          </Link>
-          .
-        </p>
-      )}
+      {note && <p className="signup-note fs-7 mb-0">{note}</p>}
       {message && (
         <p role="status" className={`fs-7 mt-2 mb-0 ${state === 'error' ? 'text-danger' : 'text-dark'}`}>
           {message}

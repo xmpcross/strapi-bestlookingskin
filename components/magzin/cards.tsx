@@ -176,29 +176,20 @@ export function TextCard({ card }: { card: PostCardData }) {
   );
 }
 
-/* card-6: compact row with thumbnail, title, date. */
-export function RowCard({ card, dark = false }: { card: PostCardData; dark?: boolean }) {
-  const tone = dark ? 'text-white' : '';
+/* card-6: bordered row with a square thumbnail, title, date and read time (official Magzin home 2 rows). */
+export function RowCard({ card }: { card: PostCardData }) {
   return (
-    <article className={`article card-6 ${dark ? 'bg-800 border-700' : ''}`}>
-      <Link href={card.href} className="thumbnail">
-        <Cover card={card} width={160} height={160} className="" sizes="120px" />
+    <article className="article card-6 card-6-row">
+      <Link href={card.href} className="thumbnail overflow-hidden">
+        <Cover card={card} width={216} height={216} className="" sizes="108px" />
       </Link>
-      <div className="card-body mt-md-0 mt-4">
+      <div className="card-body">
         <Link href={card.href}>
-          <h3 className={`h6 card-title cardTitle mb-2 ${tone}`}>{card.title}</h3>
+          <h3 className="card-title mb-2">{card.title}</h3>
         </Link>
-        <ul className={`d-flex align-items-center gap-4 text-600 m-0 ps-0 ${tone}`}>
-          {card.date && (
-            <li className="list-unstyled">
-              <p className={`fs-8 m-0 ${tone}`}>{card.date}</p>
-            </li>
-          )}
-          {card.readMinutes && (
-            <li>
-              <p className={`fs-8 m-0 pe-5 ${tone}`}>{card.readMinutes} min read</p>
-            </li>
-          )}
+        <ul className="card-6-meta d-flex align-items-center m-0 ps-0">
+          {card.date && <li>{card.date}</li>}
+          {card.readMinutes && <li>{card.readMinutes} min read</li>}
         </ul>
       </div>
     </article>

@@ -223,3 +223,121 @@ body {
     max-width: 1366px;
   }
 }
+
+/* ---- Home: newsletter block (official Magzin home 2 measurements) ---- */
+.home-newsletter {
+  padding-top: 60px;
+  padding-bottom: 70px;
+}
+.newsletter-box {
+  max-width: 1089px;
+  background: var(--tc-system-white);
+  border-radius: 16px;
+  padding: 45px 70px 70px;
+}
+.newsletter-dots {
+  position: absolute;
+  top: 0;
+  right: 12px;
+  width: 236px;
+  height: auto;
+  pointer-events: none;
+}
+.newsletter-star {
+  position: absolute;
+  left: 49px;
+  bottom: 41px;
+}
+.newsletter-title {
+  max-width: 600px;
+  font-size: 38px;
+  font-weight: var(--tc-fw-semi-bold);
+  line-height: 1.2;
+  margin-bottom: 40px !important;
+}
+.newsletter-form {
+  max-width: 660px;
+  margin-top: 40px;
+}
+.newsletter-form .form-control {
+  max-width: 483px;
+  height: 60px;
+  border-radius: 50px;
+  border: 1px solid var(--tc-neutral-500);
+}
+.newsletter-form .btn {
+  min-width: 161px;
+  height: 56px;
+  border-radius: 50px;
+  font-weight: var(--tc-fw-bold);
+}
+.signup-note {
+  color: var(--tc-neutral-700);
+}
+@media (max-width: 767.98px) {
+  .newsletter-box {
+    padding: 40px 20px 50px;
+  }
+  .newsletter-title {
+    font-size: 28px;
+  }
+  .newsletter-dots {
+    width: 140px;
+  }
+}
+
+/* ---- card-6 rows (official Magzin home 2) ---- */
+.article.card-6.card-6-row {
+  display: flex;
+  background: var(--tc-system-white);
+}
+.article.card-6.card-6-row .thumbnail {
+  max-width: 108px;
+  max-height: 108px;
+  width: 108px;
+  height: 108px;
+  flex-shrink: 0;
+  border-radius: 16px;
+}
+.article.card-6.card-6-row .thumbnail img {
+  width: 108px;
+  height: 108px;
+  object-fit: cover;
+  border-radius: 16px;
+}
+.card-6-row .card-title {
+  font-size: 18px;
+  font-weight: var(--tc-fw-semi-bold);
+  line-height: 1.2;
+  color: var(--tc-neutral-900);
+  width: 100%;
+}
+.article.card-6.card-6-row .card-body > a {
+  width: 100%;
+}
+.card-6-meta {
+  gap: 18px;
+  color: var(--tc-neutral-400);
+  font-size: 12px;
+}
+.card-6-meta li {
+  list-style: none;
+  font-size: 12px;
+  line-height: 18px;
+}
+.card-6-meta li + li {
+  list-style: disc;
+  margin-left: 4px;
+}
+
+/* ---- Post page top section: 40% text / 60% image ---- */
+@media (min-width: 992px) {
+  .post-hero-text {
+    flex: 0 0 40%;
+    max-width: 40%;
+  }
+  .post-hero-media {
+    flex: 0 0 60%;
+    max-width: 60%;
+  }
+}

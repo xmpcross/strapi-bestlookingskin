@@ -106,29 +106,24 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 3. Newsletter */}
-      <section className="sec-padding">
+      {/* 3. Newsletter (official Magzin home 2 block: white panel, dot pattern top right, star bottom left) */}
+      <section className="home-newsletter">
         <div className="container">
-          <div className="row">
-            <div className="col-lg-8 col-12 mx-auto">
-              <div className="block-subscribe text-center home-subscribe">
-                <div className="decorate-1" style={{ backgroundImage: 'url(/assets/imgs/template/decorate-1.png)' }} />
-                <div className="block-title d-flex align-items-center justify-content-center gap-1 fs-7 text-600">
-                  <svg className="dark-mode-invert" xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden>
-                    <path d="M4.75 7.75C4.75 6.64543 5.64543 5.75 6.75 5.75H17.25C18.3546 5.75 19.25 6.64543 19.25 7.75V16.25C19.25 17.3546 18.3546 18.25 17.25 18.25H6.75C5.64543 18.25 4.75 17.3546 4.75 16.25V7.75Z" stroke="#0E0E0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M5.5 6.5L12 12.25L18.5 6.5" stroke="#0E0E0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <span className="fs-7 fw-regular">Newsletter</span>
-                </div>
-                <h2 className="h4 my-3">
-                  Get new skincare guides <br className="d-none d-lg-block" />
-                  sent to your inbox
-                </h2>
-                <p className="fs-7 mb-4">We will email you when new guides are published. No spam, and we never share your address.</p>
-                <div className="mx-auto home-subscribe-form">
-                  <EmailSignup purpose="newsletter" button="Send" note />
-                </div>
-              </div>
+          <div className="newsletter-box mx-auto position-relative overflow-hidden text-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="newsletter-dots dark-mode-invert" src="/assets/imgs/template/decorate-1.png" alt="" aria-hidden />
+            <svg className="newsletter-star dark-mode-invert" xmlns="http://www.w3.org/2000/svg" width={39} height={39} viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M0.582044 11.7285C8.79451 13.4712 10.252 14.8614 12.125 22.7372C13.8067 14.8768 15.2308 13.4992 23.4018 11.8279C15.1894 10.0852 13.7319 8.69503 11.8589 0.81924C10.1769 8.67956 8.75306 10.0571 0.582044 11.7285Z" fill="#0E0E0F" />
+            </svg>
+            <div className="d-flex align-items-center justify-content-center gap-1 text-500 position-relative">
+              <svg className="dark-mode-invert" xmlns="http://www.w3.org/2000/svg" width={20} height={20} viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path d="M6.75 4.75H17.25C17.8023 4.75 18.25 5.19772 18.25 5.75V19.25L12 15.75L5.75 19.25V5.75C5.75 5.19772 6.19772 4.75 6.75 4.75Z" stroke="#3A3B3D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <p className="mb-0 fs-7">Newsletter</p>
+            </div>
+            <h2 className="newsletter-title mx-auto mt-3 mb-0 position-relative">Subscribe to our newsletter and get new guides by email</h2>
+            <div className="newsletter-form mx-auto position-relative">
+              <EmailSignup purpose="newsletter" button="Send" centered note="You’ll only hear from us when new guides are published—no spam." />
             </div>
           </div>
         </div>
@@ -146,9 +141,10 @@ export default async function HomePage() {
                 </div>
               ))}
             </div>
+            {/* Rows alternate 5/7 and 7/5 columns, as in the template. */}
             <div className="row g-4 mt-1">
-              {pickRows.map((card) => (
-                <div className="col-lg-6" key={card.key}>
+              {pickRows.map((card, i) => (
+                <div className={`${[5, 7, 7, 5, 5, 7][i] === 5 ? 'col-lg-5' : 'col-lg-7'} col-12`} key={card.key}>
                   <RowCard card={card} />
                 </div>
               ))}

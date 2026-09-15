@@ -266,12 +266,12 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
       )}
 
       <article className="sec-1-single-3 pb-70" data-testid={`post-${post.slug}`} data-category={category} data-post-type={post.postType}>
-        {/* Top section in two columns: title and description on the left, the featured image on the right. */}
+        {/* Top section in two columns, 40% / 60%: title and description on the left, the featured image on the right. */}
         <div className="position-relative block-banner">
           <div className="container">
             <Breadcrumb items={[{ label: catName, href: `/${category}` }, { label: post.title }]} />
             <div className="row g-5 align-items-center post-hero-row">
-              <div className={cover ? 'col-lg-6' : 'col-lg-8'}>
+              <div className={cover ? 'col-12 post-hero-text' : 'col-lg-8'}>
                 <div className="card-title post-hero">
                   <div className="article card-info d-flex flex-wrap align-items-center gap-2 mt-2">
                     <Link href={`/${category}`} className={`badge ${toCard(post).badgeTone} fs-8`}>
@@ -286,7 +286,9 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
                       </ul>
                     ) : null}
                   </div>
-                  {/* Byline above the H1 (Tier A post template). */}
+                  <h1 className="h3 mt-4 mb-0">{post.title}</h1>
+                  {post.excerpt && <p className="post-standfirst text-600 mt-3 mb-0">{post.excerpt}</p>}
+                  {/* Byline under the description (moved from above the H1 at the owner's request). */}
                   <div className="d-flex flex-wrap align-items-center gap-2 pt-4">
                     {post.author && (
                       <Link href={`/authors/${post.author.slug}`} className="author d-flex align-items-center gap-2">
@@ -302,12 +304,10 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
                       </li>
                     </ul>
                   </div>
-                  <h1 className="h3 mt-4 mb-0">{post.title}</h1>
-                  {post.excerpt && <p className="post-standfirst text-600 mt-3 mb-0">{post.excerpt}</p>}
                 </div>
               </div>
               {cover && (
-                <div className="col-lg-6">
+                <div className="col-12 post-hero-media">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img className="rounded-16 w-100 cover-image post-cover" src={cover} alt={post.coverImage?.alternativeText || post.title} width={660} height={495} fetchPriority="high" />
                 </div>
