@@ -12,6 +12,7 @@ import PostContent from '@/components/PostContent';
 import ArticleContents from '@/components/ArticleContents';
 import ShareRail from '@/components/ShareRail';
 import NextUp from '@/components/NextUp';
+import FeaturedPostsSlider from '@/components/FeaturedPostsSlider';
 import PostAffiliateLinks, { affiliateLinksFor, tagsFromKeywords } from '@/components/PostAffiliateLinks';
 import AuthorAvatar from '@/components/AuthorAvatar';
 import PullQuote from '@/components/PullQuote';
@@ -80,8 +81,8 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
     listPostSummaries({ category, pageSize: 9, withCover: true })
       .then((r) => r.data.filter((p) => p.id !== post.id).slice(0, 8))
       .catch(() => [] as BlsPostSummary[]),
-    listPostSummaries({ pageSize: 6, authored: true, withCover: true })
-      .then((r) => r.data.filter((p) => p.id !== post.id).slice(0, 5))
+    listPostSummaries({ pageSize: 24, authored: true, withCover: true })
+      .then((r) => r.data.filter((p) => p.id !== post.id))
       .catch(() => [] as BlsPostSummary[]),
     getTopicGroups(),
   ]);
@@ -93,7 +94,18 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
     img: mediaUrl(p.coverImage ?? null),
     minutes: p.author ? p.readingTimeMinutes : null,
   });
-  const recentRows = recentPosts.map(toRow);
+  const recentRows = recentPosts.slice(0, 5).map(toRow);
+  /* Sidebar "Featured Posts" slider: three authored guides with a working cover that are not already in the
+     "Latest guides" list below it, other topics first. The CMS has no featured flag, so nothing here claims an
+     editorial pick beyond being shown. */
+  const featuredPosts = (() => {
+    const shown = new Set(recentRows.slice(0, 3).map((r) => r.href));
+    const pool = recentPosts.slice(3).map(toCard).filter((c) => c.image && !shown.has(c.href));
+    const otherTopics = pool.filter((c) => !c.href.startsWith(`/${category}/`));
+    return [...otherTopics, ...pool.filter((c) => c.href.startsWith(`/${category}/`))]
+      .slice(0, 3)
+      .map((c) => ({ href: c.href, title: c.title, image: c.image as string, imageAlt: c.imageAlt, author: c.author?.name ?? null, date: c.date }));
+  })();
   const topics = topicGroups.flatMap((g) => g.items).filter((t) => t.href !== `/${category}`);
 
   const cover = mediaUrl(post.coverImage ?? null);
@@ -399,15 +411,11 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
 
             <aside className="post-layout-side" aria-label="Article sidebar">
               {recentRows.length > 0 && (
-                <div className="mb-5">
+                <div className="mb-5 sidebar-sticky">
                   {/* Magzin "Weekly trending" block (card-10 style-2). Headed "Latest guides": the list is the newest
-                      guides, and the site has no traffic data to call anything trending. */}
-                  <div className="d-flex align-items-center gap-2 mb-3">
-                    <svg className="dark-mode-invert" xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden>
-                      <path d="M0.582044 11.7285C8.79451 13.4712 10.252 14.8614 12.125 22.7372C13.8067 14.8768 15.2308 13.4992 23.4018 11.8279C15.1894 10.0852 13.7319 8.69503 11.8589 0.81924C10.1769 8.67956 8.75306 10.0571 0.582044 11.7285Z" fill="#0E0E0F" />
-                    </svg>
-                    <h2 className="h5 mb-0 sidebar-heading">Latest guides</h2>
-                  </div>
+                      guides, and the site has no traffic data to call anything trending. Sticky on wide screens: it
+                      stays in view while the widgets below it scroll underneath. */}
+                  <SidebarTitle>Latest guides</SidebarTitle>
                   <div className="d-flex flex-column gap-3">
                     {recentRows.slice(0, 3).map((row) => (
                       <div className="article card-10 style-2 sidebar-trending" key={row.href}>
@@ -435,9 +443,15 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
                   </div>
                 </div>
               )}
+              {featuredPosts.length > 0 && (
+                <div className="mb-5" data-testid="featured-posts">
+                  <SidebarTitle>Featured Posts</SidebarTitle>
+                  <FeaturedPostsSlider posts={featuredPosts} />
+                </div>
+              )}
               {topics.length > 0 && (
                 <div className="mb-5">
-                  <h2 className="h5 mb-3">Topics</h2>
+                  <SidebarTitle>Topics</SidebarTitle>
                   <ul className="list-unstyled d-flex flex-wrap gap-2 ps-0">
                     {topics.map((t) => (
                       <li key={t.href}>
@@ -471,5 +485,17 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
         </section>
       )}
     </>
+  );
+}
+
+/* Post sidebar widget title (Magzin "Weekly trending" heading): star mark + 1.2rem heading. */
+function SidebarTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="d-flex align-items-center gap-2 mb-3">
+      <svg className="dark-mode-invert" xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path d="M0.582044 11.7285C8.79451 13.4712 10.252 14.8614 12.125 22.7372C13.8067 14.8768 15.2308 13.4992 23.4018 11.8279C15.1894 10.0852 13.7319 8.69503 11.8589 0.81924C10.1769 8.67956 8.75306 10.0571 0.582044 11.7285Z" fill="#0E0E0F" />
+      </svg>
+      <h2 className="h5 mb-0 sidebar-heading">{children}</h2>
+    </div>
   );
 }

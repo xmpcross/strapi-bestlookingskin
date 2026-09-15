@@ -169,6 +169,16 @@ body {
   position: sticky;
   top: 100px;
 }
+/* Post sidebar "Latest guides": pinned below the header on wide screens; later widgets pass beneath it. */
+@media (min-width: 992px) {
+  .sidebar-sticky {
+    position: sticky;
+    top: 100px;
+    z-index: 2;
+    background: var(--tc-system-white);
+    padding-bottom: 1rem;
+  }
+}
 .affiliate-note {
   background: var(--tc-neutral-50);
   border: 1px solid var(--tc-neutral-200);
@@ -714,6 +724,76 @@ html .sec-1-single-3 .post-layout-main h3 {
 .next-up-copied {
   font-size: 12px;
   color: var(--tc-neutral-600);
+}
+
+/* ---- Post sidebar: Featured Posts slider ---- */
+.featured-post-card {
+  position: relative;
+  display: block;
+  aspect-ratio: 6 / 5;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--tc-neutral-100);
+}
+.featured-post-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+.featured-post-card:hover img {
+  transform: scale(1.04);
+}
+.featured-post-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 35%, rgba(0, 0, 0, 0.72) 100%);
+}
+.featured-post-body {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
+  padding: 0 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+/* White over the darkened photo in both themes (the gradient keeps it readable). */
+.featured-post-title {
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: var(--tc-fw-semi-bold);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.featured-post-meta {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 12px;
+  font-weight: var(--tc-fw-semi-bold);
+}
+.post-layout-side .article.card-10.style-2.sidebar-trending {
+  max-width: 100%;
+}
+.featured-posts-swiper .swiper-pagination {
+  position: static;
+  width: auto;
+  margin-top: 12px;
+  padding: 0;
+  background: none;
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+}
+.featured-posts-swiper .swiper-pagination-bullet {
+  background: var(--tc-neutral-400);
+  opacity: 1;
+}
+.featured-posts-swiper .swiper-pagination-bullet-active {
+  background: var(--tc-neutral-900);
 }
 
 /* ---- Affiliate links + tags (under Next Up) ---- */
