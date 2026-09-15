@@ -1,15 +1,42 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /**
  * Left rail beside the article: reading time in a circle, then share links (X, Facebook, LinkedIn, copy link),
  * stacked and sticky. Share links are plain intent URLs: nothing is loaded until the reader clicks.
  * Reading time is passed only for posts whose figure is reliable (see the post page); otherwise the circle is
  * left out and the rail shows the share links alone.
+ *
+ * The circle is a progress ring: its border fills in the primary colour as the reader moves through the article
+ * body (#article-body, so comments and the footer do not count), and the label counts down the minutes left.
  */
 export default function ShareRail({ url, title, minutes }: { url: string; title: string; minutes?: number | null }) {
   const [copied, setCopied] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (!minutes) return;
+    const target = document.getElementById('article-body');
+    if (!target) return;
+    const onScroll = () => {
+      const rect = target.getBoundingClientRect();
+      const total = rect.height - window.innerHeight * 0.6;
+      const seen = -rect.top + window.innerHeight * 0.4;
+      setProgress(total <= 0 ? 1 : Math.max(0, Math.min(1, seen / total)));
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [minutes]);
+
+  const left = minutes ? Math.ceil(minutes * (1 - progress)) : 0;
+  const RADIUS = 46;
+  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
   const enc = encodeURIComponent;
   const links = [
     {
@@ -42,9 +69,34 @@ export default function ShareRail({ url, title, minutes }: { url: string; title:
   return (
     <div className="share-rail" data-testid="share-rail">
       {minutes ? (
-        <div className="share-rail-time" aria-label={`${minutes} minute read`}>
-          <span>{minutes} min</span>
-          <span>read</span>
+        <div
+          className="share-rail-time"
+          role="progressbar"
+          aria-label="Reading progress"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(progress * 100)}
+          aria-valuetext={left > 0 ? `${left} minute${left === 1 ? '' : 's'} left` : 'Finished'}
+        >
+          <svg className="share-rail-ring" viewBox="0 0 100 100" aria-hidden>
+            <circle className="share-rail-ring-track" cx="50" cy="50" r={RADIUS} />
+            <circle
+              className="share-rail-ring-bar"
+              cx="50"
+              cy="50"
+              r={RADIUS}
+              strokeDasharray={CIRCUMFERENCE}
+              strokeDashoffset={CIRCUMFERENCE * (1 - progress)}
+            />
+          </svg>
+          {left > 0 ? (
+            <>
+              <span>{left} min</span>
+              <span>left</span>
+            </>
+          ) : (
+            <span>Done</span>
+          )}
         </div>
       ) : null}
       <ul className="share-rail-links list-unstyled m-0 p-0" aria-label="Share this article">

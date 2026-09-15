@@ -22,7 +22,7 @@ export default function ReadAlso({ rows, title = 'Read also' }: { rows: ReadAlso
             </Link>
             <div className="card-body">
               <Link href={row.href}>
-                <span className="h6 fs-6 mb-2 text-truncate-2 d-block">{row.title}</span>
+                <span className="h6 mb-2 text-truncate-2 read-also-title">{row.title}</span>
               </Link>
               {row.date && <span className="fs-8 text-600">{row.date}</span>}
             </div>

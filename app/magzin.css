@@ -3,6 +3,8 @@
  * Keep template files untouched; put site-specific adjustments here.
  */
 :root {
+  /* Site primary colour (the brand green used before the Magzin redesign). */
+  --bls-primary: #478162;
   /* Geist is self-hosted through the `geist` package (next/font/local): no request to Google Fonts. */
   --tc-body-font-family: var(--font-geist-sans), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --tc-heading-font-family: var(--font-geist-sans), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -466,6 +468,7 @@ html body .card-title.fw-normal {
   gap: 26px;
 }
 .share-rail-time {
+  position: relative;
   width: 84px;
   height: 84px;
   border-radius: 50%;
@@ -524,4 +527,35 @@ html body .card-title.fw-normal {
   font-size: 11px;
   color: var(--tc-neutral-600);
   white-space: nowrap;
+}
+
+/* Reading-progress ring on the share rail: grey track, primary-colour arc that fills as the article is read. */
+.share-rail-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+.share-rail-ring circle {
+  fill: none;
+  stroke-width: 4;
+}
+.share-rail-ring-track {
+  stroke: var(--tc-neutral-200);
+}
+.share-rail-ring-bar {
+  stroke: var(--bls-primary);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.15s linear;
+}
+.share-rail-time span {
+  position: relative;
+}
+/* "Read also" box inside articles: post titles at 14px. */
+.read-also .read-also-title {
+  font-size: 14px !important;
+  line-height: 1.35;
+  max-height: none;
 }
