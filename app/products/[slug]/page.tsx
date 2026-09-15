@@ -340,31 +340,11 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                   </>
                 ) : null}
 
-                {/* Short description directly above the price: the product's own, else the description's opening. */}
+                {/* Short description: the product's own, else the description's opening. The price and "best deal"
+                    line were removed from this column; the offer panel beside it shows the lowest price and where. */}
                 {lead && <p className="shop-lead fs-7 mb-0">{lead}</p>}
 
-                {product.currentPrice !== undefined && (
-                  <div className="d-flex flex-wrap align-items-baseline gap-3 mt-4">
-                    {hasDiscount && (
-                      <span className="fs-6 shop-was">
-                        {formatPrice(product.originalPrice!, product.currency)}
-                      </span>
-                    )}
-                    <span className="shop-price-lg">
-                      {formatPrice(product.currentPrice, product.currency)}
-                    </span>
-                  </div>
-                )}
-
                 <PriceBadges history={priceHistory} current={bestOffer?.price ?? product.currentPrice} />
-
-                {bestOffer && (
-                  <p className="d-flex flex-wrap align-items-center gap-2 fs-7 mt-4 mb-0">
-                    <span className="text-600">Best deal at:</span>
-                    <MerchantLogo merchant={bestOffer.merchant} logoUrl={bestOffer.logoUrl} />
-                    <span className="fw-medium text-dark">{bestOffer.merchant}</span>
-                  </p>
-                )}
 
                 {product.documentId && (
                   <PriceAlertForm
