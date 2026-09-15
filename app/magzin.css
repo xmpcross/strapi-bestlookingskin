@@ -169,6 +169,14 @@ body {
   position: sticky;
   top: 100px;
 }
+/* Post sidebar "Featured Posts" (the last widget): stays in view below the header while the article scrolls, on
+   wide screens where the sidebar sits beside the article. */
+@media (min-width: 992px) {
+  .featured-posts-sticky {
+    position: sticky;
+    top: 100px;
+  }
+}
 .affiliate-note {
   background: var(--tc-neutral-50);
   border: 1px solid var(--tc-neutral-200);

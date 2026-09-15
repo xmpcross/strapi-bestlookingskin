@@ -457,7 +457,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
                 </div>
               )}
               {featuredPosts.length > 0 && (
-                <div className="mb-5" data-testid="featured-posts">
+                <div className="mb-5 featured-posts-sticky" data-testid="featured-posts">
                   <SidebarTitle>Featured Posts</SidebarTitle>
                   <FeaturedPostsSlider posts={featuredPosts} />
                 </div>
