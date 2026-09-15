@@ -15,9 +15,9 @@ export const revalidate = 60;
  *   2. Topics: image chips with post counts          (category-card style-2)
  *   3. Newsletter                                    (block-subscribe)
  *   4. Guides: dark title bar, three cards, six rows (card-7, card-6)
- *   5. Latest guides: five wide cards                (card-12)
- *   6. More to read: dark title bar, overlap feature, two tiles, two rows (card-1, card-5, card-6)
- *   7. Recommended: author avatars and eight cards   (card-recommend)
+ *   5. More to read: dark title bar, overlap feature, two tiles, two rows (card-1, card-5, card-6)
+ *   6. Recommended: author avatars and eight cards   (card-recommend)
+ *   7. Latest guides: five wide cards                (card-12)
  * Headings keep the template's style and length but say what each block really shows: the demo's "Staff Picks",
  * "Handpicked Just for You" and "Most Popular Topics" would claim curation, personalisation and traffic data the
  * site does not have. No view or comment counters are shown. The newsletter form reaches the editors by email.
@@ -152,23 +152,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 5. Latest guides */}
-      {latest.length > 0 && (
-        <section className="sec-5-home-2 pb-70 overflow-hidden">
-          <div className="container">
-            <SectionTitle title="Latest Guides" description="Recently published" href="/informative-articles" />
-            <div className="row mt-2 g-4">
-              {latest.map((card) => (
-                <div className="col-12" key={card.key}>
-                  <WideCard card={card} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* 6. More to read */}
+      {/* 5. More to read */}
       {forYouFeature && (
         <section className="sec-6-home-2 pb-70">
           <div className="container">
@@ -196,7 +180,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 7. Recommended */}
+      {/* 6. Recommended */}
       {recommended.length > 0 && (
         <section className="sec-7-home-2 sec-padding" style={{ backgroundImage: 'url(/assets/imgs/page/bg-home2-sec7.png)' }}>
           <div className="container">
@@ -231,6 +215,21 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* 7. Latest guides (last on the page) */}
+      {latest.length > 0 && (
+        <section className="sec-5-home-2 pt-70 pb-70 overflow-hidden">
+          <div className="container">
+            <SectionTitle title="Latest Guides" description="Recently published" href="/informative-articles" />
+            <div className="row mt-2 g-4">
+              {latest.map((card) => (
+                <div className="col-12" key={card.key}>
+                  <WideCard card={card} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
