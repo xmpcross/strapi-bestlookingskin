@@ -47,6 +47,8 @@ function withFaqAccordion(value: string) {
   const nextH2 = rest.search(/<h2\b/i);
   const sectionEnd = nextH2 === -1 ? html.length : afterHeading + nextH2;
   const section = html.slice(afterHeading, sectionEnd);
+  /* Already an accordion (imported GreenShift FAQ block, wired up below): wrapping its questions again doubles them. */
+  if (/\bgs-accordion\b/.test(section)) return html;
 
   /*
    * Two shapes in this library, both from the same generator:

@@ -2,10 +2,12 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import '../../article.css';
+import '../../top-rated.css';
 import { getPost, listPostSummaries, listProductsForPost, getAdjacentPosts, mediaUrl, type BlsPostSummary } from '@/lib/strapi';
 import { SECTIONS, SITE } from '@/lib/site';
 import { fmtDate, primaryCategorySlug, postPath } from '@/lib/format';
 import { withHeadingIds, decodeEntities } from '@/lib/toc';
+import { cleanProductRoundupHtml } from '@/lib/legacy-product-roundup';
 import { getTopicGroups } from '@/lib/nav';
 import { toCard } from '@/lib/post-card';
 import PostContent from '@/components/PostContent';
@@ -115,7 +117,9 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
   // Strip <em> / </em> tags from the post body — text content is kept, only
   // the wrapping element is removed (so italic emphasis no longer renders).
   // \b avoids matching <embed>; [^>]* handles any attributes.
-  const postBodyRaw = (post.content ?? '')
+  /* Top-Rated Products posts are WordPress roundups: their legacy styles and frozen prices are stripped first. */
+  const isTopRated = category === 'top-rated-products';
+  const postBodyRaw = (isTopRated ? cleanProductRoundupHtml(post.content ?? '') : (post.content ?? ''))
     // Collapse "<wbr>/<wbr>" sequences to a single "<wbr>" (drops the slash).
     .replace(/<wbr\s*\/?>\s*\/\s*<wbr\s*\/?>/gi, '<wbr>')
     .replace(/<\/?em\b[^>]*>/gi, '')
@@ -129,6 +133,9 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
     // This also removes the empty <p></p> immediately above and below the
     // removed marker.
     .replace(/<p\b[^>]*>(?:\s|&nbsp;|&#160;|<br\s*\/?>)*<\/p>/gi, '')
+    // "Common Questions About Retinol Serums" (and "... on ...") section headings read as "FAQs", like the
+    // generated posts' FAQ sections; the heading's own markup is kept, only its text changes.
+    .replace(/(<h([2-4])\b[^>]*>)\s*Common\s+Questions\s+(?:about|on)\b(?:(?!<\/h\2>)[\s\S])*<\/h\2>/gi, '$1FAQs</h$2>')
     ;
 
   /*
@@ -322,7 +329,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
         </>
       )}
 
-      <article className="sec-1-single-3 pb-70" data-testid={`post-${post.slug}`} data-category={category} data-post-type={post.postType}>
+      <article className={`sec-1-single-3 pb-70${isTopRated ? ' top-rated-post' : ''}`} data-testid={`post-${post.slug}`} data-category={category} data-post-type={post.postType}>
         {/* Top section in two columns, 40% / 60%: title and description on the left, the featured image on the right. */}
         <div className="position-relative block-banner">
           <div className="container">
