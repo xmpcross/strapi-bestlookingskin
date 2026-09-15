@@ -5,7 +5,7 @@ import { getCategory, listPostSummaries } from '@/lib/strapi';
 import { SECTIONS, SITE } from '@/lib/site';
 import { getTopicGroups } from '@/lib/nav';
 import { toCard } from '@/lib/post-card';
-import { TextCard } from '@/components/magzin/cards';
+import { ListCard, RowCard, SectionTitle, TextCard, TileCard } from '@/components/magzin/cards';
 import SidebarTitle from '@/components/magzin/SidebarTitle';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
 import Pagination from '@/components/magzin/Pagination';
@@ -15,9 +15,10 @@ import FeaturedPostsSlider from '@/components/FeaturedPostsSlider';
 export const revalidate = 60;
 export const dynamicParams = true;
 
-/* Archive in the Magzin category layout (magzin.alithemes.net/category/lifestyle): archive header, a three-column
-   grid of card-7 posts beside a sidebar, then pagination. Twelve posts a page (four rows). */
-const PAGE_SIZE = 12;
+/* Archive in Magzin blocks, sixteen posts a page. Page 1: archive header, a strip of three row cards, a grid of three
+   card-7 text cards over four card-5 image tiles, then the "latest" block (card-9 list cards beside the sidebar,
+   as on home 3). Later pages show only the list block, so every post appears once. */
+const PAGE_SIZE = 16;
 
 // Reserved top-level routes that aren't categories — keep them out of this segment.
 const RESERVED = new Set(['about', 'brands', 'search', 'newhome', 'feed.xml', 'sitemap.xml', 'robots.txt']);
@@ -90,6 +91,20 @@ export default async function CategoryPage({ params, searchParams }: { params: P
   const total = res?.meta.pagination.total ?? 0;
   if (!c.known && total === 0) notFound();
   const posts = (res?.data ?? []).map(toCard);
+  /* Page 1 layout. The strip and the tiles are image-led, so they take the newest posts with a cover (the strip falls
+     back to any post); the text cards take the next three; everything else lists. Each post appears once. */
+  const take = (pool: typeof posts, n: number, used: Set<typeof posts[number]>) => {
+    const picked = pool.filter((card) => !used.has(card)).slice(0, n);
+    picked.forEach((card) => used.add(card));
+    return picked;
+  };
+  const used = new Set<(typeof posts)[number]>();
+  const withCover = posts.filter((card) => card.image);
+  const strip = page === 1 ? take(withCover, 3, used) : [];
+  if (page === 1 && strip.length < 3) strip.push(...take(posts, 3 - strip.length, used));
+  const tiles = page === 1 ? take(withCover, 4, used) : [];
+  const textCards = page === 1 ? take(posts, 3, used) : [];
+  const listed = posts.filter((card) => !used.has(card));
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
   if (page > 1 && posts.length === 0) notFound();
 
@@ -144,33 +159,86 @@ export default async function CategoryPage({ params, searchParams }: { params: P
         </div>
       </section>
 
-      <section className="pb-70">
+      {extraTopics.length > 0 && (
         <div className="container">
-          <div className="row g-5">
-            <div className="col-lg-9 col-12">
-              {extraTopics.length > 0 && (
-                <div className="archive-selected d-flex flex-wrap align-items-center gap-2 mb-4">
-                  <span className="fs-7 text-600">Showing posts from:</span>
-                  {selectedTopics.map((t) => (
-                    <span key={t} className="shop-pill">
-                      {topicLabel(t)}
-                    </span>
-                  ))}
-                  <Link href={`/${category}`} className="fs-7 text-dark text-decoration-underline ms-1">
-                    Clear
-                  </Link>
+          <div className="archive-selected d-flex flex-wrap align-items-center gap-2 mb-4">
+            <span className="fs-7 text-600">Showing posts from:</span>
+            {selectedTopics.map((t) => (
+              <span key={t} className="shop-pill">
+                {topicLabel(t)}
+              </span>
+            ))}
+            <Link href={`/${category}`} className="fs-7 text-dark text-decoration-underline ms-1">
+              Clear
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {posts.length === 0 && (
+        <div className="container pb-5">
+          <p className="text-600">Articles for this topic are on the way.</p>
+        </div>
+      )}
+
+      {/* Strip under the header: three row cards (thumbnail, title, date, read time). */}
+      {strip.length > 0 && (
+        <section className="archive-strip pb-5" data-testid="archive-strip">
+          <div className="container">
+            <div className="row g-4">
+              {strip.map((card) => (
+                <div className="col-lg-4 col-md-6 col-12" key={card.key}>
+                  <RowCard card={card} />
                 </div>
-              )}
-              {posts.length > 0 ? (
-                <div className="row g-4">
-                  {posts.map((card) => (
-                    <div className="col-lg-4 col-md-6 col-12" key={card.key}>
-                      <TextCard card={card} />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-600">Articles for this topic are on the way.</p>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Grid: three text cards, then four image tiles. */}
+      {(textCards.length > 0 || tiles.length > 0) && (
+        <section className="archive-grid pb-70" data-testid="archive-grid">
+          <div className="container">
+            {textCards.length > 0 && (
+              <div className="row g-4">
+                {textCards.map((card) => (
+                  <div className="col-lg-4 col-md-6 col-12" key={card.key}>
+                    <TextCard card={card} />
+                  </div>
+                ))}
+              </div>
+            )}
+            {tiles.length > 0 && (
+              <div className="row g-4 mt-1">
+                {tiles.map((card) => (
+                  <div className="col-lg-3 col-md-6 col-12" key={card.key}>
+                    <TileCard card={card} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Latest block: list cards beside the sidebar (Magzin home 3). The template's "Top Trending" and "Popular"
+          labels would claim traffic data the site does not have. */}
+      <section className="sec-2-home-3 archive-latest pb-70 overflow-hidden" data-testid="archive-latest">
+        <div className="container">
+          <div className="row g-lg-4 g-5">
+            <div className="col-lg-8 col-12">
+              {listed.length > 0 && (
+                <>
+                  <SectionTitle title={page === 1 ? `More in ${c.name}` : c.name} description={page === 1 ? 'Newest first' : `Page ${page} of ${pageCount}`} as="h2" />
+                  <div className="row mt-2 g-4">
+                    {listed.map((card) => (
+                      <div className="col-12" key={card.key}>
+                        <ListCard card={card} />
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
               {pageCount > 1 && (
                 <div className="row mt-5">
@@ -181,13 +249,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
               )}
             </div>
 
-            <aside className="col-lg-3 col-12 archive-sidebar" aria-label="Archive sidebar">
-              {featured.length > 0 && (
-                <div className="mb-5" data-testid="archive-featured-posts">
-                  <SidebarTitle>Featured Posts</SidebarTitle>
-                  <FeaturedPostsSlider posts={featured} />
-                </div>
-              )}
+            <aside className="col-lg-4 col-12 archive-sidebar" aria-label="Archive sidebar">
               {latest.length > 0 && (
                 <div className="mb-5">
                   <SidebarTitle>Latest guides</SidebarTitle>
@@ -213,6 +275,12 @@ export default async function CategoryPage({ params, searchParams }: { params: P
                 <div className="mb-5">
                   <SidebarTitle>Browse Topics</SidebarTitle>
                   <TopicMultiSelect basePath={`/${category}`} current={isAll ? '' : category} options={topicOptions} selected={selectedTopics} />
+                </div>
+              )}
+              {featured.length > 0 && (
+                <div className="mb-5" data-testid="archive-featured-posts">
+                  <SidebarTitle>Featured Posts</SidebarTitle>
+                  <FeaturedPostsSlider posts={featured} />
                 </div>
               )}
             </aside>

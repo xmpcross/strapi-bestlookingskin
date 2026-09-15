@@ -1057,3 +1057,8 @@ html .archive-sidebar .archive-side-title {
     height: 260px;
   }
 }
+
+/* List and row cards for posts without a cover: the text panel takes the whole row. */
+.article.card-9.no-image .card-body {
+  flex: 1 1 auto;
+}

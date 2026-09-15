@@ -182,10 +182,12 @@ export function TextCard({ card }: { card: PostCardData }) {
 /* card-6: bordered row with a square thumbnail, title, date and read time (official Magzin home 2 rows). */
 export function RowCard({ card }: { card: PostCardData }) {
   return (
-    <article className="article card-6 card-6-row">
-      <Link href={card.href} className="thumbnail overflow-hidden">
-        <Cover card={card} width={216} height={216} className="" sizes="108px" />
-      </Link>
+    <article className={`article card-6 card-6-row${card.image ? '' : ' no-image'}`}>
+      {card.image && (
+        <Link href={card.href} className="thumbnail overflow-hidden" tabIndex={-1} aria-hidden>
+          <Cover card={card} width={216} height={216} className="" sizes="108px" />
+        </Link>
+      )}
       <div className="card-body">
         <Link href={card.href}>
           <h3 className="card-title mb-2">{card.title}</h3>
@@ -224,10 +226,13 @@ export function WideCard({ card }: { card: PostCardData }) {
 /* card-9: horizontal list card (image left; badge, title, excerpt, date and read time right; arrow corner). */
 export function ListCard({ card }: { card: PostCardData }) {
   return (
-    <article className="article card-9 d-flex flex-md-row align-items-stretch flex-column">
-      <Link href={card.href} className="card-img-top" tabIndex={-1} aria-hidden>
-        <Cover card={card} width={230} height={250} className="cover-image thumbnail" sizes="(min-width: 768px) 230px, 100vw" />
-      </Link>
+    <article className={`article card-9 d-flex flex-md-row align-items-stretch flex-column${card.image ? '' : ' no-image'}`}>
+      {/* Legacy posts without a cover skip the image rather than showing an empty grey block. */}
+      {card.image && (
+        <Link href={card.href} className="card-img-top" tabIndex={-1} aria-hidden>
+          <Cover card={card} width={230} height={250} className="cover-image thumbnail" sizes="(min-width: 768px) 230px, 100vw" />
+        </Link>
+      )}
       <div className="card-body">
         <Corner href={card.href} label={card.title} />
         <div className="left">
