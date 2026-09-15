@@ -210,7 +210,7 @@ const HIGHLIGHT_KEYS: { keys: string[]; label?: string }[] = [
   { keys: ['Key Ingredient', 'Active Ingredients', 'Active Ingredient', 'Highlighted Ingredients'], label: 'Key Ingredient' },
   { keys: ['Free Of'] },
   { keys: ['Volume', 'Net Volume', 'Size', 'Net Weight', 'Item Count'], label: 'Size' },
-  { keys: ['Formulation Type', 'Texture', 'Formulation Consistency'], label: 'Texture' },
+  { keys: ['Texture', 'Texture Type', 'Formulation Consistency', 'Formulation Type'], label: 'Texture' },
   { keys: ['Scent'] },
   { keys: ['Application Frequency', 'Application Time of Day', 'Application Time'], label: 'When to Use' },
   { keys: ['Primary Skin Concern', 'Skin Concerns', 'Solution For'], label: 'Skin Concern' },

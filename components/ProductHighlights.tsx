@@ -39,7 +39,7 @@ export default function ProductHighlights({ brand, items }: { brand: { name: str
             <Link href={brand.href} className="product-highlight">
               <span className="product-highlight-text">
                 <span className="product-highlight-label">Brand</span>
-                <span className="product-highlight-value">{brand.name}</span>
+                <span className="product-highlight-value" title={brand.name}>{brand.name}</span>
               </span>
               <Chevron />
             </Link>
@@ -50,7 +50,7 @@ export default function ProductHighlights({ brand, items }: { brand: { name: str
             <a href={`#product-section-${h.section}`} className="product-highlight" onClick={(e) => openSection(e, h.section)}>
               <span className="product-highlight-text">
                 <span className="product-highlight-label">{h.label}</span>
-                <span className="product-highlight-value">{h.value}</span>
+                <span className="product-highlight-value" title={h.value}>{h.value}</span>
               </span>
               <Chevron />
             </a>
