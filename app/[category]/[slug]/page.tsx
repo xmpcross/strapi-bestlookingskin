@@ -118,8 +118,9 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
   // Strip <em> / </em> tags from the post body — text content is kept, only
   // the wrapping element is removed (so italic emphasis no longer renders).
   // \b avoids matching <embed>; [^>]* handles any attributes.
-  /* Top-Rated Products posts are WordPress roundups: their legacy styles and frozen prices are stripped first. */
-  const isTopRated = category === 'top-rated-products';
+  /* Top-rated roundups imported from WordPress (Content Egg / GreenShift markup): their legacy styles and frozen prices
+     are stripped first. Keyed on the post type and the markup, not the category, so it follows a post into a hub. */
+  const isTopRated = post.postType === 'top-rated' && /cegg5-container|gspb_/.test(post.content ?? '');
   const postBodyRaw = (isTopRated ? cleanProductRoundupHtml(post.content ?? '') : (post.content ?? ''))
     // Collapse "<wbr>/<wbr>" sequences to a single "<wbr>" (drops the slash).
     .replace(/<wbr\s*\/?>\s*\/\s*<wbr\s*\/?>/gi, '<wbr>')

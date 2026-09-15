@@ -396,10 +396,20 @@ export async function listPosts(
  */
 export type BlsPostSummary = Omit<BlsPost, 'content' | 'gallery' | 'ogImage'>;
 export async function listPostSummaries(
-  opts: { page?: number; pageSize?: number; category?: string; categories?: string[]; authored?: boolean; withCover?: boolean; exclude?: string[] } = {},
+  opts: {
+    page?: number;
+    pageSize?: number;
+    category?: string;
+    categories?: string[];
+    postType?: BlsPostType;
+    authored?: boolean;
+    withCover?: boolean;
+    exclude?: string[];
+  } = {},
 ) {
   const filters: Record<string, unknown> = {};
   if (opts.category) filters.categories = { slug: { $eqi: opts.category } };
+  if (opts.postType) filters.postType = { $eq: opts.postType };
   if (opts.categories?.length) filters.categories = { slug: { $in: opts.categories } };
   /* Tier A posts are the ones with a named author (see CLAUDE.md): the listing lead should be one of them. */
   if (opts.authored) filters.author = { id: { $notNull: true } };

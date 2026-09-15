@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getCategory, listPostSummaries } from '@/lib/strapi';
+import { getCategory, listPostSummaries, type BlsPostType } from '@/lib/strapi';
 import { SECTIONS, SITE } from '@/lib/site';
 import { getTopicGroups } from '@/lib/nav';
 import { toCard } from '@/lib/post-card';
@@ -70,6 +70,9 @@ export default async function CategoryPage({ params, searchParams }: { params: P
   const groups = await getTopicGroups();
   /* The All Articles page lists every post; the topic filter then narrows it instead of adding to it. */
   const isAll = Boolean(SECTIONS.find((sec) => sec.slug === category)?.allPosts);
+  /* Format archives (reviews, comparisons, top-rated, how-to) list by post type, so posts filed under a topic hub
+     still appear in their format's archive. */
+  const formatType = SECTIONS.find((sec) => sec.slug === category)?.postType;
   const knownSlugs = new Set([
     ...groups.flatMap((g) => g.items.map((t) => t.href.replace(/^\//, ''))),
     ...SECTIONS.filter((sec) => !sec.allPosts).map((sec) => sec.slug),
@@ -84,7 +87,9 @@ export default async function CategoryPage({ params, searchParams }: { params: P
       ? listPostSummaries({ categories: selectedTopics, pageSize: PAGE_SIZE, page })
       : isAll
         ? listPostSummaries({ pageSize: PAGE_SIZE, page })
-        : listPostSummaries({ category, pageSize: PAGE_SIZE, page })
+        : formatType
+          ? listPostSummaries({ postType: formatType, pageSize: PAGE_SIZE, page })
+          : listPostSummaries({ category, pageSize: PAGE_SIZE, page })
     ).catch(() => null),
     listPostSummaries({ authored: true, withCover: true, pageSize: 12 }).catch(() => null),
   ]);
@@ -121,19 +126,19 @@ export default async function CategoryPage({ params, searchParams }: { params: P
      widget from the product pages); the current archive is highlighted. */
   const topicSources = [
     ...groups.flatMap((g) => g.items).map((t) => ({ slug: t.href.replace(/^\//, ''), name: t.label })),
-    ...SECTIONS.filter((sec) => !sec.allPosts).map((sec) => ({ slug: sec.slug, name: sec.title })),
-  ];
+    ...SECTIONS.filter((sec) => !sec.allPosts).map((sec) => ({ slug: sec.slug, name: sec.title, postType: sec.postType })),
+  ] as { slug: string; name: string; postType?: BlsPostType }[];
   const [allTotal, ...topicCounts] = await Promise.all([
     listPostSummaries({ pageSize: 1 })
       .then((r) => r.meta.pagination.total)
       .catch(() => null),
     ...topicSources.map((t) =>
-      listPostSummaries({ category: t.slug, pageSize: 1 })
+      listPostSummaries(t.postType ? { postType: t.postType, pageSize: 1 } : { category: t.slug, pageSize: 1 })
         .then((r) => r.meta.pagination.total)
         .catch(() => 0),
     ),
   ]);
-  const topicRows = topicSources.map((t, i) => ({ ...t, count: topicCounts[i] })).filter((t) => t.count > 0 || t.slug === category);
+  const topicRows = topicSources.map((t, i) => ({ slug: t.slug, name: t.name, count: topicCounts[i] })).filter((t) => t.count > 0 || t.slug === category);
   const topicLabel = (slug: string) => topicSources.find((t) => t.slug === slug)?.name ?? slug.replace(/-/g, ' ');
 
   return (

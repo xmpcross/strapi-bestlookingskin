@@ -1,3 +1,4 @@
+import type { BlsPostType } from '@/lib/strapi';
 export const SITE = {
   name: 'BestLooking.Skin',
   tagline: 'Your trusted partner on the journey to radiant, healthy skin.',
@@ -34,11 +35,14 @@ export type Section = {
   metaDescription?: string;
   /** The archive lists every post rather than its own category (the "All Articles" page). */
   allPosts?: boolean;
+  /** Format archives list posts by their post type, whatever topic hub they sit in. */
+  postType?: BlsPostType;
 };
 
 export const SECTIONS: Section[] = [
   {
     slug: 'product-comparisons',
+    postType: 'product-comparison',
     title: 'Product Comparisons',
     short: 'Comparisons',
     subtitle: 'Two formulas, head to head — pick the one that wins for your skin.',
@@ -47,6 +51,7 @@ export const SECTIONS: Section[] = [
   },
   {
     slug: 'product-reviews',
+    postType: 'product-review',
     title: 'Product Reviews',
     short: 'Reviews',
     subtitle: 'Tested in real routines. Honest verdicts. No sponsored gushing.',
@@ -55,6 +60,7 @@ export const SECTIONS: Section[] = [
   },
   {
     slug: 'top-rated-products',
+    postType: 'top-rated',
     title: 'Top-Rated Products',
     short: 'Top Rated',
     subtitle: 'Ranked roundups of the best skincare products for every skin type and concern.',
@@ -66,6 +72,7 @@ export const SECTIONS: Section[] = [
   },
   {
     slug: 'how-to-guides',
+    postType: 'how-to-guide',
     title: 'How-to Guides',
     short: 'How-to',
     subtitle: 'Step-by-step routines that build better skin from the basics up.',
