@@ -15,8 +15,8 @@ import FeaturedPostsSlider from '@/components/FeaturedPostsSlider';
 export const revalidate = 60;
 export const dynamicParams = true;
 
-/* Archive in Magzin blocks, sixteen posts a page. Page 1: archive header, a strip of three row cards, a grid of three
-   card-7 text cards over four card-5 image tiles, then the "latest" block (card-9 list cards beside the sidebar,
+/* Archive in Magzin blocks, sixteen posts a page. Page 1: archive header, a grid of three card-7 text cards over four
+   card-5 image tiles, a strip of three row cards, then the "latest" block (card-9 list cards beside the sidebar,
    as on home 3). Later pages show only the list block, so every post appears once. */
 const PAGE_SIZE = 16;
 
@@ -181,24 +181,9 @@ export default async function CategoryPage({ params, searchParams }: { params: P
         </div>
       )}
 
-      {/* Strip under the header: three row cards (thumbnail, title, date, read time). */}
-      {strip.length > 0 && (
-        <section className="archive-strip pb-5" data-testid="archive-strip">
-          <div className="container">
-            <div className="row g-4">
-              {strip.map((card) => (
-                <div className="col-lg-4 col-md-6 col-12" key={card.key}>
-                  <RowCard card={card} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* Grid: three text cards, then four image tiles. */}
       {(textCards.length > 0 || tiles.length > 0) && (
-        <section className="archive-grid pb-70" data-testid="archive-grid">
+        <section className="archive-grid pb-4" data-testid="archive-grid">
           <div className="container">
             {textCards.length > 0 && (
               <div className="row g-4">
@@ -218,6 +203,21 @@ export default async function CategoryPage({ params, searchParams }: { params: P
                 ))}
               </div>
             )}
+          </div>
+        </section>
+      )}
+
+      {/* Strip above the list block: three row cards (thumbnail, title, date, read time). */}
+      {strip.length > 0 && (
+        <section className="archive-strip pt-3 pb-70" data-testid="archive-strip">
+          <div className="container">
+            <div className="row g-4">
+              {strip.map((card) => (
+                <div className="col-lg-4 col-md-6 col-12" key={card.key}>
+                  <RowCard card={card} />
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       )}
