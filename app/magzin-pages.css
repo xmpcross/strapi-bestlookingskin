@@ -404,3 +404,97 @@
     flex: 1 1 auto;
   }
 }
+
+/* ---- Hub page "Start here" banner linking to the pillar guide (components/pillar/PillarBanner.tsx) ---- */
+.pillar-banner-wrap {
+  padding-bottom: 40px;
+}
+.pillar-banner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  overflow: hidden;
+  border-radius: 24px;
+  background: #0e0e0f;
+  color: #fff;
+  transition: transform 0.2s ease;
+}
+.pillar-banner:hover {
+  color: #fff;
+  transform: translateY(-2px);
+}
+@media (min-width: 992px) {
+  .pillar-banner {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  }
+  .pillar-banner.no-image {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.pillar-banner-text {
+  display: flex;
+  flex-direction: column;
+  padding: 36px 40px;
+}
+.pillar-banner-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+.pillar-banner-title {
+  margin: 0;
+  font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.25rem);
+  line-height: 1.2;
+  color: #fff !important;
+}
+.pillar-banner-excerpt {
+  margin: 14px 0 0;
+  max-width: 40rem;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.72);
+}
+.pillar-banner-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-top: auto;
+  padding-top: 26px;
+}
+.pillar-banner-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: #fff;
+  color: #0e0e0f;
+  font-size: 14px;
+  font-weight: 600;
+}
+.pillar-banner-meta {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.64);
+}
+.pillar-banner-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 240px;
+  object-fit: cover;
+}
+@media (max-width: 575.98px) {
+  .pillar-banner-text {
+    padding: 26px 22px;
+  }
+}
+/* Fixed colours (the theme tokens swap in dark mode); a hairline keeps the card distinct on the dark page. */
+[data-bs-theme='dark'] .pillar-banner {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}

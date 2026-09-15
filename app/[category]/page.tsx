@@ -11,6 +11,7 @@ import Breadcrumb from '@/components/magzin/Breadcrumb';
 import Pagination from '@/components/magzin/Pagination';
 import CategoryListWidget from '@/components/magzin/CategoryListWidget';
 import FeaturedPostsSlider from '@/components/FeaturedPostsSlider';
+import PillarBanner from '@/components/pillar/PillarBanner';
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -98,6 +99,13 @@ export default async function CategoryPage({ params, searchParams }: { params: P
     ).catch(() => null),
     listPostSummaries({ authored: true, withCover: true, pageSize: 20 }).catch(() => null),
   ]);
+  /* The hub's pillar guide ("Start here" banner): first page of a topic hub only, not All Articles or a filtered view. */
+  const pillarCard =
+    page === 1 && !isAll && !formatType && extraTopics.length === 0
+      ? await listPostSummaries({ category, pillar: true, pageSize: 1 })
+          .then((r) => (r.data[0] ? toCard(r.data[0]) : null))
+          .catch(() => null)
+      : null;
   const total = res?.meta.pagination.total ?? 0;
   if (!c.known && total === 0) notFound();
   const posts = (res?.data ?? []).map(toCard);
@@ -170,6 +178,8 @@ export default async function CategoryPage({ params, searchParams }: { params: P
           </div>
         </div>
       </section>
+
+      {pillarCard && <PillarBanner card={pillarCard} hubName={c.name} />}
 
       {extraTopics.length > 0 && (
         <div className="container">

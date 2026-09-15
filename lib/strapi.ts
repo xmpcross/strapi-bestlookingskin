@@ -1,4 +1,5 @@
 import qs from 'qs';
+import { PILLAR_SLUGS } from '@/lib/site';
 
 const BASE = (process.env.NEXT_PUBLIC_STRAPI_URL || 'https://cms.fxnstudio.com').replace(/\/$/, '');
 // commerce-products is a Strapi pool SHARED with other sites (e.g. nxt.bargains).
@@ -476,9 +477,12 @@ export async function listPostSummaries(
     authored?: boolean;
     withCover?: boolean;
     exclude?: string[];
+    /** Only pillar pages: post type `pillar`, or a slug in PILLAR_SLUGS. */
+    pillar?: boolean;
   } = {},
 ) {
   const filters: Record<string, unknown> = {};
+  if (opts.pillar) filters.$and = [{ $or: [{ postType: { $eq: 'pillar' } }, { slug: { $in: [...PILLAR_SLUGS] } }] }];
   if (opts.category) filters.categories = { slug: { $eqi: opts.category } };
   if (opts.postType) filters.postType = { $eq: opts.postType };
   if (opts.categories?.length) filters.categories = { slug: { $in: opts.categories } };
