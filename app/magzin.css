@@ -803,6 +803,17 @@ html .sec-1-single-3 .post-layout-main h3 {
   background: var(--tc-neutral-900);
 }
 
+/* Home Latest Guides sidebar: the cover slider is image-only (no title overlay or darkening), portrait. */
+.featured-post-card.is-image-only {
+  aspect-ratio: 4 / 5;
+}
+.featured-post-card.is-image-only::after {
+  content: none;
+}
+.home-latest .author-card .card-body p.fs-7 {
+  line-height: 1.6;
+}
+
 /* ---- Affiliate links + tags (under Next Up) ---- */
 .post-affiliate-links {
   padding-bottom: 28px;

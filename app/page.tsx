@@ -5,7 +5,10 @@ import { getTopicGroups } from '@/lib/nav';
 import { toCard } from '@/lib/post-card';
 import AuthorAvatar from '@/components/AuthorAvatar';
 import EmailSignup from '@/components/magzin/EmailSignup';
-import { CategoryChip, FeatureCard, ImageLinkCard, OverlapCard, RowCard, SectionTitle, TextCard, TileCard, WideCard } from '@/components/magzin/cards';
+import { CategoryChip, FeatureCard, ImageLinkCard, ListCard, OverlapCard, RowCard, SectionTitle, TextCard, TileCard } from '@/components/magzin/cards';
+import SidebarTitle from '@/components/magzin/SidebarTitle';
+import FeaturedPostsSlider from '@/components/FeaturedPostsSlider';
+import { FacebookIcon, RssIcon } from '@/components/magzin/icons';
 
 export const revalidate = 60;
 
@@ -17,7 +20,7 @@ export const revalidate = 60;
  *   4. Guides: dark title bar, three cards, six rows (card-7, card-6)
  *   5. More to read: dark title bar, overlap feature, two tiles, two rows (card-1, card-5, card-6)
  *   6. Recommended: author avatars and eight cards   (card-recommend)
- *   7. Latest guides: five wide cards                (card-12)
+ *   7. Latest guides: six list cards + sidebar          (card-9, author card, card-10, tag chips, cover slider)
  * Headings keep the template's style and length but say what each block really shows: the demo's "Staff Picks",
  * "Handpicked Just for You" and "Most Popular Topics" would claim curation, personalisation and traffic data the
  * site does not have. No view or comment counters are shown. The newsletter form reaches the editors by email.
@@ -31,16 +34,16 @@ export default async function HomePage() {
   const slugOf = (href: string) => href.replace(/^\//, '');
 
   const [guides, hubData, authors] = await Promise.all([
-    listPostSummaries({ authored: true, withCover: true, pageSize: 40 }).catch(() => none),
+    listPostSummaries({ authored: true, withCover: true, pageSize: 48 }).catch(() => none),
     Promise.all(topicHubs.map((h) => listPostSummaries({ category: slugOf(h.href), pageSize: 1, withCover: true }).catch(() => none))),
     listAuthors().catch(() => []),
   ]);
 
   const cards = guides.data.map(toCard).filter((c) => c.image);
   /* Each block takes the next run of guides, so no post appears twice on the page. */
-  const blocks = [1, 4, 3, 6, 5, 1, 2, 2, 8];
+  const blocks = [1, 4, 3, 6, 6, 1, 2, 2, 8, 3, 3];
   const starts = blocks.map((_, i) => blocks.slice(0, i).reduce((n, b) => n + b, 0));
-  const [[feature], heroTiles, pickCards, pickRows, latest, [forYouFeature], forYouTiles, forYouRows, recommended] = blocks.map((n, i) =>
+  const [[feature], heroTiles, pickCards, pickRows, latest, [forYouFeature], forYouTiles, forYouRows, recommended, sideRows, sideSlides] = blocks.map((n, i) =>
     cards.slice(starts[i], starts[i] + n),
   );
 
@@ -50,6 +53,18 @@ export default async function HomePage() {
     .filter((t) => t.count > 0)
     .sort((a, b) => b.count - a.count)
     .slice(0, 6);
+
+  /* Latest Guides sidebar: the newest guide's author (with their bio), every topic with its post count, more guides
+     and a cover slider from guides not shown elsewhere on the page. */
+  const latestAuthor = (() => {
+    const slug = latest[0]?.author?.href.split('/').pop();
+    return authors.find((a) => a.slug === slug && a.bio) ?? authors.find((a) => a.bio) ?? null;
+  })();
+  const allTopics = topicHubs
+    .map((h, i) => ({ ...h, count: hubData[i].meta.pagination.total }))
+    .filter((t) => t.count > 0)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 9);
 
   const websiteJsonLd = {
     '@context': 'https://schema.org',
@@ -215,17 +230,117 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 7. Latest guides (last on the page) */}
+      {/* 7. Latest guides (last on the page): Magzin home 3 "Latest" layout. Six card-9 list cards on the left; the
+             sidebar carries an author card, more guides, topics with post counts and a cover slider. The template's
+             "Top Trending" / "Popular" labels would claim traffic data the site does not have. */}
       {latest.length > 0 && (
-        <section className="sec-5-home-2 pt-70 pb-70 overflow-hidden">
+        <section className="sec-2-home-3 home-latest pt-70 pb-70 overflow-hidden" data-testid="home-latest-guides">
           <div className="container">
-            <SectionTitle title="Latest Guides" description="Recently published" href="/informative-articles" />
-            <div className="row mt-2 g-4">
-              {latest.map((card) => (
-                <div className="col-12" key={card.key}>
-                  <WideCard card={card} />
+            <div className="row g-lg-4 g-5">
+              <div className="col-lg-8">
+                <SectionTitle title="Latest Guides" description="Recently published" href="/informative-articles" />
+                <div className="row mt-2 g-4">
+                  {latest.map((card) => (
+                    <div className="col-12" key={card.key}>
+                      <ListCard card={card} />
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+              <aside className="col-lg-4" aria-label="More from the site">
+                <div className="row">
+                  {latestAuthor && (
+                    <div className="col-md-6 col-lg-12 col-12">
+                      <div className="author-card" data-testid="home-author-card">
+                        <div className="card-img mb-4 text-center d-flex justify-content-center">
+                          <Link href={`/authors/${latestAuthor.slug}`} aria-label={latestAuthor.name}>
+                            <AuthorAvatar name={latestAuthor.name} src={latestAuthor.avatarUrl} size={120} />
+                          </Link>
+                        </div>
+                        <div className="card-body text-center">
+                          <Link href={`/authors/${latestAuthor.slug}`}>
+                            <h2 className="h5 mb-3">{latestAuthor.name}</h2>
+                          </Link>
+                          <p className="mb-4 fs-7">{latestAuthor.bio}</p>
+                          <p className="text-dark mb-0 fs-7">Follow {SITE.name}</p>
+                          <div className="d-inline-flex group-social-icons mt-2">
+                            {SITE.social.facebook && (
+                              <a href={SITE.social.facebook} className="icon-shape icon-46" target="_blank" rel="noopener noreferrer" aria-label={`${SITE.name} on Facebook`}>
+                                <FacebookIcon />
+                              </a>
+                            )}
+                            <a href="/feed.xml" className="icon-shape icon-46" aria-label={`${SITE.name} RSS feed`}>
+                              <RssIcon />
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {sideRows.length > 0 && (
+                    <div className="col-md-6 col-lg-12 col-12">
+                      <div className="mt-5 mt-md-0 mt-lg-5">
+                        <SidebarTitle>More Guides</SidebarTitle>
+                      </div>
+                      <div className="d-flex flex-column gap-3">
+                        {sideRows.map((card) => (
+                          <div className="article card-10 style-2 sidebar-trending" key={card.key}>
+                            <Link href={card.href} className="card-img" tabIndex={-1} aria-hidden>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              {card.image ? <img className="w-100" src={card.image} alt="" width={108} height={83} loading="lazy" /> : null}
+                            </Link>
+                            <div className="card-body">
+                              <Link href={card.href}>
+                                <span className="h6 fs-6 mb-2 text-truncate-2">{card.title}</span>
+                              </Link>
+                              <div className="d-flex align-items-center text-600">
+                                <span className="fs-8">{card.date}</span>
+                                {card.readMinutes ? (
+                                  <ul className="ps-4 m-0">
+                                    <li>
+                                      <span className="fs-8">{card.readMinutes} min read</span>
+                                    </li>
+                                  </ul>
+                                ) : null}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="row">
+                  {allTopics.length > 0 && (
+                    <div className="col-md-6 col-lg-12 col-12">
+                      <div className="mt-5">
+                        <SidebarTitle>Browse Topics</SidebarTitle>
+                      </div>
+                      <ul className="list-unstyled d-flex flex-wrap gap-3 ps-0">
+                        {allTopics.map((t) => (
+                          <li key={t.href}>
+                            <Link href={t.href} className="tag-item">
+                              <span>{t.label}</span>
+                              <span className="number">{t.count}</span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {sideSlides.length > 0 && (
+                    <div className="col-md-6 col-lg-12 col-12">
+                      <div className="mt-5">
+                        <FeaturedPostsSlider
+                          showText={false}
+                          className="home-cover-slider"
+                          posts={sideSlides.map((c) => ({ href: c.href, title: c.title, image: c.image as string, imageAlt: c.imageAlt, author: c.author?.name ?? null, date: c.date }))}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </aside>
             </div>
           </div>
         </section>

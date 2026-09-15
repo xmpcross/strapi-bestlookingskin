@@ -218,6 +218,37 @@ export function WideCard({ card }: { card: PostCardData }) {
   );
 }
 
+/* card-9: horizontal list card (image left; badge, title, excerpt, date and read time right; arrow corner). */
+export function ListCard({ card }: { card: PostCardData }) {
+  return (
+    <article className="article card-9 d-flex flex-md-row align-items-stretch flex-column">
+      <Link href={card.href} className="card-img-top" tabIndex={-1} aria-hidden>
+        <Cover card={card} width={230} height={250} className="cover-image thumbnail" sizes="(min-width: 768px) 230px, 100vw" />
+      </Link>
+      <div className="card-body">
+        <Corner href={card.href} label={card.title} />
+        <div className="left">
+          <div className="card-info d-flex align-items-center">
+            <Badge card={card} />
+            {card.readMinutes && (
+              <ul className="d-flex align-items-center text-600 m-0 ps-4">
+                <li>
+                  <p className="fs-8 m-0">{card.readMinutes} min read</p>
+                </li>
+              </ul>
+            )}
+          </div>
+          <Link href={card.href}>
+            <h3 className="h6 card-title mb-0 mt-3 text-truncate-2">{card.title}</h3>
+          </Link>
+          {card.excerpt && <p className="card-text text-600 fs-7 mb-0 mt-3 text-truncate-2">{card.excerpt}</p>}
+          {card.date && <p className="fs-8 text-600 mb-0 mt-auto pt-4 me-5 pe-4">{card.date}</p>}
+        </div>
+      </div>
+    </article>
+  );
+}
+
 /* card-recommend: image and title, for formats and hubs. */
 export function ImageLinkCard({ href, title, image, alt }: { href: string; title: string; image: string | null; alt: string }) {
   return (

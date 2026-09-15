@@ -81,6 +81,16 @@
   --tc-btn-padding-y: 7px;
   font-size: var(--tc-fs-8);
 }
+.btn.shop-btn-xs {
+  --tc-btn-padding-x: 12px;
+  --tc-btn-padding-y: 5px;
+  font-size: 11px;
+  gap: 5px;
+}
+.btn.shop-btn-xs svg {
+  width: 11px;
+  height: 11px;
+}
 .btn.shop-btn-square {
   border-radius: 8px;
 }
