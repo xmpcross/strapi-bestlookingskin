@@ -503,7 +503,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
 
         {/* Lower section: descriptions etc. + sidebar. The g-5 gutter stands in for the old ~5% spacer column. */}
         <div className="row g-5 mt-0" data-testid="product-detail-columns">
-          <div className={SHOW_PRODUCT_SIDEBAR ? 'col-lg-8 col-12' : 'col-12'}>
+          <div className={SHOW_PRODUCT_SIDEBAR ? 'col-lg-8 col-12 product-detail-main' : 'col-12'}>
             {/* Skin types tags (key features moved up next to the title/prices). */}
             {product.skinTypes && product.skinTypes.length > 0 && (
               <div className="mb-5">
@@ -591,7 +591,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
           {SHOW_PRODUCT_SIDEBAR && (
             /* Right column: the category list, then Featured Products (the best-rated products not already on this
                page). */
-            <aside className="col-lg-4 col-12" aria-label="Product sidebar">
+            <aside className="col-lg-4 col-12 product-detail-side" aria-label="Product sidebar">
               {topicRows.length > 0 && (
                 <div className="mb-5" data-testid="browse-by-category">
                   <CategoryListWidget

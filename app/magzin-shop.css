@@ -870,6 +870,21 @@ html .product-page .sidebar-heading {
   font-size: 1.2rem !important;
 }
 
+/* Lower section on wide screens: the sidebar is exactly as wide as the offer panel above it and lines up with it.
+   The offer panel is half of the top section's 7/12 column (g-4 inner gutter) inside a g-5 row, which works out at
+   29.1667% of the row plus 12px once the gutters are accounted for; the main column takes the rest. Below 1200px the
+   offer panel stacks under the price alert, so the default 8/4 split stays. */
+@media (min-width: 1200px) {
+  .row > .product-detail-main {
+    flex: 0 0 auto;
+    width: calc(70.8333% - 12px);
+  }
+  .row > .product-detail-side {
+    flex: 0 0 auto;
+    width: calc(29.1667% + 12px);
+  }
+}
+
 /* Highlights strip above the description: white panel, four columns of grey label/value tiles with a chevron. */
 .product-highlights {
   margin-bottom: 32px;
