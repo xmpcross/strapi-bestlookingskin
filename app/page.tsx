@@ -8,7 +8,6 @@ import EmailSignup from '@/components/magzin/EmailSignup';
 import { CategoryChip, FeatureCard, ImageLinkCard, ListCard, OverlapCard, RowCard, SectionTitle, TextCard, TileCard } from '@/components/magzin/cards';
 import SidebarTitle from '@/components/magzin/SidebarTitle';
 import FeaturedPostsSlider from '@/components/FeaturedPostsSlider';
-import { FacebookIcon, RssIcon } from '@/components/magzin/icons';
 
 export const revalidate = 60;
 
@@ -54,12 +53,8 @@ export default async function HomePage() {
     .sort((a, b) => b.count - a.count)
     .slice(0, 6);
 
-  /* Latest Guides sidebar: the newest guide's author (with their bio), every topic with its post count, more guides
-     and a cover slider from guides not shown elsewhere on the page. */
-  const latestAuthor = (() => {
-    const slug = latest[0]?.author?.href.split('/').pop();
-    return authors.find((a) => a.slug === slug && a.bio) ?? authors.find((a) => a.bio) ?? null;
-  })();
+  /* Latest Guides sidebar: more guides, every topic with its post count and a cover slider from guides not shown
+     elsewhere on the page. */
   const allTopics = topicHubs
     .map((h, i) => ({ ...h, count: hubData[i].meta.pagination.total }))
     .filter((t) => t.count > 0)
@@ -231,7 +226,7 @@ export default async function HomePage() {
       )}
 
       {/* 7. Latest guides (last on the page): Magzin home 3 "Latest" layout. Six card-9 list cards on the left; the
-             sidebar carries an author card, more guides, topics with post counts and a cover slider. The template's
+             sidebar carries more guides, topics with post counts and a cover slider. The template's
              "Top Trending" / "Popular" labels would claim traffic data the site does not have. */}
       {latest.length > 0 && (
         <section className="sec-2-home-3 home-latest pt-70 pb-70 overflow-hidden" data-testid="home-latest-guides">
@@ -249,37 +244,9 @@ export default async function HomePage() {
               </div>
               <aside className="col-lg-4" aria-label="More from the site">
                 <div className="row">
-                  {latestAuthor && (
-                    <div className="col-md-6 col-lg-12 col-12">
-                      <div className="author-card" data-testid="home-author-card">
-                        <div className="card-img mb-4 text-center d-flex justify-content-center">
-                          <Link href={`/authors/${latestAuthor.slug}`} aria-label={latestAuthor.name}>
-                            <AuthorAvatar name={latestAuthor.name} src={latestAuthor.avatarUrl} size={120} />
-                          </Link>
-                        </div>
-                        <div className="card-body text-center">
-                          <Link href={`/authors/${latestAuthor.slug}`}>
-                            <h2 className="h5 mb-3">{latestAuthor.name}</h2>
-                          </Link>
-                          <p className="mb-4 fs-7">{latestAuthor.bio}</p>
-                          <p className="text-dark mb-0 fs-7">Follow {SITE.name}</p>
-                          <div className="d-inline-flex group-social-icons mt-2">
-                            {SITE.social.facebook && (
-                              <a href={SITE.social.facebook} className="icon-shape icon-46" target="_blank" rel="noopener noreferrer" aria-label={`${SITE.name} on Facebook`}>
-                                <FacebookIcon />
-                              </a>
-                            )}
-                            <a href="/feed.xml" className="icon-shape icon-46" aria-label={`${SITE.name} RSS feed`}>
-                              <RssIcon />
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                   {sideRows.length > 0 && (
                     <div className="col-md-6 col-lg-12 col-12">
-                      <div className="mt-5 mt-md-0 mt-lg-5">
+                      <div>
                         <SidebarTitle>More Guides</SidebarTitle>
                       </div>
                       <div className="d-flex flex-column gap-3">

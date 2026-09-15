@@ -31,8 +31,9 @@ export const FacebookIcon = () => (
     <path d="M8.84863 9.20312H6.5415V16.0938H3.46533V9.20312H0.942871V6.37305H3.46533V4.18896C3.46533 1.72803 4.94189 0.34375 7.1875 0.34375C8.26416 0.34375 9.40234 0.559082 9.40234 0.559082V2.98926H8.14111C6.91064 2.98926 6.5415 3.72754 6.5415 4.52734V6.37305H9.2793L8.84863 9.20312Z" fill="black" />
   </svg>
 );
+/* fill currentColor follows the theme on its own, so no dark-mode-invert (which would flip it back to dark). */
 export const RssIcon = () => (
-  <svg className="dark-mode-invert" xmlns="http://www.w3.org/2000/svg" width={16} height={16} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+  <svg xmlns="http://www.w3.org/2000/svg" width={16} height={16} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
     <path d="M2 1a1 1 0 0 0 0 2 11 11 0 0 1 11 11 1 1 0 1 0 2 0A13 13 0 0 0 2 1m0 4a1 1 0 0 0 0 2 7 7 0 0 1 7 7 1 1 0 1 0 2 0 9 9 0 0 0-9-9m1 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4" />
   </svg>
 );
