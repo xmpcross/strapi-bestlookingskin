@@ -383,6 +383,41 @@ export const POST_COVER_OVERRIDES: Record<string, StrapiImage> = {
     height: 896,
     size: 150,
   },
+  'budget-friendly-skin-care-routine': {
+    url: '/cms-uploads/budget_friendly_skin_care_routine_cover.jpg',
+    alternativeText: 'Budget-Friendly Skin Care Routine: Essential Cleanser, Moisturizer and Daily Sunscreen',
+    width: 1200,
+    height: 900,
+    size: 150,
+  },
+  'how-to-customize-your-face-oil-blend': {
+    url: '/cms-uploads/how_to_customize_your_face_oil_blend_cover.jpg',
+    alternativeText: 'How to Customize Your Face Oil Blend: Custom carrier and essential oils',
+    width: 1200,
+    height: 900,
+    size: 150,
+  },
+  'holistic-beauty-routines-improve-skin-health': {
+    url: '/cms-uploads/holistic_beauty_routines_improve_skin_health_cover.jpg',
+    alternativeText: 'Can holistic beauty routines improve skin health? Jade gua sha, balm and botanical oil',
+    width: 1200,
+    height: 900,
+    size: 150,
+  },
+  'top-face-oil-dermaplaning': {
+    url: '/cms-uploads/top_face_oil_dermaplaning_cover.jpg',
+    alternativeText: "What's the Top Face Oil to Use with Dermaplaning? Precision dermaplaning blade and squalane oil",
+    width: 1200,
+    height: 900,
+    size: 150,
+  },
+  '5-myths-facial-oils-debunked': {
+    url: '/cms-uploads/5_myths_facial_oils_debunked_cover.jpg',
+    alternativeText: '5 Myths About Facial Oils, Debunked: Balancing, hydrating and clarifying facial oils',
+    width: 1200,
+    height: 900,
+    size: 150,
+  },
 };
 
 /** Apply content + media rewrites to a single post. Idempotent. */
