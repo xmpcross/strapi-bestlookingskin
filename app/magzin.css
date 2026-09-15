@@ -279,6 +279,10 @@ body {
   max-width: 100%;
 }
 
+/* Footer style 4: no rule above the footer (the template draws a 1px neutral-300 top border). */
+.section-footer-4 .border-top-300 {
+  border-top: 0;
+}
 /* Footer style 4: cover grid (in place of the template's Instagram photos). */
 .footer-cover {
   display: block;
