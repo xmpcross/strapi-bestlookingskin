@@ -38,7 +38,7 @@ export default async function SiteFooter() {
       <div className="section-footer-4 overflow-hidden">
         <div className="container border-top-300">
           <div className="row g-5 sec-padding">
-            <div className="col-lg-4 col-md-8 pe-lg-5">
+            <div className="col-12 footer-col-brand pe-lg-5">
               <div className="d-flex gap-2 align-items-center">
                 <Link href="/" aria-label={`${SITE.name} home`}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -59,45 +59,41 @@ export default async function SiteFooter() {
                 </a>
               </div>
             </div>
-            <div className="col-lg-8">
-              <div className="row g-4">
-                <div className="col-lg-3 col-md-3 col-6">
-                  <h6 className="mb-3">Topics</h6>
-                  <ul className="list-unstyled ps-0">
-                    {topics.map((l, i) => (
-                      <li className={i < topics.length - 1 ? 'mb-3' : ''} key={l.href}>
-                        <Link className="text-500 hover-dark" href={l.href}>
-                          {l.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="col-lg-3 col-md-3 col-6">
-                  <h6 className="mb-3">About</h6>
-                  <ul className="list-unstyled ps-0">
-                    {siteLinks.map((l, i) => (
-                      <li className={i < siteLinks.length - 1 ? 'mb-3' : ''} key={l.href}>
-                        <Link className="text-500 hover-dark" href={l.href}>
-                          {l.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="col-lg-3 col-md-3 col-6">
-                  <h6 className="mb-3">Products</h6>
-                  <ul className="list-unstyled ps-0">
-                    {productLinks.map((l, i) => (
-                      <li className={i < productLinks.length - 1 ? 'mb-3' : ''} key={l.href}>
-                        <Link className="text-500 hover-dark" href={l.href}>
-                          {l.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+            <div className="col-md-4 col-6 footer-col-links">
+              <h6 className="mb-3">Topics</h6>
+              <ul className="list-unstyled ps-0">
+                {topics.map((l, i) => (
+                  <li className={i < topics.length - 1 ? 'mb-3' : ''} key={l.href}>
+                    <Link className="text-500 hover-dark" href={l.href}>
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="col-md-4 col-6 footer-col-links">
+              <h6 className="mb-3">About</h6>
+              <ul className="list-unstyled ps-0">
+                {siteLinks.map((l, i) => (
+                  <li className={i < siteLinks.length - 1 ? 'mb-3' : ''} key={l.href}>
+                    <Link className="text-500 hover-dark" href={l.href}>
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="col-md-4 col-6 footer-col-links">
+              <h6 className="mb-3">Products</h6>
+              <ul className="list-unstyled ps-0">
+                {productLinks.map((l, i) => (
+                  <li className={i < productLinks.length - 1 ? 'mb-3' : ''} key={l.href}>
+                    <Link className="text-500 hover-dark" href={l.href}>
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>

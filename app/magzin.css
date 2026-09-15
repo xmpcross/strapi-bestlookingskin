@@ -276,6 +276,17 @@ body {
 .footer-bottom nav a {
   line-height: 1.5;
 }
+/* Footer columns on wide screens: brand block 55%, each link column 15%. */
+@media (min-width: 992px) {
+  .section-footer-4 .row > .footer-col-brand {
+    flex: 0 0 auto;
+    width: 55%;
+  }
+  .section-footer-4 .row > .footer-col-links {
+    flex: 0 0 auto;
+    width: 15%;
+  }
+}
 /* Footer link columns (Topics, About, Products): 15px links. */
 .section-footer-4 ul li a {
   font-size: 15px;
