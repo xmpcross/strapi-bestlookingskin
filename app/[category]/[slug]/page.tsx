@@ -375,10 +375,10 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
                     <svg className="dark-mode-invert" xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden>
                       <path d="M0.582044 11.7285C8.79451 13.4712 10.252 14.8614 12.125 22.7372C13.8067 14.8768 15.2308 13.4992 23.4018 11.8279C15.1894 10.0852 13.7319 8.69503 11.8589 0.81924C10.1769 8.67956 8.75306 10.0571 0.582044 11.7285Z" fill="#0E0E0F" />
                     </svg>
-                    <h2 className="h5 mb-0">Latest guides</h2>
+                    <h2 className="h5 mb-0 sidebar-heading">Latest guides</h2>
                   </div>
                   <div className="d-flex flex-column gap-3">
-                    {recentRows.map((row) => (
+                    {recentRows.slice(0, 3).map((row) => (
                       <div className="article card-10 style-2 sidebar-trending" key={row.href}>
                         <Link href={row.href} className="card-img">
                           {/* eslint-disable-next-line @next/next/no-img-element */}

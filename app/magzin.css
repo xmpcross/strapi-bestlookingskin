@@ -368,3 +368,6 @@ body {
   line-height: 1.35;
   max-height: none;
 }
+.sidebar-heading {
+  font-size: 1.2rem;
+}
