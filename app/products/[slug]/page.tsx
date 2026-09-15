@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { getProduct, listProducts, getPriceHistory, listProductReviews, mediaUrl, type BlsProduct, listProductCategoryCounts } from '@/lib/strapi';
 import { SITE } from '@/lib/site';
 import ProductCard from '@/components/ProductCard';
+import ProductCarousel from '@/components/ProductCarousel';
 import PriceAlertForm from '@/components/PriceAlertForm';
 import PriceHistoryChart from '@/components/PriceHistoryChart';
 import ReviewForm from '@/components/ReviewForm';
@@ -64,9 +65,9 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
 
   // Related: same category, exclude self
   const relatedRes = product.categories?.[0]
-    ? await listProducts({ category: product.categories[0].slug, pageSize: 6 }).catch(() => null)
+    ? await listProducts({ category: product.categories[0].slug, pageSize: 11 }).catch(() => null)
     : null;
-  const related = (relatedRes?.data ?? []).filter((p) => p.id !== product.id).slice(0, 5);
+  const related = (relatedRes?.data ?? []).filter((p) => p.id !== product.id).slice(0, 10);
 
   // Sidebar topic list: this site's categories with live product counts.
   const topicRows = await listProductCategoryCounts().catch(() => []);
@@ -634,13 +635,13 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
         {related.length > 0 && (
           <aside className="mt-5 pt-4" data-testid="related-products">
             <h3 className="h4 mb-4">More in {cat?.name ?? 'this category'}</h3>
-            {/* 20px between cards; each card carries the border, background and shadow (see .related-products-grid),
-                so the thumbnail inside drops its own frame. */}
-            <div className="related-products-grid">
+            {/* Up to ten products, auto-sliding, six per row on wide screens (ProductCarousel). Cards carry the white
+                background and 8px corners with no border or shadow, so the thumbnail inside drops its own frame. */}
+            <ProductCarousel label={`More in ${cat?.name ?? 'this category'}`}>
               {related.map((r) => (
                 <ProductCard key={r.id} product={r} variant="tile" thumbBg="bg-transparent" />
               ))}
-            </div>
+            </ProductCarousel>
           </aside>
         )}
       </div>

@@ -642,32 +642,39 @@
   padding: 6px;
   background: #fff;
 }
-/* "More in {category}" row: 20px between cards; each card has 8px corners and a hairline border, no shadow. */
-.related-products-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 20px;
+/* "More in {category}" carousel: cards with a white background and 8px corners, no border or shadow; equal heights;
+   the dots sit below the row. */
+.product-carousel .swiper-slide {
+  height: auto;
+  display: flex;
 }
-@media (min-width: 576px) {
-  .related-products-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (min-width: 992px) {
-  .related-products-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
-}
-.related-products-grid .product-card {
+.product-carousel .product-card {
+  width: 100%;
   padding: 14px 14px 18px;
-  border: 1px solid var(--tc-neutral-200);
+  border: 0;
   border-radius: 8px;
   background: var(--tc-system-white);
   box-shadow: none;
-  transition: border-color 0.2s ease;
 }
-.related-products-grid .product-card:hover {
-  border-color: var(--tc-neutral-400);
+.product-carousel.swiper {
+  padding-bottom: 8px;
+}
+.product-carousel .swiper-pagination {
+  position: static;
+  width: auto;
+  margin-top: 20px;
+  padding: 0;
+  background: none;
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+}
+.product-carousel .swiper-pagination-bullet {
+  background: var(--tc-neutral-400);
+  opacity: 1;
+}
+.product-carousel .swiper-pagination-bullet-active {
+  background: var(--tc-neutral-900);
 }
 /* "More in {category}" row under the product: 14px product names, 40px around each product image. */
 html .product-page [data-testid='related-products'] .product-name {
