@@ -1,17 +1,17 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getProduct, listProducts, listPostSummaries, getPriceHistory, listProductReviews, mediaUrl, type BlsProduct, type BlsPostSummary, listProductCategoryCounts } from '@/lib/strapi';
+import { getProduct, listProducts, getPriceHistory, listProductReviews, mediaUrl, type BlsProduct, listProductCategoryCounts } from '@/lib/strapi';
 import { SITE } from '@/lib/site';
-import { fmtDate, postPath } from '@/lib/format';
 import ProductCard from '@/components/ProductCard';
 import PriceAlertForm from '@/components/PriceAlertForm';
 import PriceHistoryChart from '@/components/PriceHistoryChart';
 import ReviewForm from '@/components/ReviewForm';
 import ReviewList from '@/components/ReviewList';
 import PriceBadges from '@/components/PriceBadges';
-import ProductInfoTabs from '@/components/ProductInfoTabs';
+import ProductInfoAccordion from '@/components/ProductInfoAccordion';
 import SidebarTitle from '@/components/magzin/SidebarTitle';
+import CategoryListWidget from '@/components/magzin/CategoryListWidget';
 import { productAttributes, productLead } from '@/lib/product-attributes';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
 
@@ -70,6 +70,10 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
 
   // Sidebar topic list: this site's categories with live product counts.
   const topicRows = await listProductCategoryCounts().catch(() => []);
+  // Catalogue total for the sidebar's "All products" row (the same scoped count the /products listing uses).
+  const productTotal = await listProducts({ pageSize: 1 })
+    .then((r) => r.meta.pagination.total)
+    .catch(() => null);
 
   // Price-history points (from commerce-price-snapshots) for the Price History tab.
   const priceHistory = await getPriceHistory(product.documentId ?? '');
@@ -87,18 +91,20 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
   const attributes = productAttributes(product.specs as Record<string, unknown> | undefined);
   const lead = productLead(product.shortDescription, product.description);
 
-  // Recent articles for the right-hand sidebar column. Card-sized summaries (no bodies), and only authored
-  // posts with their own cover: the old fallback to the first image in the body pulled merchant-hotlinked
-  // Amazon images out of the legacy posts, which this site must not display.
-  const recentPosts = await listPostSummaries({ pageSize: 5, authored: true, withCover: true })
-    .then((r) => r.data)
-    .catch(() => [] as BlsPostSummary[]);
-  const recentRows = recentPosts.map((p) => ({
-    href: postPath(p),
-    title: p.title,
-    date: fmtDate(p.publishedAt),
-    img: mediaUrl(p.coverImage ?? null),
-  }));
+  // Sidebar "Featured Products": the best-rated products in the catalogue, leaving out this product and the ones
+  // already in the "More in {category}" row. The CMS has no featured flag. Ratings are weighted by how many there
+  // are (a Bayesian average pulled towards 4.0 by 20 phantom ratings), so a 5.0 from four ratings does not
+  // outrank a 4.9 from fifteen thousand.
+  const shownIds = new Set([product.id, ...related.map((r) => r.id)]);
+  const weightedRating = (p: BlsProduct) => ((p.rating ?? 0) * (p.ratingCount ?? 0) + 4 * 20) / ((p.ratingCount ?? 0) + 20);
+  const featuredProducts = await listProducts({ sort: 'rating-desc', rated: true, pageSize: 100 })
+    .then((r) =>
+      r.data
+        .filter((p) => !shownIds.has(p.id))
+        .sort((a, b) => weightedRating(b) - weightedRating(a))
+        .slice(0, 5),
+    )
+    .catch(() => [] as BlsProduct[]);
 
   const cover = mediaUrl(product.primaryImage ?? null);
   const galleryImgs = (product.gallery ?? []).slice(0, 6);
@@ -299,9 +305,6 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
               </div>
             )}
 
-            {/* Short description under the title and rating: the product's own, else the description's opening. */}
-            {lead && <p className="shop-lead fs-7 mt-3 mb-0">{lead}</p>}
-
             {/* Social share icons under product title */}
             <div className="shop-share d-flex align-items-center gap-2 mt-3" data-testid="product-share">
               <ShareLink label="Share on Facebook" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${SITE.url}/products/${product.slug}`)}`} tone="is-facebook">
@@ -334,6 +337,9 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                     </ul>
                   </>
                 ) : null}
+
+                {/* Short description directly above the price: the product's own, else the description's opening. */}
+                {lead && <p className="shop-lead fs-7 mb-0">{lead}</p>}
 
                 {product.currentPrice !== undefined && (
                   <div className="d-flex flex-wrap align-items-baseline gap-3 mt-4">
@@ -496,10 +502,10 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
               </div>
             )}
 
-            {/* Description / Specifications / Additional Info / Reviews. The description shows in full (no "View more" clamp);
-                a tab with nothing sourced for this product is left out rather than shown empty. */}
-            <ProductInfoTabs
-              tabs={[
+            {/* Description / Specifications / Additional Info / Reviews as an accordion (Description open). The description
+                shows in full (no "View more" clamp); a section with nothing sourced for this product is left out. */}
+            <ProductInfoAccordion
+              sections={[
                 ...(product.description
                   ? [{ key: 'description', label: 'Description', content: <div data-testid="product-description"><ProductDescription markdown={product.description} /></div> }]
                   : []),
@@ -561,47 +567,52 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
           </div>
 
           {SHOW_PRODUCT_SIDEBAR && (
-            /* Right column: Latest guides first (Tier A posts with their own cover, as on the post page's aside),
-               then topic browsing. */
+            /* Right column: Featured Products (the highest-rated products not already on this page), then the
+               category list. */
             <aside className="col-lg-4 col-12" aria-label="Product sidebar">
-              {recentRows.length > 0 && (
-                <div className="mb-5">
-                  <SidebarTitle>Latest guides</SidebarTitle>
+              {featuredProducts.length > 0 && (
+                <div className="mb-5" data-testid="featured-products">
+                  <SidebarTitle>Featured Products</SidebarTitle>
                   <div className="d-flex flex-column gap-3">
-                    {recentRows.map((row) => (
-                      <div className="article card-10 style-1" key={row.href}>
-                        <Link href={row.href} className="card-img">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          {row.img ? <img className="w-100 rounded-8" src={row.img} alt="" width={96} height={96} loading="lazy" /> : null}
-                        </Link>
-                        <div className="card-body">
-                          <Link href={row.href}>
-                            <span className="h6 mb-2 text-truncate-2 product-side-guide-title">{row.title}</span>
+                    {featuredProducts.map((fp) => {
+                      const img = mediaUrl(fp.primaryImage ?? null);
+                      return (
+                        <div className="article card-10 style-1 featured-product-row" key={fp.slug}>
+                          <Link href={`/products/${fp.slug}`} className="card-img" tabIndex={-1} aria-hidden>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            {img ? <img className="w-100 rounded-8" src={img} alt="" width={96} height={96} loading="lazy" /> : null}
                           </Link>
-                          <span className="fs-8 text-600">{row.date}</span>
+                          <div className="card-body">
+                            <Link href={`/products/${fp.slug}`}>
+                              <span className="h6 mb-1 text-truncate-2 product-side-guide-title">{fp.name}</span>
+                            </Link>
+                            {(fp.rating ?? 0) > 0 && (
+                              <span className="d-flex align-items-center gap-1 fs-8 text-600">
+                                <span className="shop-star-on" aria-hidden>★</span>
+                                {fp.rating!.toFixed(1)}
+                                {fp.ratingCount ? <span className="text-500">({fp.ratingCount.toLocaleString('en-US')})</span> : null}
+                              </span>
+                            )}
+                            {fp.currentPrice !== undefined && (
+                              <span className="d-block fs-7 fw-semi-bold text-dark mt-1">{formatPrice(fp.currentPrice, fp.currency)}</span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
               {topicRows.length > 0 && (
-                <div className="mb-5" data-testid="browse-by-topic">
-                  <SidebarTitle>Categories</SidebarTitle>
-                  <ul className="list-unstyled ps-0 d-flex flex-wrap gap-2 m-0">
-                    {topicRows.map((row) => (
-                      <li key={row.slug}>
-                        <Link
-                          href={`/categories/${row.slug}`}
-                          className="tag-item"
-                          aria-current={cat?.slug === row.slug ? 'page' : undefined}
-                        >
-                          <span className="fs-7">{row.name}</span>
-                          <span className="number">{row.count}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+                <div className="mb-5" data-testid="browse-by-category">
+                  <CategoryListWidget
+                    title="Browse by category"
+                    allHref="/products"
+                    allLabel="All products"
+                    total={productTotal}
+                    rows={topicRows}
+                    current={cat?.slug}
+                  />
                 </div>
               )}
             </aside>

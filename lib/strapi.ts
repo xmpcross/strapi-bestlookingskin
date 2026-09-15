@@ -612,10 +612,13 @@ export async function listProducts(
     maxPrice?: number;
     q?: string;
     sort?: 'newest' | 'price-asc' | 'price-desc' | 'rating-desc';
+    /* Only products with an imported rating (a descending rating sort puts unrated rows first in Postgres). */
+    rated?: boolean;
   } = {},
 ) {
   const filters: Record<string, unknown> = {};
   if (opts.category) filters.categories = { slug: { $eqi: opts.category } };
+  if (opts.rated) filters.rating = { $notNull: true };
   const andFilters: Record<string, unknown>[] = [];
   if (opts.brand) {
     andFilters.push({ $or: [
