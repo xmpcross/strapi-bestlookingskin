@@ -88,6 +88,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
     title: p.title,
     date: fmtDate(p.publishedAt),
     img: mediaUrl(p.coverImage ?? null),
+    minutes: p.author ? p.readingTimeMinutes : null,
   });
   const recentRows = recentPosts.map(toRow);
   const topics = topicGroups.flatMap((g) => g.items).filter((t) => t.href !== `/${category}`);
@@ -368,21 +369,35 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
             <aside className="col-lg-4" aria-label="Article sidebar">
               {recentRows.length > 0 && (
                 <div className="mb-5">
+                  {/* Magzin "Weekly trending" block (card-10 style-2). Headed "Latest guides": the list is the newest
+                      guides, and the site has no traffic data to call anything trending. */}
                   <div className="d-flex align-items-center gap-2 mb-3">
+                    <svg className="dark-mode-invert" xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden>
+                      <path d="M0.582044 11.7285C8.79451 13.4712 10.252 14.8614 12.125 22.7372C13.8067 14.8768 15.2308 13.4992 23.4018 11.8279C15.1894 10.0852 13.7319 8.69503 11.8589 0.81924C10.1769 8.67956 8.75306 10.0571 0.582044 11.7285Z" fill="#0E0E0F" />
+                    </svg>
                     <h2 className="h5 mb-0">Latest guides</h2>
                   </div>
                   <div className="d-flex flex-column gap-3">
                     {recentRows.map((row) => (
-                      <div className="article card-10 style-1" key={row.href}>
+                      <div className="article card-10 style-2 sidebar-trending" key={row.href}>
                         <Link href={row.href} className="card-img">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          {row.img ? <img className="w-100 rounded-8" src={row.img} alt="" width={96} height={96} loading="lazy" /> : null}
+                          {row.img ? <img className="w-100" src={row.img} alt="" width={108} height={83} loading="lazy" /> : null}
                         </Link>
                         <div className="card-body">
                           <Link href={row.href}>
                             <span className="h6 fs-6 mb-2 text-truncate-2 d-block">{row.title}</span>
                           </Link>
-                          <span className="fs-8 text-600">{row.date}</span>
+                          <div className="d-flex align-items-center text-600">
+                            <span className="fs-8">{row.date}</span>
+                            {row.minutes ? (
+                              <ul className="ps-4 m-0">
+                                <li>
+                                  <span className="fs-8">{row.minutes} min read</span>
+                                </li>
+                              </ul>
+                            ) : null}
+                          </div>
                         </div>
                       </div>
                     ))}

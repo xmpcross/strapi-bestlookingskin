@@ -147,9 +147,13 @@ body {
   clear: both;
 }
 .post-cover {
-  aspect-ratio: 4 / 3;
   object-fit: cover;
-  height: auto;
+  height: 450px;
+}
+@media (max-width: 575.98px) {
+  .post-cover {
+    height: 260px;
+  }
 }
 .block-banner .card-title.post-hero {
   padding-top: 0;
@@ -340,4 +344,27 @@ body {
     flex: 0 0 60%;
     max-width: 60%;
   }
+}
+
+/* Post sidebar list in the Magzin "Weekly trending" card style (card-10 style-2): full width of the column. */
+.col-lg-4 .article.card-10.style-2.sidebar-trending {
+  width: 100%;
+  max-width: 100%;
+}
+.col-lg-4 .article.card-10.style-2.sidebar-trending .card-body {
+  width: auto;
+  flex: 1 1 auto;
+}
+.article.card-10.sidebar-trending .card-img img {
+  width: 108px;
+  height: 83px;
+  object-fit: cover;
+}
+.article.card-10.sidebar-trending ul li {
+  list-style: disc;
+}
+.article.card-10.sidebar-trending .text-truncate-2 {
+  font-size: 15px !important;
+  line-height: 1.35;
+  max-height: none;
 }
