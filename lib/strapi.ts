@@ -419,6 +419,41 @@ export const POST_COVER_OVERRIDES: Record<string, StrapiImage> = {
     height: 900,
     size: 150,
   },
+  'incorporating-retinol-skincare-routine': {
+    url: '/cms-uploads/incorporating_retinol_skincare_routine_cover.jpg',
+    alternativeText: 'Incorporating Retinol into Your Skincare Routine: Amber dropper bottle, gentle night cream, and barrier moisturizer',
+    width: 1200,
+    height: 896,
+    size: 150,
+  },
+  'best-gentle-skincare-routine': {
+    url: '/cms-uploads/best_gentle_skincare_routine_cover.jpg',
+    alternativeText: 'What is the Best Gentle Skincare Routine? Calming milky cleanser, ceramide barrier moisturizer, and mineral sunscreen',
+    width: 1200,
+    height: 896,
+    size: 150,
+  },
+  'hydrating-skincare-mistakes-avoid-healthy-glowing-skin': {
+    url: '/cms-uploads/hydrating_skincare_mistakes_avoid_healthy_glowing_skin_cover.jpg',
+    alternativeText: 'Hydrating Skincare Mistakes to Avoid for Healthy, Glowing Skin: Hyaluronic acid serum, hydrating mist, and barrier cream',
+    width: 1200,
+    height: 896,
+    size: 150,
+  },
+  'best-facial-skincare-tool': {
+    url: '/cms-uploads/best_facial_skincare_tool_cover.jpg',
+    alternativeText: 'What is the Best Facial Skincare Tool? Rose quartz gua sha, jade roller, and LED microcurrent beauty tool with nourishing oil',
+    width: 1200,
+    height: 896,
+    size: 150,
+  },
+  'compare-bio-oil-body-serum-thayers-milky-face-toner': {
+    url: '/cms-uploads/compare_bio_oil_body_serum_tha_vs_23d17d3137.jpg',
+    alternativeText: 'Comparing Bio-Oil Body Serum and Thayers Milky Face Toner: Product comparison and routine guide',
+    width: 1280,
+    height: 832,
+    size: 45,
+  },
 };
 
 /** Apply content + media rewrites to a single post. Idempotent. */
