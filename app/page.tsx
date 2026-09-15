@@ -1,11 +1,10 @@
 import Link from 'next/link';
-import { listAuthors, listPostSummaries, type BlsPostSummary } from '@/lib/strapi';
+import { listPostSummaries, type BlsPostSummary } from '@/lib/strapi';
 import { SITE } from '@/lib/site';
 import { getTopicGroups } from '@/lib/nav';
 import { toCard } from '@/lib/post-card';
-import AuthorAvatar from '@/components/AuthorAvatar';
 import EmailSignup from '@/components/magzin/EmailSignup';
-import { CategoryChip, FeatureCard, ImageLinkCard, ListCard, OverlapCard, RowCard, SectionTitle, TextCard, TileCard } from '@/components/magzin/cards';
+import { CategoryChip, FeatureCard, ListCard, OverlapCard, RowCard, SectionTitle, TextCard, TileCard } from '@/components/magzin/cards';
 import SidebarTitle from '@/components/magzin/SidebarTitle';
 import FeaturedPostsSlider from '@/components/FeaturedPostsSlider';
 
@@ -18,7 +17,7 @@ export const revalidate = 60;
  *   3. Newsletter                                    (block-subscribe)
  *   4. Guides: dark title bar, three cards, six rows (card-7, card-6)
  *   5. More to read: dark title bar, overlap feature, two tiles, two rows (card-1, card-5, card-6)
- *   6. Recommended: author avatars and eight cards   (card-recommend)
+ *   6. Suggestions: overlap feature and four tiles      (card-1, card-5)
  *   7. Latest guides: six list cards + sidebar          (card-9, author card, card-10, tag chips, cover slider)
  * Headings keep the template's style and length but say what each block really shows: the demo's "Staff Picks",
  * "Handpicked Just for You" and "Most Popular Topics" would claim curation, personalisation and traffic data the
@@ -32,17 +31,16 @@ export default async function HomePage() {
   const topicHubs = groups.flatMap((g) => g.items);
   const slugOf = (href: string) => href.replace(/^\//, '');
 
-  const [guides, hubData, authors] = await Promise.all([
+  const [guides, hubData] = await Promise.all([
     listPostSummaries({ authored: true, withCover: true, pageSize: 48 }).catch(() => none),
     Promise.all(topicHubs.map((h) => listPostSummaries({ category: slugOf(h.href), pageSize: 1, withCover: true }).catch(() => none))),
-    listAuthors().catch(() => []),
   ]);
 
   const cards = guides.data.map(toCard).filter((c) => c.image);
   /* Each block takes the next run of guides, so no post appears twice on the page. */
-  const blocks = [1, 4, 3, 6, 6, 1, 2, 2, 8, 3, 3];
+  const blocks = [1, 4, 3, 6, 6, 1, 2, 2, 1, 4, 3, 3];
   const starts = blocks.map((_, i) => blocks.slice(0, i).reduce((n, b) => n + b, 0));
-  const [[feature], heroTiles, pickCards, pickRows, latest, [forYouFeature], forYouTiles, forYouRows, recommended, sideRows, sideSlides] = blocks.map((n, i) =>
+  const [[feature], heroTiles, pickCards, pickRows, latest, [forYouFeature], forYouTiles, forYouRows, [suggestFeature], suggestTiles, sideRows, sideSlides] = blocks.map((n, i) =>
     cards.slice(starts[i], starts[i] + n),
   );
 
@@ -190,36 +188,25 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 6. Recommended */}
-      {recommended.length > 0 && (
-        <section className="sec-7-home-2 sec-padding" style={{ backgroundImage: 'url(/assets/imgs/page/bg-home2-sec7.png)' }}>
+      {/* 6. Suggestions: white title bar, an overlap feature (card-1) and a 2x2 grid of tiles (card-5). "Picks" would
+             claim curation, so the description just says what the block holds. */}
+      {suggestFeature && (
+        <section className="pb-70" data-testid="home-suggestions">
           <div className="container">
-            <div className="d-flex align-items-center justify-content-between gap-3">
-              <h2 className="h4 mb-0 ds-4">Recommended</h2>
-              <div className="justify-content-between align-items-center gap-3 d-none d-md-flex">
-                <Link href="/informative-articles" className="view-more">
-                  <span className="circle" aria-hidden="true">
-                    <span className="icon arrow" />
-                  </span>
-                  <span className="button-text">View More</span>
-                </Link>
-                {authors.length > 0 && (
-                  <div className="block-author d-none d-lg-flex align-items-center" aria-label="Our authors">
-                    {authors.slice(0, 5).map((a, i) => (
-                      <Link key={a.slug} href={`/authors/${a.slug}`} className="avatar avatar-64 rounded-circle overflow-hidden border-3 border-white bg-white d-flex" style={{ zIndex: 5 - i }} title={a.name}>
-                        <AuthorAvatar name={a.name} src={a.avatarUrl} size={64} />
-                      </Link>
-                    ))}
-                  </div>
-                )}
+            <SectionTitle title="Suggestions" description="More guides to explore" href="/informative-articles" />
+            <div className="row mt-2 g-4">
+              <div className="col-lg-6">
+                <OverlapCard card={suggestFeature} />
               </div>
-            </div>
-            <div className="row mt-4 g-4">
-              {recommended.map((card) => (
-                <div className="col-lg-3 col-md-4 col-6" key={card.key}>
-                  <ImageLinkCard href={card.href} title={card.title} image={card.image} alt={card.imageAlt} />
+              <div className="col-lg-6">
+                <div className="row g-4">
+                  {suggestTiles.map((card) => (
+                    <div className="col-md-6 col-12" key={card.key}>
+                      <TileCard card={card} />
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         </section>
