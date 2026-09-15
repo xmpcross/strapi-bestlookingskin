@@ -10,6 +10,7 @@ import { getTopicGroups } from '@/lib/nav';
 import { toCard } from '@/lib/post-card';
 import PostContent from '@/components/PostContent';
 import ArticleContents from '@/components/ArticleContents';
+import ShareRail from '@/components/ShareRail';
 import ReadingRail from '@/components/ReadingRail';
 import AuthorAvatar from '@/components/AuthorAvatar';
 import PullQuote from '@/components/PullQuote';
@@ -337,8 +338,14 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
         </div>
 
         <div className="container">
-          <div className="row mt-4 g-5">
-            <div className="col-lg-8">
+          {/* Three columns from lg up: share rail, article, sidebar. Widths adjust in app/magzin.css (.post-layout). */}
+          <div className="post-layout mt-4">
+            <div className="post-layout-rail d-none d-lg-block">
+              <div className="post-sticky">
+                <ShareRail url={`${SITE.url}/${category}/${post.slug}`} title={post.title} minutes={post.author ? post.readingTimeMinutes : null} />
+              </div>
+            </div>
+            <div className="post-layout-main">
               {/* Disclosure above the article, not after it. */}
               <p className="affiliate-note fs-7 text-600 px-3 py-2 mb-4">
                 <strong className="text-dark">Heads up:</strong> when you buy through links on this page we may earn a commission, at no extra cost to you. It never changes which products
@@ -387,7 +394,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
               <CommentForm postTitle={post.title} postUrl={`${SITE.url}/${category}/${post.slug}`} />
             </div>
 
-            <aside className="col-lg-4" aria-label="Article sidebar">
+            <aside className="post-layout-side" aria-label="Article sidebar">
               {recentRows.length > 0 && (
                 <div className="mb-5">
                   {/* Magzin "Weekly trending" block (card-10 style-2). Headed "Latest guides": the list is the newest

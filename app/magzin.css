@@ -434,3 +434,94 @@ html .post-content h4, html .post-content h5, html .post-content h6,
 html body .card-title.fw-normal {
   font-weight: 600 !important;
 }
+
+/* ---- Post content: share rail | article | sidebar ---- */
+.post-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 40px;
+}
+@media (min-width: 992px) {
+  .post-layout {
+    grid-template-columns: 72px minmax(0, 1fr) 300px;
+    gap: 32px;
+  }
+}
+@media (min-width: 1200px) {
+  .post-layout {
+    grid-template-columns: 88px minmax(0, 1fr) 340px;
+    gap: 44px;
+  }
+}
+@media (min-width: 1400px) {
+  .post-layout {
+    grid-template-columns: 96px minmax(0, 1fr) 380px;
+    gap: 56px;
+  }
+}
+.share-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+}
+.share-rail-time {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: var(--tc-system-white);
+  box-shadow: 0 6px 24px rgba(14, 14, 15, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: var(--tc-fw-semi-bold);
+  line-height: 1.2;
+  color: var(--tc-neutral-900);
+  text-align: center;
+}
+@media (max-width: 1199.98px) {
+  .share-rail-time {
+    width: 68px;
+    height: 68px;
+    font-size: 13px;
+  }
+}
+.share-rail-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+.share-rail-links li {
+  position: relative;
+}
+.share-rail-links a,
+.share-rail-links button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--tc-neutral-700);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.2s, transform 0.2s;
+}
+.share-rail-links a:hover,
+.share-rail-links button:hover {
+  color: var(--tc-neutral-900);
+  transform: translateY(-2px);
+}
+.share-rail-copied {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--tc-neutral-600);
+  white-space: nowrap;
+}
