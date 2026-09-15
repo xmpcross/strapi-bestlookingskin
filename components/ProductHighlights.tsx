@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import type { ProductHighlight } from '@/lib/product-attributes';
+import { PRODUCT_PEEK_EVENT } from './ProductInfoAccordion';
 
 function Chevron() {
   return (
@@ -13,19 +14,17 @@ function Chevron() {
 
 /**
  * "Highlights" strip on the product page, above the description: label/value tiles in four columns. The brand tile
- * goes to the brand's page; every other tile opens and scrolls to the accordion section (Specifications or
- * Additional Info) its value comes from. Without JavaScript the tiles still jump to the section by its anchor.
+ * goes to the brand's page; every other tile opens the side peek (Specifications or Additional Info) its value
+ * comes from. Without JavaScript the tiles still jump to the section by its anchor.
  */
 export default function ProductHighlights({ brand, items }: { brand: { name: string; href: string } | null; items: ProductHighlight[] }) {
   if (!brand && !items.length) return null;
 
+  /* Specifications and Additional Info open in the side peek (ProductInfoAccordion listens for this event). */
   const openSection = (e: React.MouseEvent<HTMLAnchorElement>, section: string) => {
-    const el = document.getElementById(`product-section-${section}`) as HTMLDetailsElement | null;
-    if (!el) return;
+    if (!document.getElementById(`product-section-${section}`)) return;
     e.preventDefault();
-    el.open = true;
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    history.replaceState(null, '', `#product-section-${section}`);
+    window.dispatchEvent(new CustomEvent(PRODUCT_PEEK_EVENT, { detail: section }));
   };
 
   return (

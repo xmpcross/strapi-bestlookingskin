@@ -981,6 +981,101 @@ html .product-page .product-accordion-title {
   margin: 0;
   color: var(--tc-neutral-900);
 }
+/* Rows that open the side peek (Specifications, Additional Info). */
+.product-peek-trigger {
+  width: 100%;
+  border: 0;
+  background: none;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+}
+.product-peek-trigger:hover .product-peek-arrow {
+  transform: translateX(3px);
+}
+.product-peek-arrow {
+  flex-shrink: 0;
+  color: var(--tc-neutral-900);
+  transition: transform 0.2s ease;
+}
+
+/* Side peek: a panel sliding in from the right over a dimmed page. */
+.side-peek-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1040;
+  background: rgba(14, 14, 15, 0.45);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+.side-peek-backdrop.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+.side-peek {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  width: min(520px, 100vw);
+  background: var(--tc-system-white);
+  box-shadow: -12px 0 40px rgba(14, 14, 15, 0.18);
+  transform: translateX(100%);
+  visibility: hidden;
+  transition: transform 0.3s ease, visibility 0.3s ease;
+}
+.side-peek.is-open {
+  transform: translateX(0);
+  visibility: visible;
+  /* Visible at once when opening, so focus can move into the panel. */
+  transition: transform 0.3s ease, visibility 0s;
+}
+.side-peek-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--tc-neutral-200);
+}
+html .product-page .side-peek-title {
+  margin: 0;
+  font-size: 1.3rem !important;
+  color: var(--tc-neutral-900);
+}
+.side-peek-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--tc-neutral-100);
+  color: var(--tc-neutral-900);
+  cursor: pointer;
+}
+.side-peek-close:hover {
+  background: var(--tc-neutral-200);
+}
+.side-peek-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px 24px 32px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .side-peek,
+  .side-peek-backdrop,
+  .product-peek-arrow {
+    transition: none;
+  }
+}
+
 /* Plus that turns into a minus when the section is open. */
 .product-accordion-icon {
   position: relative;

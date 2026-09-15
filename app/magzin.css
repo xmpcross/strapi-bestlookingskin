@@ -276,6 +276,10 @@ body {
 .footer-bottom nav a {
   line-height: 1.5;
 }
+/* Footer link columns (Topics, About): 15px links. */
+.section-footer-4 ul li a {
+  font-size: 15px;
+}
 /* Footer style 4: cover grid (in place of the template's Instagram photos). */
 .footer-cover {
   display: block;
