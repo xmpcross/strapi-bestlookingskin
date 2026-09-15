@@ -11,7 +11,6 @@ import { toCard } from '@/lib/post-card';
 import PostContent from '@/components/PostContent';
 import ArticleContents from '@/components/ArticleContents';
 import ShareRail from '@/components/ShareRail';
-import ReadingRail from '@/components/ReadingRail';
 import AuthorAvatar from '@/components/AuthorAvatar';
 import PullQuote from '@/components/PullQuote';
 import ReadAlso from '@/components/ReadAlso';
@@ -446,9 +445,6 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
                   </ul>
                 </div>
               )}
-              <div className="post-sticky">
-                <ReadingRail minutes={post.author ? post.readingTimeMinutes : null} toc={toc} />
-              </div>
             </aside>
           </div>
         </div>
