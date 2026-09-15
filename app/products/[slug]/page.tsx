@@ -496,7 +496,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
               </div>
             )}
 
-            {/* Description / Specifications / Additional Info. The description shows in full (no "View more" clamp);
+            {/* Description / Specifications / Additional Info / Reviews. The description shows in full (no "View more" clamp);
                 a tab with nothing sourced for this product is left out rather than shown empty. */}
             <ProductInfoTabs
               tabs={[
@@ -508,6 +508,45 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                   : []),
                 ...(attributes.additional.length
                   ? [{ key: 'additional', label: 'Additional Info', content: <AttributeTable rows={attributes.additional} testId="product-additional-info" /> }]
+                  : []),
+                ...(productReviews.length > 0 || product.documentId
+                  ? [
+                      {
+                        key: 'reviews',
+                        label: productReviews.length ? `Reviews (${productReviews.length})` : 'Reviews',
+                        content: (
+                          <div data-testid="product-reviews">
+                            {/* Rating summary beside the review cards, then the write-a-review form. */}
+                            <div className="row g-4 align-items-start">
+                              {productReviews.length > 0 && (
+                                <div className="col-md-4 col-12">
+                                  <div className="review-summary text-center p-4">
+                                    <p className="score mb-0">{ratingValue.toFixed(1)}</p>
+                                    <span className="shop-stars fs-5 mt-3" aria-hidden>
+                                      <span className="shop-star-off">★★★★★</span>
+                                      <span className="shop-star-fill shop-star-on" style={{ width: `${(Math.min(5, ratingValue) / 5) * 100}%` }}>
+                                        ★★★★★
+                                      </span>
+                                    </span>
+                                    <p className="fs-7 text-600 mt-3 mb-0">
+                                      Based on {ratingCount} {ratingCount === 1 ? 'review' : 'reviews'}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+                              <div className={productReviews.length > 0 ? 'col-md-8 col-12' : 'col-12'}>
+                                <ReviewList reviews={productReviews} />
+                              </div>
+                            </div>
+                            {product.documentId && (
+                              <div className="product-review-form mt-5">
+                                <ReviewForm productDocumentId={product.documentId} />
+                              </div>
+                            )}
+                          </div>
+                        ),
+                      },
+                    ]
                   : []),
               ]}
             />
@@ -580,41 +619,6 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
               whether today&rsquo;s price is a genuine deal or worth waiting out before you buy.
             </p>
             <PriceHistoryChart points={priceHistory} />
-          </section>
-        )}
-
-        {/* Reviews — moved out of the description tabs to its own section. */}
-        {(productReviews.length > 0 || product.documentId) && (
-          <section className="mt-5 pt-4" data-testid="product-reviews">
-            <h2 className="h4 mb-4">Reviews</h2>
-            <div className="row g-5 align-items-start">
-              {/* Left rail: rating summary + write-a-review form. */}
-              <div className="col-lg-4 col-12 shop-sticky">
-                {productReviews.length > 0 && (
-                  <div className="review-summary text-center p-4">
-                    <p className="score mb-0">{ratingValue.toFixed(1)}</p>
-                    <span className="shop-stars fs-5 mt-3" aria-hidden>
-                      <span className="shop-star-off">★★★★★</span>
-                      <span
-                        className="shop-star-fill shop-star-on"
-                        style={{ width: `${(Math.min(5, ratingValue) / 5) * 100}%` }}
-                      >
-                        ★★★★★
-                      </span>
-                    </span>
-                    <p className="fs-7 text-600 mt-3 mb-0">
-                      Based on {ratingCount} {ratingCount === 1 ? 'review' : 'reviews'}
-                    </p>
-                  </div>
-                )}
-                {product.documentId && <ReviewForm productDocumentId={product.documentId} />}
-              </div>
-
-              {/* Right: reviews card grid. */}
-              <div className="col-lg-8 col-12">
-                <ReviewList reviews={productReviews} />
-              </div>
-            </div>
           </section>
         )}
 

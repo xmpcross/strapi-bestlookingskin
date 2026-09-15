@@ -572,6 +572,9 @@ html .product-page .sidebar-heading {
 .product-info-tabs .shop-tabs button {
   font-size: var(--tc-fs-6);
 }
+.product-review-form {
+  max-width: 640px;
+}
 .shop-lead {
   color: var(--tc-neutral-700);
   line-height: 1.6;
