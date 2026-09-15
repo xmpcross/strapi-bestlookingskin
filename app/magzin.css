@@ -169,26 +169,6 @@ body {
   position: sticky;
   top: 100px;
 }
-/* Post sidebar "Latest guides": pinned below the header on wide screens; later widgets pass beneath it. */
-@media (min-width: 992px) {
-  .sidebar-sticky {
-    position: sticky;
-    top: 100px;
-    z-index: 2;
-    background: var(--tc-system-white);
-    padding-bottom: 1rem;
-  }
-  /* Cover the strip between the header and the pinned block, so the widgets passing beneath don't show above it. */
-  .sidebar-sticky::before {
-    content: '';
-    position: absolute;
-    left: -12px;
-    right: -12px;
-    bottom: 100%;
-    height: 100px;
-    background: var(--tc-system-white);
-  }
-}
 .affiliate-note {
   background: var(--tc-neutral-50);
   border: 1px solid var(--tc-neutral-200);

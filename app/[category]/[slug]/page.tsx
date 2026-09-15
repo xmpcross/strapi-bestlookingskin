@@ -411,10 +411,9 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
 
             <aside className="post-layout-side" aria-label="Article sidebar">
               {recentRows.length > 0 && (
-                <div className="mb-5 sidebar-sticky">
+                <div className="mb-5">
                   {/* Magzin "Weekly trending" block (card-10 style-2). Headed "Latest guides": the list is the newest
-                      guides, and the site has no traffic data to call anything trending. Sticky on wide screens: it
-                      stays in view while the widgets below it scroll underneath. */}
+                      guides, and the site has no traffic data to call anything trending. */}
                   <SidebarTitle>Latest guides</SidebarTitle>
                   <div className="d-flex flex-column gap-3">
                     {recentRows.slice(0, 3).map((row) => (
@@ -443,12 +442,6 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
                   </div>
                 </div>
               )}
-              {featuredPosts.length > 0 && (
-                <div className="mb-5" data-testid="featured-posts">
-                  <SidebarTitle>Featured Posts</SidebarTitle>
-                  <FeaturedPostsSlider posts={featuredPosts} />
-                </div>
-              )}
               {topics.length > 0 && (
                 <div className="mb-5">
                   <SidebarTitle>Topics</SidebarTitle>
@@ -461,6 +454,12 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
                       </li>
                     ))}
                   </ul>
+                </div>
+              )}
+              {featuredPosts.length > 0 && (
+                <div className="mb-5" data-testid="featured-posts">
+                  <SidebarTitle>Featured Posts</SidebarTitle>
+                  <FeaturedPostsSlider posts={featuredPosts} />
                 </div>
               )}
             </aside>
