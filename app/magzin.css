@@ -276,16 +276,15 @@ body {
 .footer-bottom nav a {
   line-height: 1.5;
 }
-/* Footer columns on wide screens: brand block 45% with a 15% gap to its right, then three link columns of 13.33%. */
+/* Footer columns on wide screens: brand block 55%, each link column 15%. */
 @media (min-width: 992px) {
   .section-footer-4 .row > .footer-col-brand {
     flex: 0 0 auto;
-    width: 45%;
-    margin-right: 15%;
+    width: 55%;
   }
   .section-footer-4 .row > .footer-col-links {
     flex: 0 0 auto;
-    width: 13.3333%;
+    width: 15%;
   }
 }
 /* Footer link columns (Topics, About, Products): 14px links; the site description at 1rem. */
