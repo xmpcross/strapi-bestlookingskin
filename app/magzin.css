@@ -1062,3 +1062,18 @@ html .archive-sidebar .archive-side-title {
 .article.card-9.no-image .card-body {
   flex: 1 1 auto;
 }
+
+/* Post category sidebar: Browse Topics is capped at 500px; the title stays and the list scrolls. */
+.archive-sidebar .category-widget {
+  display: flex;
+  flex-direction: column;
+  max-height: 500px;
+}
+.archive-sidebar .category-widget ul {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px !important;
+  scrollbar-width: thin;
+}
