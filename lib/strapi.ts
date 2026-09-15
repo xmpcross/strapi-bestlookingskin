@@ -340,6 +340,27 @@ export const POST_COVER_OVERRIDES: Record<string, StrapiImage> = {
     height: 896,
     size: 150,
   },
+  'how-to-use-gentle-face-wash-for-sensitive-skin': {
+    url: '/cms-uploads/how_to_use_gentle_face_wash_sensitive_skin_cover.jpg',
+    alternativeText: 'Cetaphil Gentle Skin Cleanser, CeraVe Hydrating Facial Cleanser and Neutrogena Ultra Gentle Daily Cleanser on a shelf',
+    width: 1280,
+    height: 720,
+    size: 47,
+  },
+  'cerave-hydrating-facial-cleanser-16-oz-deep-hydration': {
+    url: '/cms-uploads/cerave_hydrating_facial_cleanser_16_oz_cover.jpg',
+    alternativeText: 'CeraVe Hydrating Facial Cleanser 16 oz bottle',
+    width: 1280,
+    height: 720,
+    size: 29,
+  },
+  'top-7-face-oil-cleansers-you-need-to-try': {
+    url: '/cms-uploads/top_7_face_oil_cleansers_cover.jpg',
+    alternativeText: "Palmer's Skin Therapy Cleansing Oil, DHC Deep Cleansing Oil and CeraVe Hydrating Foaming Oil Cleanser",
+    width: 1280,
+    height: 720,
+    size: 41,
+  },
   'serums-cerave-vs-truskin': {
     url: '/cms-uploads/serums_cerave_vs_truskin_cover.jpg',
     alternativeText: 'CeraVe Skin Renewing Vitamin C Serum vs TruSkin Vitamin C Facial Serum',
