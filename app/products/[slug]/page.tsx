@@ -253,7 +253,7 @@ const SPEC_LABEL_OVERRIDES: Record<string, string> = {
   };
 
   return (
-    <article className="pb-70" data-testid={`product-${product.slug}`}>
+    <article className="pb-70 product-page" data-testid={`product-${product.slug}`}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}

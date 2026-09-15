@@ -266,11 +266,12 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
       )}
 
       <article className="sec-1-single-3 pb-70" data-testid={`post-${post.slug}`} data-category={category} data-post-type={post.postType}>
+        {/* Top section in two columns: title and description on the left, the featured image on the right. */}
         <div className="position-relative block-banner">
           <div className="container">
-            <div className="row">
-              <div className="col-lg-8">
-                <Breadcrumb items={[{ label: catName, href: `/${category}` }, { label: post.title }]} />
+            <Breadcrumb items={[{ label: catName, href: `/${category}` }, { label: post.title }]} />
+            <div className="row g-5 align-items-center post-hero-row">
+              <div className={cover ? 'col-lg-6' : 'col-lg-8'}>
                 <div className="card-title post-hero">
                   <div className="article card-info d-flex flex-wrap align-items-center gap-2 mt-2">
                     <Link href={`/${category}`} className={`badge ${toCard(post).badgeTone} fs-8`}>
@@ -305,6 +306,12 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
                   {post.excerpt && <p className="post-standfirst text-600 mt-3 mb-0">{post.excerpt}</p>}
                 </div>
               </div>
+              {cover && (
+                <div className="col-lg-6">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img className="rounded-16 w-100 cover-image post-cover" src={cover} alt={post.coverImage?.alternativeText || post.title} width={660} height={495} fetchPriority="high" />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -312,11 +319,6 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
         <div className="container">
           <div className="row mt-4 g-5">
             <div className="col-lg-8">
-              {cover && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img className="rounded-8 w-100 mb-4 cover-image post-cover" src={cover} alt={post.coverImage?.alternativeText || post.title} width={888} height={500} fetchPriority="high" />
-              )}
-
               {/* Disclosure above the article, not after it. */}
               <p className="affiliate-note fs-7 text-600 px-3 py-2 mb-4">
                 <strong className="text-dark">Heads up:</strong> when you buy through links on this page we may earn a commission, at no extra cost to you. It never changes which products

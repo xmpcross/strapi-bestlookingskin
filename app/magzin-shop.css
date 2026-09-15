@@ -730,3 +730,11 @@
 .review-form textarea.form-control {
   resize: vertical;
 }
+
+/* Single product page heading sizes. Product-card titles in the related grid keep their own size. */
+.product-page h2 {
+  font-size: 1.7rem;
+}
+.product-page h3:not(.product-name) {
+  font-size: 1.3rem;
+}

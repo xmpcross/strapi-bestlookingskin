@@ -147,13 +147,16 @@ body {
   clear: both;
 }
 .post-cover {
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 4 / 3;
   object-fit: cover;
   height: auto;
 }
 .block-banner .card-title.post-hero {
-  padding-top: 8px;
-  padding-bottom: 32px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.post-hero-row {
+  padding-bottom: 40px;
 }
 
 /*
@@ -207,4 +210,16 @@ body {
 /* Side menu: only expandable items get the dropdown arrow (the template draws it on every link). */
 .sidebar-left .sidebar-nav .nav-item:not(.collapse) > .nav-link::after {
   display: none;
+}
+
+/* Site width: 1366px maximum on wide screens (the template caps containers at 1195px from 1400px up). */
+@media (min-width: 1400px) {
+  .container,
+  .container-lg,
+  .container-md,
+  .container-sm,
+  .container-xl,
+  .container-xxl {
+    max-width: 1366px;
+  }
 }
