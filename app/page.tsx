@@ -38,7 +38,7 @@ export default async function HomePage() {
 
   const cards = guides.data.map(toCard).filter((c) => c.image);
   /* Each block takes the next run of guides, so no post appears twice on the page. */
-  const blocks = [1, 4, 3, 6, 6, 1, 2, 2, 1, 4, 3, 3];
+  const blocks = [1, 4, 3, 6, 6, 1, 2, 2, 1, 4, 5, 3];
   const starts = blocks.map((_, i) => blocks.slice(0, i).reduce((n, b) => n + b, 0));
   const [[feature], heroTiles, pickCards, pickRows, latest, [forYouFeature], forYouTiles, forYouRows, [suggestFeature], suggestTiles, sideRows, sideSlides] = blocks.map((n, i) =>
     cards.slice(starts[i], starts[i] + n),

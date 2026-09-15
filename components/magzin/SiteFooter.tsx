@@ -1,23 +1,15 @@
 import Link from 'next/link';
-import { SITE, SECTIONS } from '@/lib/site';
+import { SITE } from '@/lib/site';
 import { getTopicGroups } from '@/lib/nav';
-import { listAuthors, listProductBrands, listProductCategoryCounts } from '@/lib/strapi';
-import EmailSignup from './EmailSignup';
+import { listProductCategoryCounts } from '@/lib/strapi';
 import { FacebookIcon, RssIcon } from './icons';
 
 /*
- * Site footer: a full link directory, built from live data so a new hub, product category, brand or author appears
- * with no code change.
- *
- *   Top band      logo, what the site is, socials, newsletter sign-up
- *   Link columns  the three topic-hub groups (from the CMS nav), the article formats, the shop (all products, every
- *                 product category, brands) and the company pages (about, authors, help, contact, site map, search, RSS)
- *   Brands band   every brand the catalogue carries, A-Z
- *   Bottom bar    copyright and the legal pages
- *
- * Group headings are rewritten for readers ("Product-Type Hubs" is a CMS label, not a heading).
+ * Magzin footer style 4 (the "Personal" home): brand block with socials, and link columns for topics, the site and
+ * products (the template's Instagram image grid was replaced by the Products links). Style 4 has no legal row, so a
+ * bottom bar below it carries the copyright (left) and the legal links (right): a dead or missing policy link is
+ * worse than none on a site carrying affiliate disclosures.
  */
-
 const LEGAL_LINKS = [
   { href: '/legal/disclosure', label: 'Affiliate Disclosure' },
   { href: '/legal/privacy', label: 'Privacy Policy' },
@@ -25,72 +17,35 @@ const LEGAL_LINKS = [
   { href: '/legal/terms', label: 'Terms and Conditions' },
 ];
 
-const GROUP_TITLES: Record<string, string> = {
-  'product-type-hubs': 'Skincare by Type',
-  'skin-concern-hubs': 'Skin Concerns',
-  'cross-cutting-hubs': 'Routines & Ingredients',
-  more: 'More Topics',
-};
-
-type FooterLink = { label: string; href: string; count?: number };
-
-function LinkColumn({ title, links }: { title: string; links: FooterLink[] }) {
-  if (!links.length) return null;
-  return (
-    <div className="col">
-      <h2 className="footer-col-title">{title}</h2>
-      <ul className="footer-links list-unstyled ps-0 m-0">
-        {links.map((l) => (
-          <li key={l.href}>
-            <Link className="text-500 hover-dark" href={l.href}>
-              {l.label}
-              {typeof l.count === 'number' && <span className="footer-link-count">{l.count}</span>}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 export default async function SiteFooter() {
-  const [groups, productCategories, brands, authors] = await Promise.all([
-    getTopicGroups(),
-    listProductCategoryCounts().catch(() => []),
-    listProductBrands().catch(() => []),
-    listAuthors().catch(() => []),
-  ]);
-
-  const topicColumns = groups.map((g) => ({ title: GROUP_TITLES[g.slug] ?? g.label, links: g.items }));
-  const guideLinks: FooterLink[] = SECTIONS.map((s) => ({ label: s.title, href: `/${s.slug}` }));
-  const shopLinks: FooterLink[] = [
-    { label: 'All Products', href: '/products' },
-    ...productCategories.map((c) => ({ label: c.name, href: `/categories/${c.slug}`, count: c.count })),
-    { label: 'All Categories', href: '/categories' },
-    { label: 'All Brands', href: '/brands' },
-  ];
-  const companyLinks: FooterLink[] = [
+  const [groups, productCategories] = await Promise.all([getTopicGroups(), listProductCategoryCounts().catch(() => [])]);
+  const topics = groups.flatMap((g) => g.items).slice(0, 5);
+  const siteLinks = [
     { label: 'Our Story', href: '/about' },
-    ...authors.map((a) => ({ label: a.name, href: `/authors/${a.slug}` })),
-    { label: 'Help & FAQs', href: '/faqs' },
-    { label: 'Get in Touch', href: '/contact' },
-    { label: 'Search', href: '/search' },
+    { label: 'All Articles', href: '/informative-articles' },
+    { label: 'Help & Support', href: '/faqs' },
     { label: 'Site Map', href: '/sitemap' },
-    { label: 'RSS Feed', href: '/feed.xml' },
+    { label: 'Get in Touch', href: '/contact' },
+  ];
+  /* All products, then the product categories that hold products (four, so the column matches the others). */
+  const productLinks = [
+    { label: 'All Products', href: '/products' },
+    ...productCategories.slice(0, 4).map((c) => ({ label: c.name, href: `/categories/${c.slug}` })),
   ];
 
   return (
     <footer data-testid="site-footer">
-      <div className="section-footer-4 site-footer overflow-hidden">
-        <div className="container">
-          {/* Top band: brand and newsletter. */}
-          <div className="footer-top row g-4 align-items-center">
-            <div className="col-lg-6 col-12">
-              <Link href="/" aria-label={`${SITE.name} home`} className="d-inline-block">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/bestlookingskin_logo.svg" width={170} height={35} alt={SITE.name} />
-              </Link>
-              <p className="fs-7 text-dark mt-3 mb-0 footer-about">
+      <div className="section-footer-4 overflow-hidden">
+        <div className="container border-top-300">
+          <div className="row g-5 sec-padding">
+            <div className="col-lg-4 col-md-8 pe-lg-5">
+              <div className="d-flex gap-2 align-items-center">
+                <Link href="/" aria-label={`${SITE.name} home`}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/bestlookingskin_logo.svg" width={170} height={35} alt={SITE.name} />
+                </Link>
+              </div>
+              <p className="fs-7 text-dark mt-4">
                 {SITE.tagline} {SITE.description}
               </p>
               <div className="d-inline-flex group-social-icons bg-transparent mt-3">
@@ -104,42 +59,48 @@ export default async function SiteFooter() {
                 </a>
               </div>
             </div>
-            <div className="col-lg-5 offset-lg-1 col-12">
-              <div className="footer-newsletter">
-                <h2 className="footer-col-title mb-2">Get new guides by email</h2>
-                <p className="fs-7 text-600 mb-3">We only email when new guides are published.</p>
-                <EmailSignup purpose="newsletter" button="Subscribe" />
+            <div className="col-lg-8">
+              <div className="row g-4">
+                <div className="col-lg-3 col-md-3 col-6">
+                  <h6 className="mb-3">Topics</h6>
+                  <ul className="list-unstyled ps-0">
+                    {topics.map((l, i) => (
+                      <li className={i < topics.length - 1 ? 'mb-3' : ''} key={l.href}>
+                        <Link className="text-500 hover-dark" href={l.href}>
+                          {l.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="col-lg-3 col-md-3 col-6">
+                  <h6 className="mb-3">About</h6>
+                  <ul className="list-unstyled ps-0">
+                    {siteLinks.map((l, i) => (
+                      <li className={i < siteLinks.length - 1 ? 'mb-3' : ''} key={l.href}>
+                        <Link className="text-500 hover-dark" href={l.href}>
+                          {l.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="col-lg-3 col-md-3 col-6">
+                  <h6 className="mb-3">Products</h6>
+                  <ul className="list-unstyled ps-0">
+                    {productLinks.map((l, i) => (
+                      <li className={i < productLinks.length - 1 ? 'mb-3' : ''} key={l.href}>
+                        <Link className="text-500 hover-dark" href={l.href}>
+                          {l.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
-
-          {/* Link directory. */}
-          <nav aria-label="Footer" className="footer-directory row row-cols-2 row-cols-md-3 row-cols-xl-6 g-4">
-            {topicColumns.map((c) => (
-              <LinkColumn key={c.title} title={c.title} links={c.links} />
-            ))}
-            <LinkColumn title="Guides & Reviews" links={guideLinks} />
-            <LinkColumn title="Shop" links={shopLinks} />
-            <LinkColumn title="Company" links={companyLinks} />
-          </nav>
-
-          {/* Every brand the catalogue carries. */}
-          {brands.length > 0 && (
-            <div className="footer-brands">
-              <h2 className="footer-col-title">Brands we cover</h2>
-              <ul className="list-unstyled ps-0 m-0">
-                {brands.map((b) => (
-                  <li key={b.slug}>
-                    <Link className="text-500 hover-dark" href={`/brands/${encodeURIComponent(b.slug)}`}>
-                      {b.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
-
         {/* Bottom bar: copyright left, legal links right (stacked on phones). */}
         <div className="container footer-bottom">
           <div className="row g-2 align-items-center py-4">
