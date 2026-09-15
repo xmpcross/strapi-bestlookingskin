@@ -1,6 +1,10 @@
 import Link from 'next/link';
 import { getNav } from '@/lib/nav';
-import HeaderClient from './HeaderClient';
+import { toCard } from '@/lib/post-card';
+import { listPostSummaries, type BlsPostSummary } from '@/lib/strapi';
+import HeaderClient, { type SearchPick, type SearchTag } from './HeaderClient';
+
+const none = { data: [] as BlsPostSummary[], meta: { pagination: { page: 1, pageSize: 0, pageCount: 0, total: 0 } } };
 
 /*
  * Magzin header style 4 (the "Personal" home): logo left, the menu in a rounded pill in the middle, search / theme /
@@ -18,6 +22,25 @@ function LinkText({ label }: { label: string }) {
 
 export default async function SiteHeader() {
   const { nav, topics } = await getNav();
+  /*
+   * Search panel data. Same queries as the home page's topic chips and guide grid, so the fetch cache serves both.
+   * Counts are real post totals per hub; the picks are the newest authored guides with a cover.
+   */
+  const hubs = topics.flatMap((g) => g.items);
+  const [hubData, guides] = await Promise.all([
+    Promise.all(hubs.map((h) => listPostSummaries({ category: h.href.replace(/^\//, ''), pageSize: 1, withCover: true }).catch(() => none))),
+    listPostSummaries({ authored: true, withCover: true, pageSize: 40 }).catch(() => none),
+  ]);
+  const searchTags: SearchTag[] = hubs
+    .map((h, i) => ({ ...h, count: hubData[i].meta.pagination.total }))
+    .filter((t) => t.count > 0)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 9);
+  const searchPicks: SearchPick[] = guides.data
+    .map(toCard)
+    .filter((c) => c.image)
+    .slice(0, 3)
+    .map((c) => ({ href: c.href, title: c.title, image: c.image!, date: c.date, readMinutes: c.readMinutes }));
   const menu = (
     <ul className="navbar-nav">
       {nav.map((item) =>
@@ -72,5 +95,5 @@ export default async function SiteHeader() {
       )}
     </ul>
   );
-  return <HeaderClient nav={nav} topics={topics} menu={menu} />;
+  return <HeaderClient nav={nav} menu={menu} searchTags={searchTags} searchPicks={searchPicks} />;
 }

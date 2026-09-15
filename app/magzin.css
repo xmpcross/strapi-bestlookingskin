@@ -39,6 +39,59 @@ header .navbar-toggler,
   width: auto;
 }
 
+/* ---- Search panel (template popup-search) ----
+   Fixed to the viewport, so it opens in view wherever the page is scrolled, and full container width
+   (the template's absolute + translateX box otherwise shrinks to its content). */
+.popup-search {
+  position: fixed;
+  top: clamp(84px, 12vh, 143px);
+  width: 100%;
+  max-height: calc(100vh - clamp(84px, 12vh, 143px) - 16px);
+  overscroll-behavior: contain;
+}
+.popup-search .popup-search-content .form-control {
+  min-height: 60px;
+}
+.popup-search .popup-search-content .btn {
+  padding-inline: 2.5rem;
+}
+.popup-search .search-picks {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+}
+.popup-search .article.card-10.search-pick {
+  max-width: none;
+}
+.popup-search .article.card-10.search-pick .card-img img {
+  width: 108px;
+  height: 83px;
+  object-fit: cover;
+}
+.popup-search .article.card-10.search-pick .card-body {
+  min-width: 0;
+}
+.popup-search .article.card-10.search-pick ul li {
+  list-style: disc;
+}
+.popup-search .article.card-10.search-pick .text-truncate-2 {
+  line-height: 1.4;
+  max-height: none;
+}
+@media (max-width: 1199.98px) {
+  .popup-search .search-picks {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 767.98px) {
+  .popup-search .popup-search-content {
+    padding: 40px 20px 28px;
+  }
+  .popup-search .search-picks {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /*
  * Heading-size utilities. The template sizes by element (h5 for card titles, h6 for small cards); pages here
  * keep a correct outline (h1 → h2 → h3) and borrow the size with a class instead.
