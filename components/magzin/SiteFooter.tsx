@@ -1,12 +1,26 @@
 import Link from 'next/link';
-import { SITE, SECTIONS } from '@/lib/site';
+import { SITE } from '@/lib/site';
 import { getTopicGroups } from '@/lib/nav';
+import { listPostSummaries } from '@/lib/strapi';
+import { toCard, type PostCardData } from '@/lib/post-card';
 import { FacebookIcon, RssIcon } from './icons';
 
 /*
- * Magzin footer (style 2) with the site's real destinations. The template's placeholder columns
- * (Careers, Press, Membership, Instagram grid) are not carried over: no such pages exist.
+ * Magzin footer style 4 (the "Personal" home): brand block with socials and copyright, two link columns, and an
+ * image grid. The template's Instagram grid holds demo photos; here it shows the newest guides' covers, each
+ * linking to its guide. Style 4 has no legal row, so the legal links sit under the copyright line: a dead or
+ * missing policy link is worse than none on a site carrying affiliate disclosures.
  */
+function Cover({ card, w, h }: { card?: PostCardData; w: number; h: number }) {
+  if (!card?.image) return null;
+  return (
+    <Link href={card.href} className="d-block" title={card.title}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className="rounded-8 footer-cover" src={card.image} alt={card.title} width={w} height={h} loading="lazy" />
+    </Link>
+  );
+}
+
 const LEGAL_LINKS = [
   { href: '/legal/disclosure', label: 'Affiliate Disclosure' },
   { href: '/legal/privacy', label: 'Privacy Policy' },
@@ -15,27 +29,33 @@ const LEGAL_LINKS = [
 ];
 
 export default async function SiteFooter() {
-  const groups = await getTopicGroups();
-  const byslug = (slug: string) => groups.find((g) => g.slug === slug);
-  const columns = [
-    { label: 'About', items: [{ label: 'Our Story', href: '/about' }, { label: 'All Articles', href: '/informative-articles' }, { label: 'Help & Support', href: '/faqs' }, { label: 'Site Map', href: '/sitemap' }, { label: 'Get in Touch', href: '/contact' }] },
-    byslug('product-type-hubs') && { label: byslug('product-type-hubs')!.label, items: byslug('product-type-hubs')!.items },
-    byslug('skin-concern-hubs') && { label: byslug('skin-concern-hubs')!.label, items: byslug('skin-concern-hubs')!.items },
-    { label: 'Formats', items: [...(byslug('cross-cutting-hubs')?.items ?? []), ...SECTIONS.map((s) => ({ label: s.title, href: `/${s.slug}` }))] },
-  ].filter(Boolean) as { label: string; items: { label: string; href: string }[] }[];
+  const [groups, latest] = await Promise.all([getTopicGroups(), listPostSummaries({ authored: true, withCover: true, pageSize: 8 }).catch(() => null)]);
+  const topics = groups.flatMap((g) => g.items).slice(0, 5);
+  const siteLinks = [
+    { label: 'Our Story', href: '/about' },
+    { label: 'All Articles', href: '/informative-articles' },
+    { label: 'Help & Support', href: '/faqs' },
+    { label: 'Site Map', href: '/sitemap' },
+    { label: 'Get in Touch', href: '/contact' },
+  ];
+  const covers = (latest?.data ?? []).map(toCard).filter((c) => c.image).slice(0, 5);
 
   return (
     <footer data-testid="site-footer">
-      <div className="section-footer-2 overflow-hidden">
-        <div className="container">
+      <div className="section-footer-4 overflow-hidden">
+        <div className="container border-top-300">
           <div className="row g-5 sec-padding">
-            <div className="col-lg-4 pe-lg-5">
-              <Link className="d-inline-block" href="/" aria-label={`${SITE.name} home`}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className="dark-mode-invert" src="/bestlookingskin_logo.svg" width={150} height={47} alt={SITE.name} />
-              </Link>
-              <p className="fs-7 text-dark mt-4">{SITE.tagline} {SITE.description}</p>
-              <div className="d-inline-flex group-social-icons">
+            <div className="col-lg-4 col-md-8 pe-lg-5">
+              <div className="d-flex gap-2 align-items-center">
+                <Link href="/" aria-label={`${SITE.name} home`}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img className="dark-mode-invert" src="/bestlookingskin_logo.svg" width={143} height={45} alt={SITE.name} />
+                </Link>
+              </div>
+              <p className="fs-7 text-dark mt-4">
+                {SITE.tagline} {SITE.description}
+              </p>
+              <div className="d-inline-flex group-social-icons bg-transparent mt-3">
                 {SITE.social.facebook && (
                   <a href={SITE.social.facebook} className="icon-shape icon-46" target="_blank" rel="noopener noreferrer" aria-label={`${SITE.name} on Facebook`}>
                     <FacebookIcon />
@@ -45,39 +65,59 @@ export default async function SiteFooter() {
                   <RssIcon />
                 </a>
               </div>
+              <p className="fs-8 mb-0 mt-4">
+                © {new Date().getFullYear()} — {SITE.name}. All rights reserved.
+              </p>
+              <nav aria-label="Legal" className="d-flex flex-wrap gap-3 mt-2">
+                {LEGAL_LINKS.map((l) => (
+                  <Link key={l.href} href={l.href} className="fs-8 text-500 hover-dark">
+                    {l.label}
+                  </Link>
+                ))}
+              </nav>
             </div>
             <div className="col-lg-8">
-              <div className="row g-4 justify-content-between">
-                {columns.map((col) => (
-                  <div className="col-lg-3 col-md-3 col-6" key={col.label}>
-                    <h6 className="mb-3">{col.label}</h6>
-                    <ul className="list-unstyled ps-0">
-                      {col.items.map((l) => (
-                        <li className="mb-3" key={l.href}>
-                          <Link className="text-500 hover-dark" href={l.href}>
-                            {l.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
+              <div className="row g-4">
+                <div className="col-lg-3 col-md-3 col-6">
+                  <h6 className="mb-3">Topics</h6>
+                  <ul className="list-unstyled ps-0">
+                    {topics.map((l, i) => (
+                      <li className={i < topics.length - 1 ? 'mb-3' : ''} key={l.href}>
+                        <Link className="text-500 hover-dark" href={l.href}>
+                          {l.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="col-lg-3 col-md-3 col-6">
+                  <h6 className="mb-3">About</h6>
+                  <ul className="list-unstyled ps-0">
+                    {siteLinks.map((l, i) => (
+                      <li className={i < siteLinks.length - 1 ? 'mb-3' : ''} key={l.href}>
+                        <Link className="text-500 hover-dark" href={l.href}>
+                          {l.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                {covers.length === 5 && (
+                  <div className="col-lg-6 col-12">
+                    <h6 className="mb-4">Latest guides</h6>
+                    <div className="d-flex gap-2">
+                      <Cover card={covers[0]} w={174} h={200} />
+                      <div className="d-flex flex-column gap-2 justify-content-between">
+                        <Cover card={covers[1]} w={95} h={95} />
+                        <Cover card={covers[2]} w={95} h={95} />
+                      </div>
+                      <div className="d-flex flex-column gap-2 justify-content-between">
+                        <Cover card={covers[3]} w={95} h={95} />
+                        <Cover card={covers[4]} w={95} h={95} />
+                      </div>
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="col-12">
-              <div className="bottom-footer2 d-flex flex-wrap justify-content-lg-between justify-content-center align-items-center gap-lg-5 gap-3">
-                <p className="text-500 m-0">
-                  © {new Date().getFullYear()} <span className="text-dark">{SITE.name}</span>. All rights reserved.
-                </p>
-                <nav aria-label="Legal" className="d-flex flex-wrap justify-content-center align-items-center gap-lg-4 gap-3">
-                  {LEGAL_LINKS.map((l) => (
-                    <Link key={l.href} href={l.href} className="text-500 hover-dark d-block px-2 fs-7">
-                      {l.label}
-                    </Link>
-                  ))}
-                </nav>
+                )}
               </div>
             </div>
           </div>

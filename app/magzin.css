@@ -32,7 +32,7 @@ header .navbar-toggler,
   font: inherit;
   padding: 0;
 }
-.navbar.style-2 .navbar-brand img {
+.navbar .navbar-brand img {
   height: 42px;
   width: auto;
 }
@@ -195,4 +195,16 @@ body {
 }
 .sec-8-home-2 .form-control {
   max-width: 100%;
+}
+
+/* Footer style 4: cover grid (in place of the template's Instagram photos). */
+.footer-cover {
+  display: block;
+  object-fit: cover;
+  max-width: 100%;
+}
+
+/* Side menu: only expandable items get the dropdown arrow (the template draws it on every link). */
+.sidebar-left .sidebar-nav .nav-item:not(.collapse) > .nav-link::after {
+  display: none;
 }

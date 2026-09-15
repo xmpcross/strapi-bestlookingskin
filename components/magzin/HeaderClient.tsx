@@ -11,7 +11,7 @@ import { CloseIcon, MenuIcon, SearchIcon, ThemeIcon } from './icons';
  * The header's interactive parts: sticky/hide-on-scroll, the search panel, the theme switch and the
  * off-canvas side menu. Plain React state (the template drove these with document.querySelector).
  */
-export default function HeaderClient({ nav, topics }: { nav: NavItem[]; topics: NavGroup[] }) {
+export default function HeaderClient({ nav, topics, menu }: { nav: NavItem[]; topics: NavGroup[]; menu: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -83,20 +83,53 @@ export default function HeaderClient({ nav, topics }: { nav: NavItem[]; topics: 
 
   return (
     <>
-      <div className="d-flex align-items-center ms-auto gap-4">
-        <button type="button" className="search-btn fs-7 d-none d-md-flex link-effect-2 border-0 bg-transparent" onClick={() => setSearchOpen(true)} aria-label={`Search ${SITE.name}`}>
-          <SearchIcon />
-          Search
-        </button>
-        <div className="group-btn-right d-flex align-items-center">
-          <button type="button" className="dark-light-switcher border-0 bg-transparent" onClick={toggleTheme} aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}>
-            <ThemeIcon dark={dark} />
-          </button>
-          <button type="button" className="navbar-toggler border-0 bg-transparent" onClick={() => setMenuOpen(true)} aria-label="Open menu" aria-expanded={menuOpen}>
-            <MenuIcon />
-          </button>
-        </div>
-      </div>
+      <header data-testid="site-header">
+        <nav className="navbar style-4" aria-label="Main">
+          <div className="container">
+            <div className="header d-flex align-items-center justify-content-between w-100">
+              <div className="d-flex align-items-center">
+                <Link className="navbar-brand" href="/" aria-label={`${SITE.name} home`} data-testid="logo-link">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img className="dark-mode-invert" src="/bestlookingskin_logo.svg" width={150} height={47} alt={SITE.name} />
+                </Link>
+              </div>
+              <div className="navbar-collapse d-none d-lg-block">{menu}</div>
+              <div className="d-flex align-items-center gap-4">
+                <button
+                  type="button"
+                  className="search-btn fs-7 d-none d-md-flex link-effect-2 border-0 bg-transparent"
+                  onClick={() => setSearchOpen(true)}
+                  aria-label={`Search ${SITE.name}`}
+                >
+                  <SearchIcon />
+                  Search
+                </button>
+                <div className="group-btn-right d-flex align-items-center">
+                  <button
+                    type="button"
+                    className="dark-light-switcher border-0 bg-transparent"
+                    onClick={toggleTheme}
+                    aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+                  >
+                    <ThemeIcon dark={dark} />
+                  </button>
+                  <button
+                    type="button"
+                    className="navbar-toggler border-0 bg-transparent"
+                    onClick={() => setMenuOpen(true)}
+                    aria-label="Open menu"
+                    aria-expanded={menuOpen}
+                  >
+                    <MenuIcon />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      {/* Panels sit outside the navbar: it is transformed while scrolling, which would pin fixed children to it. */}
 
       {/* Search panel */}
       <div className={`popup-search ${searchOpen ? 'show' : ''}`} role="dialog" aria-modal="true" aria-label="Search" aria-hidden={!searchOpen}>
@@ -104,7 +137,12 @@ export default function HeaderClient({ nav, topics }: { nav: NavItem[]; topics: 
           <div className="row">
             <div className="col-lg-10 col-12 mx-auto">
               <div className="popup-search-content position-relative">
-                <button type="button" className="close-popup position-absolute top-0 end-0 m-3 border-0 bg-transparent" onClick={() => setSearchOpen(false)} aria-label="Close search">
+                <button
+                  type="button"
+                  className="close-popup position-absolute top-0 end-0 m-3 border-0 bg-transparent"
+                  onClick={() => setSearchOpen(false)}
+                  aria-label="Close search"
+                >
                   <CloseIcon />
                 </button>
                 <h5 className="mb-4">Search {SITE.name}</h5>
@@ -165,7 +203,12 @@ export default function HeaderClient({ nav, topics }: { nav: NavItem[]; topics: 
             const open = openSection === item.label;
             return (
               <li className={`nav-item collapse ${open ? 'active' : ''}`} key={item.label}>
-                <button type="button" className="nav-link mb-2 collapse-toggle border-0 bg-transparent w-100 text-start" onClick={() => setOpenSection(open ? null : item.label)} aria-expanded={open}>
+                <button
+                  type="button"
+                  className="nav-link mb-2 collapse-toggle border-0 bg-transparent w-100 text-start"
+                  onClick={() => setOpenSection(open ? null : item.label)}
+                  aria-expanded={open}
+                >
                   {item.label}
                 </button>
                 <ul className="collapse-menu d-flex flex-column gap-1 list-unstyled" style={{ maxHeight: open ? `${children.length * 44}px` : undefined }}>
