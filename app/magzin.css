@@ -287,9 +287,12 @@ body {
     width: 15%;
   }
 }
-/* Footer link columns (Topics, About, Products): 15px links. */
+/* Footer link columns (Topics, About, Products): 14px links; the site description at 1rem. */
 .section-footer-4 ul li a {
-  font-size: 15px;
+  font-size: 14px;
+}
+html .section-footer-4 .footer-col-brand p.footer-description {
+  font-size: 1rem !important;
 }
 /* Side menu: only expandable items get the dropdown arrow (the template draws it on every link). */
 .sidebar-left .sidebar-nav .nav-item:not(.collapse) > .nav-link::after {

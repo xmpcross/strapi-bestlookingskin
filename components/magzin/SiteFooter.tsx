@@ -45,7 +45,7 @@ export default async function SiteFooter() {
                   <img src="/bestlookingskin_logo.svg" width={170} height={35} alt={SITE.name} />
                 </Link>
               </div>
-              <p className="fs-7 text-dark mt-4">
+              <p className="text-dark mt-4 footer-description">
                 {SITE.tagline} {SITE.description}
               </p>
               <div className="d-inline-flex group-social-icons bg-transparent mt-3">
