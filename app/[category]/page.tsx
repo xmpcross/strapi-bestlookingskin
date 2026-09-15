@@ -9,7 +9,7 @@ import { ListCard, RowCard, SectionTitle, TextCard, TileCard } from '@/component
 import SidebarTitle from '@/components/magzin/SidebarTitle';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
 import Pagination from '@/components/magzin/Pagination';
-import TopicMultiSelect from '@/components/magzin/TopicMultiSelect';
+import CategoryListWidget from '@/components/magzin/CategoryListWidget';
 import FeaturedPostsSlider from '@/components/FeaturedPostsSlider';
 
 export const revalidate = 60;
@@ -117,22 +117,24 @@ export default async function CategoryPage({ params, searchParams }: { params: P
   const featured = outsideArchive
     .slice(3, 6)
     .map((card) => ({ href: card.href, title: card.title, image: card.image as string, imageAlt: card.imageAlt, author: card.author?.name ?? null, date: card.date }));
-  const hubs = groups.flatMap((g) => g.items).filter((t) => t.href !== `/${category}`);
-  const hubCounts = await Promise.all(
-    hubs.map((h) =>
-      listPostSummaries({ category: h.href.replace(/^\//, ''), pageSize: 1, withCover: true })
+  /* "Browse Topics": every hub, then the article formats, each with its live post count (the "Browse by category"
+     widget from the product pages); the current archive is highlighted. */
+  const topicSources = [
+    ...groups.flatMap((g) => g.items).map((t) => ({ slug: t.href.replace(/^\//, ''), name: t.label })),
+    ...SECTIONS.filter((sec) => !sec.allPosts).map((sec) => ({ slug: sec.slug, name: sec.title })),
+  ];
+  const [allTotal, ...topicCounts] = await Promise.all([
+    listPostSummaries({ pageSize: 1 })
+      .then((r) => r.meta.pagination.total)
+      .catch(() => null),
+    ...topicSources.map((t) =>
+      listPostSummaries({ category: t.slug, pageSize: 1 })
         .then((r) => r.meta.pagination.total)
         .catch(() => 0),
     ),
-  );
-  const topicTags = hubs.map((h, i) => ({ ...h, count: hubCounts[i] })).filter((t) => t.count > 0);
-  const formatTags = SECTIONS.filter((sec) => sec.slug !== category && !sec.allPosts).map((sec) => ({ label: sec.title, href: `/${sec.slug}` }));
-  const topicOptions = [
-    ...(isAll ? [] : [{ slug: category, label: c.name }]),
-    ...topicTags.map((t) => ({ slug: t.href.replace(/^\//, ''), label: t.label, count: t.count })),
-    ...formatTags.map((t) => ({ slug: t.href.replace(/^\//, ''), label: t.label })),
-  ];
-  const topicLabel = (slug: string) => topicOptions.find((o) => o.slug === slug)?.label ?? slug.replace(/-/g, ' ');
+  ]);
+  const topicRows = topicSources.map((t, i) => ({ ...t, count: topicCounts[i] })).filter((t) => t.count > 0 || t.slug === category);
+  const topicLabel = (slug: string) => topicSources.find((t) => t.slug === slug)?.name ?? slug.replace(/-/g, ' ');
 
   return (
     <div data-testid={`category-${category}`}>
@@ -271,10 +273,18 @@ export default async function CategoryPage({ params, searchParams }: { params: P
                   </div>
                 </div>
               )}
-              {topicOptions.length > 1 && (
+              {topicRows.length > 0 && (
                 <div className="mb-5">
-                  <SidebarTitle>Browse Topics</SidebarTitle>
-                  <TopicMultiSelect basePath={`/${category}`} current={isAll ? '' : category} options={topicOptions} selected={selectedTopics} />
+                  <CategoryListWidget
+                    title="Browse Topics"
+                    allHref="/informative-articles"
+                    allLabel="All articles"
+                    total={allTotal}
+                    rows={topicRows}
+                    current={isAll ? undefined : category}
+                    allActive={isAll && extraTopics.length === 0}
+                    rowHref={(slug) => `/${slug}`}
+                  />
                 </div>
               )}
               {featured.length > 0 && (

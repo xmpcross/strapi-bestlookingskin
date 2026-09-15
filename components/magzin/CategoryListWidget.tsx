@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import SidebarTitle from './SidebarTitle';
 
-/* Emoji per product category (decorative; hidden from screen readers). Unknown categories get a sparkle. */
+/* Emoji per product category and post topic (decorative; hidden from screen readers). Unknown slugs get a sparkle. */
 const CATEGORY_ICONS: Record<string, string> = {
   'anti-aging': '⏳',
   'exfoliators-and-scrubs': '🧽',
@@ -10,6 +10,25 @@ const CATEGORY_ICONS: Record<string, string> = {
   'hyaluronic-acid': '💦',
   moisturisers: '🧴',
   'toners-and-astringents': '🌿',
+  /* Post topic hubs and article formats. */
+  acne: '🩹',
+  cleansers: '🫧',
+  dupes: '🔁',
+  exfoliants: '🧽',
+  'eye-cream': '👁️',
+  'face-masks': '🧖',
+  hyperpigmentation: '🌗',
+  ingredients: '🧪',
+  'korean-skincare': '🌸',
+  moisturizers: '🧴',
+  routines: '🗓️',
+  'sensitive-skin': '🌿',
+  serums: '💧',
+  sunscreen: '☀️',
+  'product-comparisons': '⚖️',
+  'product-reviews': '⭐',
+  'top-rated-products': '🏆',
+  'how-to-guides': '📘',
 };
 
 /**
