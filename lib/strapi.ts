@@ -354,13 +354,6 @@ export const POST_COVER_OVERRIDES: Record<string, StrapiImage> = {
     height: 720,
     size: 29,
   },
-  'top-7-face-oil-cleansers-you-need-to-try': {
-    url: '/cms-uploads/top_7_face_oil_cleansers_cover.jpg',
-    alternativeText: "Palmer's Skin Therapy Cleansing Oil, DHC Deep Cleansing Oil and CeraVe Hydrating Foaming Oil Cleanser",
-    width: 1280,
-    height: 720,
-    size: 41,
-  },
   'serums-cerave-vs-truskin': {
     url: '/cms-uploads/serums_cerave_vs_truskin_cover.jpg',
     alternativeText: 'CeraVe Skin Renewing Vitamin C Serum vs TruSkin Vitamin C Facial Serum',
