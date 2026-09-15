@@ -27,7 +27,7 @@ export default function AuthorAvatar({
   shape?: 'circle' | 'square';
   className?: string;
 }) {
-  const radius = shape === 'square' ? 'rounded-2xl' : 'rounded-full';
+  const radius = shape === 'square' ? 16 : '50%';
   if (src) {
     // eslint-disable-next-line @next/next/no-img-element
     return (
@@ -36,7 +36,8 @@ export default function AuthorAvatar({
         alt={name}
         width={size}
         height={size}
-        className={`shrink-0 ${radius} object-cover ${className}`}
+        className={className}
+        style={{ borderRadius: radius, objectFit: 'cover', flexShrink: 0 }}
         loading="lazy"
       />
     );
@@ -48,8 +49,8 @@ export default function AuthorAvatar({
 
   return (
     <span
-      className={`inline-grid shrink-0 place-items-center ${radius} border border-ink/20 bg-paper text-ink/70 ${className}`}
-      style={{ width: size, height: size }}
+      className={`d-inline-flex align-items-center justify-content-center text-600 ${className}`}
+      style={{ width: size, height: size, borderRadius: radius, border: '1px solid var(--tc-neutral-300)', background: 'var(--tc-neutral-50)', flexShrink: 0 }}
       aria-hidden
     >
       <svg

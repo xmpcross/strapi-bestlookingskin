@@ -74,52 +74,31 @@ export default function ReadingRail({
   if (!toc.length && !minutes) return null;
 
   return (
-    <aside className="lg:sticky lg:top-24" aria-label="Reading progress and contents" data-testid="reading-rail">
+    <aside className="reading-rail rounded-16 p-4" aria-label="Reading progress and contents" data-testid="reading-rail">
       {minutes ? (
-        <div className="rounded-xl border border-ink/10 bg-paper p-4 shadow-sm">
-          <p className="flex items-center gap-2 text-[13px] font-semibold text-ink">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden className="text-ink/55">
+        <div>
+          <p className="d-flex align-items-center gap-2 fs-7 fw-semi-bold text-dark mb-2">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
               <circle cx="12" cy="12" r="9" />
               <path d="M12 7v5l3 2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             {minutes} min read
           </p>
-          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-ink/10">
-            <div
-              className="h-full rounded-full bg-primary transition-[width] duration-150"
-              style={{ width: `${progress}%` }}
-              role="progressbar"
-              aria-valuenow={Math.round(progress)}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label="Article read progress"
-            />
+          <div className="reading-rail-track" role="progressbar" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100} aria-label="Article read progress">
+            <div className="reading-rail-bar" style={{ width: `${progress}%` }} />
           </div>
         </div>
       ) : null}
 
       {toc.length > 0 && (
-        <nav className="mt-8" aria-label="Contents">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-ink/45">Contents</p>
-          <ul className="mt-4 space-y-3">
+        <nav className={minutes ? 'mt-4' : ''} aria-label="Contents">
+          <p className="fs-8 fw-semi-bold text-uppercase text-600 mb-3">Contents</p>
+          <ul className="list-unstyled ps-0 d-flex flex-column gap-2 m-0">
             {toc.map((item) => {
               const active = item.id === activeId;
               return (
-                <li key={item.id} className={item.level === 3 ? 'pl-3' : ''}>
-                  <a
-                    href={`#${item.id}`}
-                    className={
-                      /* Indented h3 entries at 13px: the indent alone did not
-                         separate them from the h2 headings above. */
-                      `block leading-snug transition ${item.level === 3 ? 'text-[13px]' : 'text-[14px]'} ` +
-                      (active
-                        ? 'font-semibold text-primary'
-                        : item.level === 2
-                          ? 'font-bold text-ink hover:text-primary'
-                          : 'text-ink/55 hover:text-primary')
-                    }
-                    aria-current={active ? 'location' : undefined}
-                  >
+                <li key={item.id} className={item.level === 3 ? 'ps-3' : ''}>
+                  <a href={`#${item.id}`} className={`reading-rail-link d-block ${item.level === 3 ? 'fs-8' : 'fs-7'} ${active ? 'is-active' : ''}`} aria-current={active ? 'location' : undefined}>
                     {item.text}
                   </a>
                 </li>

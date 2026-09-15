@@ -1,42 +1,34 @@
 import Link from 'next/link';
-import type { SidebarRow } from '@/components/ArticleSidebar';
+
+export type ReadAlsoRow = { href: string; title: string; date?: string; img?: string | null };
 
 /**
- * "Read Also" card, placed inside the article body.
+ * "Read also" box inside the article body (Magzin card-10 rows).
  *
- * The reference shows a comment count beside each date. Not rendered:
- * bls-post has no comments relation, so every one of them would read "0" or be
- * invented. A count that is always zero is worse than no count -- it advertises
- * that nobody is reading.
+ * No comment counts: bls-post has no comments relation, so every one would read "0" or be invented.
  */
-export default function ReadAlso({ rows, title = 'Read Also' }: { rows: SidebarRow[]; title?: string }) {
+export default function ReadAlso({ rows, title = 'Read also' }: { rows: ReadAlsoRow[]; title?: string }) {
   const items = rows.filter((r) => r.img).slice(0, 2);
   if (items.length < 2) return null;
-
   return (
-    <aside className="my-10 rounded-2xl border border-ink/10 bg-paper p-6" data-testid="read-also">
-      <p className="font-display !text-[17px] font-bold text-ink">{title}</p>
-      <ul className="mt-5 space-y-5">
+    <aside className="read-also rounded-16 p-4 my-5" data-testid="read-also">
+      <p className="h6 mb-3">{title}</p>
+      <div className="d-flex flex-column flex-md-row gap-3">
         {items.map((row) => (
-          <li key={row.href}>
-            <Link href={row.href} className="group flex items-start gap-4">
+          <div className="article card-10 style-1 flex-fill" key={row.href}>
+            <Link href={row.href} className="card-img">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={row.img as string}
-                alt={row.title}
-                className="h-14 w-14 shrink-0 rounded-lg object-cover"
-                loading="lazy"
-              />
-              <span className="min-w-0">
-                <span className="block font-display !text-[15px] font-bold leading-snug text-ink transition group-hover:text-primary">
-                  {row.title}
-                </span>
-                {row.date && <span className="mt-1 block text-[13px] text-ink/50">{row.date}</span>}
-              </span>
+              <img className="w-100 rounded-8" src={row.img as string} alt="" loading="lazy" width={80} height={80} />
             </Link>
-          </li>
+            <div className="card-body">
+              <Link href={row.href}>
+                <span className="h6 fs-6 mb-2 text-truncate-2 d-block">{row.title}</span>
+              </Link>
+              {row.date && <span className="fs-8 text-600">{row.date}</span>}
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
     </aside>
   );
 }

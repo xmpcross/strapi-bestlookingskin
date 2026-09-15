@@ -74,3 +74,84 @@ body {
 .section-title.dark p {
   color: #fff;
 }
+
+/* ---- Post page pieces (Single 3) ---- */
+.read-also,
+.reading-rail,
+.comment-form {
+  background: var(--tc-neutral-50);
+  border: 1px solid var(--tc-neutral-200);
+}
+.inline-product {
+  border: 1px solid var(--tc-neutral-200);
+  background: var(--tc-system-white);
+  transition: border-color 0.2s;
+}
+.inline-product:hover {
+  border-color: var(--tc-neutral-500);
+}
+.reading-rail-track {
+  height: 4px;
+  border-radius: 4px;
+  background: var(--tc-neutral-200);
+  overflow: hidden;
+}
+.reading-rail-bar {
+  height: 100%;
+  background: var(--tc-neutral-900);
+  transition: width 0.15s;
+}
+.reading-rail-link {
+  color: var(--tc-neutral-600);
+  line-height: 1.4;
+}
+.reading-rail-link:hover,
+.reading-rail-link.is-active {
+  color: var(--tc-neutral-900);
+  font-weight: var(--tc-fw-semi-bold);
+}
+.post-sticky {
+  position: sticky;
+  top: 100px;
+}
+.affiliate-note {
+  background: var(--tc-neutral-50);
+  border: 1px solid var(--tc-neutral-200);
+  border-radius: 8px;
+}
+.mw-100 {
+  max-width: 100% !important;
+}
+.post-standfirst {
+  font-size: 18px;
+  line-height: 1.6;
+}
+.post-figure {
+  margin: 0 0 1.5rem;
+}
+@media (min-width: 576px) {
+  .post-figure-start {
+    float: left;
+    width: 45%;
+    margin: 0.25rem 1.75rem 1rem 0;
+  }
+  .post-figure-end {
+    float: right;
+    width: 45%;
+    margin: 0.25rem 0 1rem 1.75rem;
+  }
+}
+.post-body::after {
+  content: '';
+  display: block;
+  clear: both;
+}
+.post-cover {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  height: auto;
+}
+.block-banner .card-title.post-hero {
+  padding-top: 8px;
+  padding-bottom: 32px;
+}

@@ -1,0 +1,889 @@
+/*
+ * Article body styles: post HTML from the CMS (generated guides, plus the imported WordPress / GreenShift /
+ * Content Egg markup in older posts), the FAQ accordion and comparison widgets. Moved out of the Tailwind
+ * globals.css when the site switched to the Magzin template; theme() tokens are now Magzin CSS variables.
+ */
+/* WordPress "white" text-color utility (carried in imported post markup).
+   The --wp--preset--color--white var isn't defined in this app, so a #fff
+   fallback keeps the class working. */
+.has-white-color {
+  color: var(--wp--preset--color--white, #fff) !important;
+}
+
+/* GSPB column (imported post markup) — dashed right divider. */
+#gspb_col-id-gsbp-v4o63h0u-vce2.gspb_row__col--6 {
+  border-right-style: dashed;
+  border-right-width: 2px;
+  border-right-color: #cecece !important;
+}
+
+article strong,
+.post strong {
+  font-weight: bold;
+  color: #444444;
+}
+
+.cegg5-container .btn-outline-primary {
+  --cegg-btn-color: #0d6efd;
+  --cegg-btn-border-color: #0d6efd;
+  --cegg-btn-hover-bg: #0d6efd;
+  --cegg-btn-hover-border-color: #0d6efd;
+  --cegg-btn-focus-shadow-rgb: 13, 110, 253;
+  --cegg-btn-active-bg: #0d6efd;
+  --cegg-btn-active-border-color: #0d6efd;
+  --cegg-btn-disabled-color: #0d6efd;
+  --cegg-btn-disabled-bg: transparent;
+  --cegg-btn-disabled-border-color: #0d6efd;
+  --cegg-gradient: none;
+}
+
+.cegg5-container .btn-dark,
+.cegg5-container .btn-outline-primary {
+  --cegg-btn-hover-color: #fff;
+  --cegg-btn-active-color: #fff;
+  --cegg-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+.cegg5-container .btn {
+  --cegg-btn-padding-x: 0.75rem;
+  --cegg-btn-padding-y: 0.375rem;
+  --cegg-btn-font-family: ;
+  --cegg-btn-font-size: 1rem;
+  --cegg-btn-font-weight: 400;
+  --cegg-btn-line-height: 1.5;
+  --cegg-btn-color: var(--cegg-body-color);
+  --cegg-btn-bg: transparent;
+  --cegg-btn-border-width: var(--cegg-border-width);
+  --cegg-btn-border-color: transparent;
+  --cegg-btn-border-radius: var(--cegg-border-radius);
+  --cegg-btn-hover-border-color: transparent;
+  --cegg-btn-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 1px rgba(0, 0, 0, 0.075);
+  --cegg-btn-disabled-opacity: 0.65;
+  --cegg-btn-focus-box-shadow: 0 0 0 0.25rem rgba(var(--cegg-btn-focus-shadow-rgb), .5);
+  display: inline-block;
+  padding: var(--cegg-btn-padding-y) var(--cegg-btn-padding-x);
+  font-family: var(--cegg-btn-font-family);
+  font-size: var(--cegg-btn-font-size);
+  font-weight: var(--cegg-btn-font-weight);
+  line-height: var(--cegg-btn-line-height);
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  border: var(--cegg-btn-border-width) solid var(--cegg-btn-border-color);
+  border-radius: var(--cegg-btn-border-radius);
+  transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+.btn-check+.cegg5-container .btn:hover,
+.cegg5-container .btn {
+  color: var(--cegg-btn-color);
+  background-color: var(--cegg-btn-bg);
+}
+
+#gspb_iconsList-id-gsbp-2867104.gspb_iconsList .gspb_iconsList__item__text {
+  margin-left: 15px;
+}
+
+#gspb_iconsList-id-gsbp-gulv9773.gspb_iconsList .gspb_iconsList__item {
+  font-size: 18px;
+  font-weight: 700 !important;
+}
+
+#gspb_iconsList-id-gsbp-s81yhsfl-csg2.gspb_iconsList .gspb_iconsList__item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  position: relative;
+  margin-bottom: 12px;
+}
+.post ul:not([class]) li,
+.post ol:not([class]) li {
+  margin: 0 0 5px 15px;
+}
+.post ul:not([class]) > li {
+  list-style: disc outside none;
+}
+
+#gspb_iconsList-id-gsbp-2867104.gspb_iconsList,
+#gspb_iconsList-id-gsbp-429c3bb.gspb_iconsList {
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+/* ---------------------------------------------------------------------------
+   .post-content typography
+   The imported HTML brings its own GreenShift/GSPB <style> blocks for the
+   product comparison boxes. We must NOT add a global rule that styles every
+   <p>/<img>/<a> uniformly, because that breaks GSPB's flex layout (the side
+   by-side product columns). Instead: target ONLY the direct children that
+   are plain WP markup (paragraphs, headings, lists, blockquotes, plain
+   tables, plain images) and explicitly skip anything inside .gspb_*.
+   --------------------------------------------------------------------------- */
+
+.post-content {
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--tc-neutral-900);
+}
+
+.post-content :where(p, li, blockquote, figcaption, td) {
+  font-weight: 400;
+}
+
+/* Paragraphs / headings OUTSIDE GreenShift blocks (lists handled below) */
+.post-content > :where(p, h2, h3, h4, blockquote, hr, figure, pre) {
+  margin: 1.25rem 0;
+}
+.post-content > :where(h2) {
+  font-family: var(--tc-heading-font-family);
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-top: 1rem;
+  /* Superseded by the .post-content > :where(h2) rule further down this file,
+     which is later at the same specificity and therefore the one that applies.
+     Kept in step so reading either one tells the truth. */
+  margin-bottom: 5px;
+  color: var(--tc-neutral-900);
+}
+/* Post single page: h2 top spacing = 1rem (wins over the block rhythm). */
+.post-content h2 {
+  margin-top: 1rem !important;
+}
+.post-content > :where(h3) {
+  font-family: var(--tc-heading-font-family);
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-top: 2rem;
+  /* Superseded further down, same as h2 above. */
+  margin-bottom: 0;
+  color: var(--tc-neutral-900);
+}
+.post-content > :where(h4) {
+  font-family: var(--tc-heading-font-family);
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+.post-content :where(ul, ol) {
+  padding-left: 1.5rem;
+  margin: 0;
+}
+
+/* Lists start flush with the text above them. */
+.post-content :where(ul, ol),
+.post-content :where(ul, ol) :where(ul, ol) {
+  margin-top: 0;
+}
+.post-content :where(ul) { list-style-type: disc; }
+.post-content :where(ol) { list-style-type: decimal; }
+.post-content :where(ul) :where(ul) { list-style-type: circle; }
+.post-content :where(ul) :where(ul) :where(ul) { list-style-type: square; }
+/* List items sit flush; vertical rhythm comes from the list's own spacing. */
+.post-content :where(ul, ol) > li { margin-top: 0; margin-bottom: 0; }
+.post-content > :where(blockquote) {
+  border-left: 4px solid var(--tc-neutral-900);
+  padding: 0.5rem 1rem;
+  background: var(--tc-neutral-100);
+  border-radius: 0 0.5rem 0.5rem 0;
+  font-style: italic;
+}
+.post-content :where(a:not(.gspb_row a, .gspb_col a, [class*="gspb_"] a)) {
+  color: var(--tc-neutral-900);
+  text-decoration: none;
+}
+.post-content :where(a:not(.gspb_row a, .gspb_col a, [class*="gspb_"] a)):hover {
+  text-decoration: underline;
+}
+
+/* Plain tables (WP-authored, not GSPB) — 1px #dddddd grid per design.
+   Selector is intentionally specific (article + .post-content + table) so it
+   beats the article-level border-color override that follows below. */
+article[data-testid^="post-"] .post-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  border: 0 !important;
+}
+article[data-testid^="post-"] .post-content table td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border: 1px solid #dddddd !important;
+}
+/* Header cells: no visible border (0 / transparent) per design. */
+article[data-testid^="post-"] .post-content table th {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border: 0 !important;
+  border-color: transparent !important;
+}
+
+/* Plain top-level images (NOT inside a GSPB block) */
+.post-content > :where(img) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  margin: 1.5rem auto;
+}
+
+/* Inside GSPB blocks: don't touch — let the inline styles drive the layout. */
+
+/* Bootstrap-Icons inline rendering: 1em × 1em, baseline-aligned. Source uses
+   <svg class="bi bi-info-circle"> after the "Amazon price updated:" date so it
+   sits on the same line right after the time. */
+.post-content :where(svg.bi) {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  flex-shrink: 0;
+  fill: currentColor;
+}
+
+/* The cegg "price updated" disclaimer line — keep date + tooltip icon on one
+   line; the source uses <span class="text-nowrap">date<a>icon</a></span>. */
+.post-content .cegg-price-disclaimer small { font-style: italic; }
+.post-content .cegg-price-disclaimer a {
+  text-decoration: none;
+  color: inherit;
+  margin-left: 0.25rem;
+}
+
+/* "BUY NOW" buttons inside imported post bodies use Bootstrap's .btn-primary
+   and .btn-outline-primary from the vendored cegg-bootstrap stylesheet.
+   Override the per-button CSS variables to the OriginFacts blue scale without
+   touching Bootstrap's globals. */
+.post-content .btn-primary {
+  --bs-btn-bg: #014fd3;
+  --bs-btn-border-color: #014fd3;
+  --bs-btn-hover-bg: #0072de;
+  --bs-btn-hover-border-color: #0072de;
+  --bs-btn-active-bg: #0046be;
+  --bs-btn-active-border-color: #0046be;
+  --bs-btn-disabled-bg: #014fd3;
+  --bs-btn-disabled-border-color: #014fd3;
+}
+.post-content .btn-outline-primary {
+  --bs-btn-color: #014fd3;
+  --bs-btn-border-color: #014fd3;
+  --bs-btn-hover-bg: #014fd3;
+  --bs-btn-hover-border-color: #014fd3;
+  --bs-btn-active-bg: #014fd3;
+  --bs-btn-active-border-color: #014fd3;
+  --bs-btn-disabled-color: #014fd3;
+  --bs-btn-disabled-border-color: #014fd3;
+}
+.post-content .text-bg-primary {
+  background-color: #014fd3 !important;
+}
+
+/* Cegg grid product card — soft elevation */
+.post-content .cegg-grid-card {
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px,
+              rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+}
+
+/* Cegg card chrome — just the visible surface (white bg + subtle border).
+   Layout (flex-row, columns, padding) is provided by the vendored Bootstrap
+   stylesheets; do NOT override the flex direction or column basis here, or the
+   inner .row > .col-* layout collapses to a left-clustered column. */
+.cegg5-container .cegg-card,
+.cegg5-container .card {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.175) !important;
+  border-radius: 0.375rem !important;
+}
+
+.cegg5-container .cegg-list-card {
+  margin-bottom: 1rem !important;
+}
+
+/* Kill .post-content paragraph margins and link underlines inside cegg cards
+   so the editorial typography rules above don't bleed into Bootstrap layout. */
+.cegg5-container p {
+  margin: 0 !important;
+}
+.post-content .cegg5-container :where(a) {
+  text-decoration: none !important;
+}
+.post-content .cegg5-container .cegg-list-card:hover .card-title {
+  text-decoration: underline !important;
+}
+
+/* =========================================================================
+   GreenShift / GSPB visual parity with WP source.
+   Scoped to .post-content so only imported post bodies are affected.
+   ========================================================================= */
+
+/* 1. Numbered heading row (blue-circle "1", "2"… + product title h2) */
+.post-content [class^="gspb_heading_sep_gsbp-"],
+.post-content [class*=" gspb_heading_sep_gsbp-"] {
+  display: flex;
+  align-items: center;
+  margin-top: 2.5rem;
+  margin-bottom: 1.4rem;
+}
+.post-content .gspb_heading_sep_before {
+  margin-right: 17px;
+  flex: 0 0 auto;
+}
+.post-content .gs-numhead__circle {
+  border: 3px solid #2184f9;
+  border-radius: 50%;
+  box-sizing: content-box;
+  display: inline-block;
+  font-weight: 700;
+  text-align: center;
+  overflow: hidden;
+  color: #2184f9;
+  width: calc(40px - 6px);
+  min-width: calc(40px - 6px);
+  height: calc(40px - 6px);
+  line-height: calc(40px - 6px);
+  font-size: 24px;
+}
+.post-content [class^="gspb_heading_sep_gsbp-"] > .gspb_heading,
+.post-content [class*=" gspb_heading_sep_gsbp-"] > .gspb_heading {
+  margin: 0 !important;
+}
+
+/* 2. Score-summary block — 2-column layout (9.3 left, conclusion right).
+   The actual horizontal row lives on the inner .gspb_container child of
+   .tmn-review-conclusion (the section is a single-child wrapper). */
+.post-content .tmn-review-conclusion > .gspb_container {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  column-gap: 20px;
+}
+.post-content .tmn-review-conclusion {
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.07);
+  padding: 15px 20px 25px 15px;
+  margin: 1.5rem 0 30px;
+}
+.post-content .tmn-review-conclusion .wp-block-greenshift-blocks-progressbar {
+  flex: 0 0 auto;
+}
+.post-content .tmn-review-conclusion > .gspb_container > .gspb_container {
+  display: flex;
+  flex-direction: column;
+  row-gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.post-content .tmn-review-conclusion .gspb_heading {
+  font-size: 26px !important;
+  line-height: 32px !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+}
+.post-content .tmn-review-conclusion .gspb_text {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+}
+@media (max-width: 575.98px) {
+  .post-content .tmn-review-conclusion > .gspb_container {
+    flex-direction: column !important;
+    align-items: flex-start;
+  }
+}
+
+/* 3. Progressbar circle ("9.3" / "8.9") */
+.post-content .gspb-progressbar_circle {
+  position: relative;
+  height: 100px;
+  width: 100px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.post-content .gspb-progressbar_circle_value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #111;
+  z-index: 1;
+}
+
+/* 4. Pros / Cons sections — display side-by-side (50/50 columns).
+   .tmn-pros and .tmn-cons are sibling <section>s; inline-block puts them
+   on one row. Stacks back to one column under 768px. */
+.post-content section.tmn-pros,
+.post-content section.tmn-cons {
+  display: inline-block;
+  vertical-align: top;
+  width: calc(50% - 12px);
+  box-sizing: border-box;
+}
+.post-content section.tmn-pros {
+  margin-right: 16px;
+}
+@media (max-width: 767.98px) {
+  .post-content section.tmn-pros,
+  .post-content section.tmn-cons {
+    display: block;
+    width: 100%;
+    margin-right: 0;
+  }
+}
+
+/* Pros/cons two-column grid: a GSPB container whose direct children are a pros
+   box + a cons box (or two pros boxes). The boxes are <div class="tmn-pros
+   gspb_container">, not <section>, so the rule above doesn't reach them; we
+   grid the parent so the two cards sit side-by-side at 50% each. !important
+   beats GSPB's inline <style> #id rules (specificity 1,0,0) that otherwise
+   size the columns/cards to content. Applies to all posts. */
+.post-content .gspb_container:has(> .tmn-pros + .tmn-pros),
+.post-content .gspb_container:has(> .tmn-pros):has(> .tmn-cons) {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  column-gap: 35px;
+  align-items: start;
+  margin-bottom: 30px;
+}
+.post-content .gspb_container:has(> .tmn-pros + .tmn-pros) > *,
+.post-content .gspb_container:has(> .tmn-pros):has(> .tmn-cons) > * {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box;
+}
+/* Force the whole GSPB/Elementor wrapper chain that contains a pros/cons pair
+   to span the full content width. The imported markup nests the grid inside
+   flex containers that shrink-wrap it, leaving the cards bunched in ~half the
+   row; this stretches every ancestor wrapping the pair back to 100%. */
+.post-content .gspb_container:has(.tmn-pros):has(.tmn-cons),
+.post-content .e-con-inner:has(.tmn-pros):has(.tmn-cons),
+.post-content .elementor-widget-container:has(.tmn-pros):has(.tmn-cons),
+.post-content [class*="elementor-element"]:has(.tmn-pros):has(.tmn-cons) {
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: 1 1 100% !important;
+  align-self: stretch !important;
+}
+@media (max-width: 767.98px) {
+  .post-content .gspb_container:has(> .tmn-pros + .tmn-pros),
+  .post-content .gspb_container:has(> .tmn-pros):has(> .tmn-cons) {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* 5. Body paragraph spacing — 20px breathing room below every <p>. */
+/* 6. Amazon merchant logo fix — the imported WP markup hard-codes
+   `https://bestlooking.skin/wp-content/plugins/content-egg/res/logos/amazon.webp`
+   which 404s on this domain. CSS `content` swap rewrites the rendered
+   image to the local `/brand/amazon.webp` we ship in `public/brand/`. */
+img.cegg-merhant-logo[src*="content-egg/res/logos/amazon"],
+img.cegg-merhant-logo[alt*="Amazon" i] {
+  content: url('/brand/amazon.webp');
+}
+
+/* Cegg list-card BUY NOW + merchant — tighten the gap between the button
+   and the merchant label (Amazon.com / Walmart / etc.) underneath. */
+.post-content .cegg-card-button {
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+.post-content .cegg-merchant {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  line-height: 1.2 !important;
+}
+
+/* Buttons inside grid cards use a darker blue (#0046be) to distinguish them
+   from the side-by-side comparison-block buttons. */
+.post-content .cegg-grid-card .btn-primary {
+  --bs-btn-bg: #0046be;
+  --bs-btn-border-color: #0046be;
+  --bs-btn-hover-bg: #052f7c;
+  --bs-btn-hover-border-color: #052f7c;
+  --bs-btn-active-bg: #052f7c;
+  --bs-btn-active-border-color: #052f7c;
+  --bs-btn-disabled-bg: #0046be;
+  --bs-btn-disabled-border-color: #0046be;
+}
+.post-content .cegg-grid-card .btn-outline-primary {
+  --bs-btn-color: #0046be;
+  --bs-btn-border-color: #0046be;
+  --bs-btn-hover-bg: #0046be;
+  --bs-btn-hover-border-color: #0046be;
+  --bs-btn-active-bg: #0046be;
+  --bs-btn-active-border-color: #0046be;
+  --bs-btn-disabled-color: #0046be;
+  --bs-btn-disabled-border-color: #0046be;
+}
+
+/* Single post page: white surface + every border (chrome, affiliate disclosure,
+   GSPB column dividers, comparison-box outline, etc.) forced to white so they
+   blend into the page. Scoped so it doesn't affect home/category. */
+article[data-testid^="post-"] {
+  background-color: #ffffff;
+}
+/* ---------------------------------------------------------------------------
+   GreenShift (gspb_*) layout fallbacks
+   The imported HTML's inline <style> tags reference random GSPB instance IDs
+   (e.g. #gspb_row-id-gsbp-r4q8ub4h-p37j) that *do not match* the IDs in the
+   markup itself — the source WP server returns mismatched IDs in
+   `content.rendered`. The id-based rules are inert, so we add class-based
+   fallbacks for the structural layout (side-by-side columns, etc.).
+   --------------------------------------------------------------------------- */
+.post-content .gspb_row { position: relative; }
+.post-content .gspb_row__content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 1200px;
+}
+.post-content .gspb_row__col--6 {
+  width: 50%;
+  padding: 15px min(3vw, 20px);
+  box-sizing: border-box;
+  position: relative;
+}
+.post-content .gspb_row__col--4  { width: 33.3333%; padding: 15px min(3vw, 20px); box-sizing: border-box; }
+.post-content .gspb_row__col--3  { width: 25%;       padding: 15px min(3vw, 20px); box-sizing: border-box; }
+.post-content .gspb_row__col--12 { width: 100%;      padding: 15px min(3vw, 20px); box-sizing: border-box; }
+@media (max-width: 767.98px) {
+  .post-content .gspb_row__col--6,
+  .post-content .gspb_row__col--4,
+  .post-content .gspb_row__col--3 { width: 100%; }
+}
+.post-content [id^=gspb_col-id] {
+  padding: 15px min(3vw, 20px);
+  box-sizing: border-box;
+  position: relative;
+}
+.post-content .gspb_container { position: relative; }
+
+/* Versus column dividers and headers (used by the comparison template) */
+.post-content .tmn-versus-col + .tmn-versus-col {
+  border-left: 1px dashed #cecece;
+}
+@media (max-width: 767.98px) {
+  .post-content .tmn-versus-col + .tmn-versus-col { border-left: none; }
+}
+.post-content .tmn-verus-title {
+  text-align: center;
+  color: #fff;
+  padding: 10px 1rem;
+  margin: 0 -15px 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.post-content .tmn-versus-col:nth-of-type(1) .tmn-verus-title { background: #304ffe; }
+.post-content .tmn-versus-col:nth-of-type(2) .tmn-verus-title { background: #009688; }
+
+
+/* GreenShift FAQ accordion — question (title) bar styling.
+   Source markup keys per-instance IDs we can't match, so target by class. */
+.post-content .gs-accordion-item > .gs-accordion-item__title {
+  background-color: #f9f9f9;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  padding: 0.875rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+.post-content .gs-accordion-item__heading,
+.post-content .gs-accordion-item__heading * {
+  font-size: 18px;
+  font-weight: 600;
+}
+.post-content .gs-accordion-item > .gs-accordion-item__content {
+  background-color: #ffffff;
+  padding: 0.875rem 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-top: 0;
+}
+/* Closed state — collapses the answer panel. PostContent.tsx adds `.gsclose`
+   to every accordion item on mount and toggles it on title click. */
+.post-content .gs-accordion-item.gsclose > .gs-accordion-item__content {
+  display: none;
+}
+/* Visual toggle indicator on the title bar */
+.post-content .gs-accordion-item > .gs-accordion-item__title::after {
+  content: '−';
+  margin-left: 1rem;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: rgba(15, 23, 42, 0.5);
+  transition: transform 0.15s ease;
+}
+.post-content .gs-accordion-item.gsclose > .gs-accordion-item__title::after {
+  content: '+';
+}
+.post-content .gs-accordion-item__heading {
+  margin: 0 !important;
+  flex: 1;
+}
+
+/* FAQ accordion (all posts): question text at 18px, and no borders anywhere.
+   !important overrides the per-instance #id border/size rules in custom.css
+   (which load after globals and aren't !important). */
+.post-content .gs-accordion-item__title,
+.post-content .gs-accordion-item__heading,
+.post-content .gs-accordion-item__heading * {
+  font-size: 18px !important;
+  font-weight: 500 !important;
+}
+.post-content .gs-accordion,
+.post-content .gs-accordion-item,
+.post-content .gs-accordion-item > .gs-accordion-item__title,
+.post-content .gs-accordion-item > .gs-accordion-item__content,
+.post-content .gs-accordion-item__heading,
+.post-content .gs-accordion-item__title span.iconfortoggle,
+.post-content .gs-accordion-item__title span.iconfortoggle * {
+  border: 0 !important;
+}
+/* FAQ question bar — flat white background (no grey fill). */
+.post-content .gs-accordion-item > .gs-accordion-item__title {
+  background-color: #ffffff !important;
+}
+/* Separator line between FAQ questions (placed after the border-reset above
+   so it wins on the bottom edge; skips the last item to avoid a trailing line). */
+.post-content .gs-accordion-item:not(:last-child) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+/* GreenShift heading block (e.g. "Advantages", "Drawbacks") — bold 19px label
+   above the icon-lists in product roundups. */
+.post-content .gspb_heading {
+  font-size: 14px;
+  font-weight: normal;
+  margin: 30px 0 0;
+  font-family: var(--tc-body-font-family);
+  color: #07142b;
+}
+/* When the GSPB heading is rendered as a real <h2>/<h3> (i.e. it's a major
+   section header like "FAQs" / "Phone FAQs", not a sub-label like
+   Advantages/Drawbacks) give it more breathing room above. */
+.post-content h2.gspb_heading,
+.post-content h3.gspb_heading {
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+/* GreenShift icon list — used for Advantages (check) / Drawbacks (x) lists. */
+.post-content .gspb_iconsList { padding: 0; margin: 0 0 1rem; }
+.post-content .gspb_iconsList__item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 10px;
+  position: relative;
+}
+.post-content .gspb_iconsList__item__text {
+  margin-left: 15px;
+  font-family: var(--tc-body-font-family);
+}
+.post-content .gspb_iconsList__item svg {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px;
+  margin: 0 !important;
+  flex-shrink: 0;
+}
+/* Icon colors — distinguished by Bootstrap-Icons class names baked into the SVG */
+.post-content .gspb_iconsList__item svg.bi-check-circle path { fill: #00d084; }
+.post-content .gspb_iconsList__item svg.bi-x-circle path     { fill: #de1414; }
+.post-content .gspb_iconsList__item svg.bi-info-circle path  { fill: #0d6efd; }
+.post-content .gspb_iconsList__item svg.bi-exclamation-triangle path { fill: #f59e0b; }
+
+/* GreenShift progress-bar / rating circle (the "8.4" score widget).
+   Source IDs vary, so we apply via the stable class names. */
+.post-content .gspb-progressbar_circle {
+  position: relative;
+  height: 100px;
+  width: 100px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1.5rem auto;
+}
+.post-content .gspb-progressbar_circle svg {
+  height: 100px;
+  width: 100px;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.post-content .gspb-progressbar_circle svg path {
+  stroke-width: 6px;
+  stroke: #2184f9;
+  fill: #f2fffe;
+}
+.post-content .gspb-progressbar_circle_value {
+  font-size: 32px;
+  font-weight: 600;
+  color: #111;
+  z-index: 1;
+  position: relative;
+  font-family: var(--tc-body-font-family);
+}
+
+/* ===========================================================================
+   Article body reading layout — ported from frolicflock.com (Blocksy theme).
+   Narrow centered reading column (above), generous line-height, an even
+   block-spacing rhythm (Blocksy "is-layout-flow"), a larger heading scale and
+   a neutral reading color. Scoped to .post-content only — the feature image
+   sits outside .post-content and is left untouched.
+   =========================================================================== */
+.post-content {
+  line-height: 1.8;
+  letter-spacing: normal;
+  color: #2c2c2c;
+}
+
+/* Even vertical rhythm between every top-level block. */
+.post-content > * {
+  margin-top: 1.6em;
+  margin-bottom: 0;
+}
+.post-content > *:first-child {
+  margin-top: 0;
+}
+/* Article body paragraphs: 15px bottom spacing. Scoped to top-level (direct
+   child) paragraphs so nested GSPB/Content-Egg box paragraphs are untouched.
+   The following block's top margin is zeroed so the 15px isn't swallowed by
+   the 1.6em block rhythm via margin-collapse. */
+.post-content > p {
+  margin-top: 5px !important;
+  margin-bottom: 15px !important;
+}
+
+.post-content :where(p, li, blockquote, figcaption, td) {
+  line-height: 1.8;
+  letter-spacing: normal;
+}
+
+/* Heading scale (Blocksy preset clamps), keeping the brand display font. */
+.post-content > :where(h2) {
+  font-size: clamp(1.75rem, 1.4rem + 1.6vw, 2.25rem);
+  line-height: 1.25;
+  margin-top: 1.9em;
+  margin-bottom: 5px !important;
+}
+.post-content > :where(h3) {
+  font-size: clamp(1.375rem, 1.2rem + 0.9vw, 1.7rem);
+  line-height: 1.3;
+  margin-top: 1.6em;
+  margin-bottom: 0;
+}
+.post-content > :where(h4) {
+  font-size: 1.2rem;
+  margin-top: 1.4em;
+  margin-bottom: 0.4em;
+}
+
+/* Blocksy default link style: accent + persistent underline. */
+.post-content :where(a:not(.gspb_row a, .gspb_col a, [class*="gspb_"] a)) {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.post-content :where(ul, ol) > li {
+  /* Flush list items. This rule sits after the earlier one and has the same
+     specificity, so it is the one that decides -- zeroing only the first left
+     0.6em in place. */
+  margin-top: 0;
+  margin-bottom: 0;
+  line-height: 1.8;
+}
+
+
+
+
+
+/* ---- FAQ accordion ----------------------------------------------------
+   Applied by withFaqAccordion() in PostContent to any trailing FAQ section.
+   <details>/<summary>, so every answer is in the HTML while collapsed and the
+   keyboard behaviour is the browser's own. Colours come from site tokens. */
+.faq-accordion {
+  margin: 1.25rem 0 2rem;
+  border-top: 1px solid rgb(0 0 0 / 0.1);
+}
+
+.faq-item {
+  border-bottom: 1px solid rgb(0 0 0 / 0.1);
+}
+
+.faq-question {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0;
+  cursor: pointer;
+  list-style: none;
+  font-size: 1rem !important;
+  /* 600, not 700: the post body sets `.post-content strong, b { font-weight:700
+     !important }`, and the questions sat at the same weight as the bold runs
+     inside the answers. !important because that rule would otherwise win. */
+  font-weight: 600 !important;
+  line-height: 1.4;
+  color: var(--sb-heading);
+  transition: color 0.15s ease;
+}
+
+/* Safari paints its own disclosure triangle without both of these. */
+.faq-question::-webkit-details-marker { display: none; }
+.faq-question::marker { content: ''; }
+.faq-question:hover { color: var(--sb-primary); }
+.faq-question:focus-visible { outline: 2px solid var(--sb-primary); outline-offset: 2px; }
+
+.faq-icon {
+  position: relative;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+}
+
+/* A plus that becomes a minus -- drawn, so it inherits colour and costs no
+   extra request. */
+.faq-icon::before,
+.faq-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 13px;
+  height: 2px;
+  background: var(--sb-primary);
+  transform: translate(-50%, -50%);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.faq-icon::after { transform: translate(-50%, -50%) rotate(90deg); }
+.faq-item[open] .faq-icon::after { transform: translate(-50%, -50%) rotate(0deg); opacity: 0; }
+
+.faq-answer {
+  padding: 0 0 1.15rem;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--sb-body);
+}
+.faq-answer > :first-child { margin-top: 0; }
+.faq-answer > :last-child { margin-bottom: 0; }
+.faq-answer p { margin: 0 0 0.85rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-icon::before, .faq-icon::after, .faq-question { transition: none; }
+}
+
+

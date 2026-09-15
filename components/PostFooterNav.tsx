@@ -9,7 +9,7 @@ type Tag = { label: string; href?: string };
  * End-of-article furniture: tags and share buttons, then previous/next posts.
  *
  * Share links are plain intent URLs — no SDK, no third-party script, nothing
- * loaded until the reader actually clicks. The reference also showed a Behance
+ * loaded until the reader actually clicks. The template also showed a Behance
  * button, dropped here because a skincare article has no business being shared
  * to a design portfolio network.
  */
@@ -43,21 +43,16 @@ export default function PostFooterNav({
   const Card = ({ post, side }: { post: BlsPost; side: 'prev' | 'next' }) => {
     const img = mediaUrl(post.coverImage ?? null) ?? firstImageUrl(post.content ?? '');
     return (
-      <Link
-        href={postPath(post)}
-        className={`group flex items-center gap-4 ${side === 'next' ? 'sm:flex-row-reverse sm:text-right' : ''}`}
-      >
+      <Link href={postPath(post)} className={`d-flex align-items-center gap-3 ${side === 'next' ? 'flex-sm-row-reverse text-sm-end' : ''}`}>
         {img ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={img} alt={post.title} className="h-16 w-16 shrink-0 rounded object-cover" loading="lazy" />
+          <img src={img} alt="" className="rounded-8" style={{ width: 64, height: 64, objectFit: 'cover', flexShrink: 0 }} loading="lazy" />
         ) : (
-          <span className="h-16 w-16 shrink-0 rounded bg-ink/5" />
+          <span className="rounded-8 bg-100" style={{ width: 64, height: 64, flexShrink: 0 }} />
         )}
-        <span className="min-w-0">
-          <span className="block text-[13px] text-ink/45">{side === 'prev' ? 'Prev Post' : 'Next Post'}</span>
-          <span className="mt-1 block font-display !text-[15px] font-bold leading-snug text-ink transition group-hover:text-primary">
-            {post.title}
-          </span>
+        <span>
+          <span className="d-block fs-8 text-600">{side === 'prev' ? 'Previous article' : 'Next article'}</span>
+          <span className="d-block fs-6 fw-semi-bold text-dark mt-1 text-truncate-2">{post.title}</span>
         </span>
       </Link>
     );
@@ -65,41 +60,31 @@ export default function PostFooterNav({
 
   return (
     <div data-testid="post-footer-nav">
-      <div className="mt-6 border-y border-ink/10 py-5">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <ul className="flex flex-wrap gap-3">
-            {tags.map((t) => (
-              <li key={t.label}>
-                {t.href ? (
-                  <Link href={t.href} className="inline-flex min-h-[38px] items-center justify-center rounded border border-ink/15 px-4 text-[13px] leading-none text-ink/70 transition hover:border-ink/30 hover:text-primary">
-                    {t.label}
-                  </Link>
-                ) : (
-                  <span className="inline-flex min-h-[38px] items-center justify-center rounded border border-ink/15 px-4 text-[13px] leading-none text-ink/70">{t.label}</span>
-                )}
-              </li>
+      <div className="border-top mt-5 mb-1" />
+      <div className="d-flex flex-wrap gap-4 align-items-center justify-content-between mb-4 pt-3">
+        <div className="d-flex flex-wrap align-items-center gap-2">
+          {tags.map((t) =>
+            t.href ? (
+              <Link key={t.label} href={t.href} className="tag-item px-3">
+                <span>{t.label}</span>
+              </Link>
+            ) : (
+              <span key={t.label} className="tag-item px-3">
+                <span className="text-capitalize">{t.label}</span>
+              </span>
+            ),
+          )}
+        </div>
+        <div className="d-flex align-items-center gap-2">
+          <span className="fs-7 text-600">Share:</span>
+          <div className="d-inline-flex group-social-icons mt-0">
+            {share.map((sh) => (
+              <a key={sh.label} href={sh.href} target="_blank" rel="noopener noreferrer" aria-label={`Share on ${sh.label}`} className="icon-shape icon-46">
+                <svg className="dark-mode-invert" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden>
+                  <path d={sh.path} />
+                </svg>
+              </a>
             ))}
-          </ul>
-
-          <div className="flex items-center gap-3">
-            <span className="text-[13px] text-ink/55">Share:</span>
-            <ul className="flex items-center overflow-hidden rounded border border-ink/15">
-              {share.map((sh) => (
-                <li key={sh.label} className="border-l border-ink/15 first:border-l-0">
-                  <a
-                    href={sh.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Share on ${sh.label}`}
-                    className="grid h-10 w-11 place-items-center text-ink/70 transition hover:bg-muted hover:text-primary"
-                  >
-                    <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden>
-                      <path d={sh.path} />
-                    </svg>
-                  </a>
-                </li>
-              ))}
-            </ul>
           </div>
         </div>
       </div>
@@ -107,9 +92,9 @@ export default function PostFooterNav({
       {children}
 
       {(prev || next) && (
-        <div className="mt-10 grid gap-8 border-t border-ink/10 pt-8 sm:grid-cols-2">
-          <div>{prev && <Card post={prev} side="prev" />}</div>
-          <div>{next && <Card post={next} side="next" />}</div>
+        <div className="row g-4 border-top mt-5 pt-4">
+          <div className="col-sm-6">{prev && <Card post={prev} side="prev" />}</div>
+          <div className="col-sm-6">{next && <Card post={next} side="next" />}</div>
         </div>
       )}
     </div>

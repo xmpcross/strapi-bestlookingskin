@@ -1,13 +1,13 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-// Single post stylesheet, loaded on all article single pages (App Router
-// code-splits this CSS to the post route).
-import '../../custom.css';
-import { getPost, listPosts, listCategories, listProductsForPost, getAdjacentPosts, mediaUrl, type BlsPost } from '@/lib/strapi';
+import '../../article.css';
+import { getPost, listPostSummaries, listProductsForPost, getAdjacentPosts, mediaUrl, type BlsPostSummary } from '@/lib/strapi';
 import { SECTIONS, SITE } from '@/lib/site';
-import { fmtDate, firstImageUrl, primaryCategorySlug, postPath } from '@/lib/format';
+import { fmtDate, primaryCategorySlug, postPath } from '@/lib/format';
 import { withHeadingIds, decodeEntities } from '@/lib/toc';
+import { getTopicGroups } from '@/lib/nav';
+import { toCard } from '@/lib/post-card';
 import PostContent from '@/components/PostContent';
 import ReadingRail from '@/components/ReadingRail';
 import AuthorAvatar from '@/components/AuthorAvatar';
@@ -16,8 +16,8 @@ import ReadAlso from '@/components/ReadAlso';
 import InlineProducts from '@/components/InlineProducts';
 import PostFooterNav from '@/components/PostFooterNav';
 import CommentForm from '@/components/CommentForm';
-import RelatedCarousel from '@/components/RelatedCarousel';
-import ArticleSidebar from '@/components/ArticleSidebar';
+import Breadcrumb from '@/components/magzin/Breadcrumb';
+import { TileCard } from '@/components/magzin/cards';
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -72,55 +72,25 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
     redirect(postPath(post));
   }
 
-  // Pull related posts (same category, excluding this one) and recent posts
-  // across all categories (for the right sidebar) in parallel.
-  const [related, recentPosts] = await Promise.all([
-    listPosts({ category, pageSize: 9 })
+  // Related posts (same category, excluding this one), recent guides across the site, and the topic hubs.
+  const [related, recentPosts, topicGroups] = await Promise.all([
+    listPostSummaries({ category, pageSize: 9, withCover: true })
       .then((r) => r.data.filter((p) => p.id !== post.id).slice(0, 8))
-      .catch(() => [] as BlsPost[]),
-    listPosts({ pageSize: 6 })
+      .catch(() => [] as BlsPostSummary[]),
+    listPostSummaries({ pageSize: 6, authored: true, withCover: true })
       .then((r) => r.data.filter((p) => p.id !== post.id).slice(0, 5))
-      .catch(() => [] as BlsPost[]),
+      .catch(() => [] as BlsPostSummary[]),
+    getTopicGroups(),
   ]);
 
-  /*
-   * Sidebar categories: every category that has posts, not just the five format
-   * buckets in SECTIONS. The topic hubs are what a reader browses by, and they
-   * were only reachable from the header menu and the footer.
-   *
-   * Counted one query each -- Strapi's REST layer has no aggregate -- and
-   * anything empty is dropped, which also removes the three grouping parents
-   * (product-type-hubs and friends). Those exist to organise the nav and hold
-   * no posts of their own, so a row reading "Skin-Concern Hubs 0" would be
-   * noise.
-   *
-   * No image is fetched any more: the card that renders these shows emoji and a
-   * count, so pulling a representative cover per category was 23 wasted reads.
-   */
-  const allCategories = await listCategories().catch(() => []);
-  const categoryTiles = (
-    await Promise.all(
-      allCategories.map(async (c) => {
-        const r = await listPosts({ category: c.slug, pageSize: 1 }).catch(() => null);
-        return {
-          href: `/${c.slug}`,
-          name: c.name,
-          count: r?.meta?.pagination?.total ?? 0,
-          image: null as string | null,
-        };
-      }),
-    )
-  ).filter((t) => t.count > 0);
-
-  const toRow = (p: BlsPost) => ({
+  const toRow = (p: BlsPostSummary) => ({
     href: postPath(p),
     title: p.title,
     date: fmtDate(p.publishedAt),
-    img: mediaUrl(p.coverImage ?? null) ?? firstImageUrl(p.content),
-    category: p.categories?.[0]?.name,
+    img: mediaUrl(p.coverImage ?? null),
   });
-  const popularRows = related.map(toRow);
   const recentRows = recentPosts.map(toRow);
+  const topics = topicGroups.flatMap((g) => g.items).filter((t) => t.href !== `/${category}`);
 
   const cover = mediaUrl(post.coverImage ?? null);
   const cat = post.categories?.[0];
@@ -273,270 +243,188 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
     mainEntityOfPage: `${SITE.url}/${category}/${post.slug}`,
   };
 
+  const catName = cat?.name ?? categoryName(category);
+  const figure = (i: 0 | 1, side: 'start' | 'end') =>
+    galleryImages[i] ? (
+      <figure className={`post-figure post-figure-${side}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={galleryImages[i]} alt={post.gallery?.[i]?.alternativeText || post.title} className="rounded-8 w-100" loading="lazy" />
+        {post.gallery?.[i]?.alternativeText && <figcaption className="fs-8 text-600 mt-2">{post.gallery[i].alternativeText}</figcaption>}
+      </figure>
+    ) : null;
+
   return (
     <>
-    <article
-      className="mx-auto max-w-7xl bg-white px-6 pb-12 pt-4"
-      data-testid={`post-${post.slug}`}
-      data-category={category}
-      data-post-type={post.postType}
-    >
-      {/* Vendor stylesheets used by the imported product-comparison blocks
-          (Content Egg + scoped Bootstrap, both rules scoped under
-          .cegg5-container). Loaded for this article only. */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
+      {/* Vendor stylesheets used by the imported product-comparison blocks (Content Egg + scoped Bootstrap,
+          both scoped under .cegg5-container). Loaded for this article only. */}
       {slug === 'cerave-acne-gel-differin-gel-30-day-comparison' && (
         <>
           <link rel="stylesheet" href="/vendor/cegg-bootstrap.min.css" />
           <link rel="stylesheet" href="/vendor/cegg-products.min.css" />
         </>
       )}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
-      />
 
-      {/* Breadcrumbs sit directly under the site nav, full width and flush:
-          no vertical margin or padding, so the rule reads as part of the header
-          rather than as the article's first element. */}
-      <nav className="my-0 flex items-center gap-2 py-0 text-[12px] font-semibold text-ink/55" data-testid="breadcrumb" aria-label="Breadcrumb">
-        <Link href="/" className="shrink-0 font-semibold text-primary hover:text-primary-highlight">Home</Link>
-        <span className="shrink-0">/</span>
-        <Link href={`/${category}`} className="shrink-0 font-semibold text-primary hover:text-primary-highlight">
-          {cat?.name ?? categoryName(category)}
-        </Link>
-        <span className="shrink-0">/</span>
-        <span className="min-w-0 truncate text-ink/75" aria-current="page">{post.title}</span>
-      </nav>
-
-      {/* Split hero: byline, title, standfirst and tags on the left, cover on
-          the right. The cover used to run full width above everything, which
-          gave the page two competing focal points before a word was read. */}
-      <div className="mt-6 grid items-center gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        {/* 40 / 60. Expressed as 2fr / 3fr rather than literal percentages so the
-            10-unit gap comes out of the track sizing instead of overflowing the row. */}
-        <div className="min-w-0">
-          {post.author && (
-            <p className="flex items-center gap-2 text-[14px] text-ink/60">
-              <AuthorAvatar name={post.author.name} src={post.author.avatarUrl} size={28} />
-              <Link href={`/authors/${post.author.slug}`} className="font-bold text-ink hover:text-primary">
-                {post.author.name}
-              </Link>
-              <span className="text-ink/45">on {fmtDate(post.publishedAt)}</span>
-            </p>
-          )}
-
-          <h1 className="mt-5 font-display text-[2rem] font-bold leading-tight tracking-tight text-ink">
-            {post.title}
-          </h1>
-
-          {post.excerpt && (
-            <p className="mt-5 max-w-xl text-[17px] leading-8 text-ink/60">{post.excerpt}</p>
-          )}
-
-          {/* Category and format, as the tags in the reference. Both are real
-              fields, so neither is decoration. */}
-          {/* inline-flex, not inline: vertical padding on an inline element does
-              not grow its line box, which left the label sitting off-centre in
-              the border. text-indent offsets the trailing letter-space that
-              tracking-wider adds after the last character, which otherwise
-              pushes the text visibly left of centre. */}
-          <div className="mt-7 flex flex-wrap gap-3">
-            <Link
-              href={`/${category}`}
-              className="inline-flex min-h-[34px] items-center justify-center rounded border border-ink/15 px-4 text-[11px] font-bold uppercase leading-none tracking-wider text-ink/70 transition [text-indent:0.09em] hover:border-ink/30 hover:text-primary"
-            >
-              {cat?.name ?? categoryName(category)}
-            </Link>
-            {post.postType && (
-              <span className="inline-flex min-h-[34px] items-center justify-center rounded border border-ink/15 px-4 text-[11px] font-bold uppercase leading-none tracking-wider text-ink/70 [text-indent:0.09em]">
-                {post.postType.replace(/-/g, ' ')}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {cover && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={cover}
-            alt={post.coverImage?.alternativeText || post.title}
-            className="aspect-[4/3] max-h-[400px] w-full rounded-2xl object-cover"
-          />
-        )}
-      </div>
-
-      <div aria-hidden className="mt-10 h-px w-full bg-ink/10" />
-
-      <div className="mt-10 grid gap-10 lg:grid-cols-[210px_minmax(0,1fr)_280px] lg:gap-12">
-        {/* Left rail: reading progress + contents. Ordered after the article on
-            small screens, where a contents list above the piece is just a wall
-            of links between the reader and the text. */}
-        <div className="order-2 lg:order-1">
-          <ReadingRail minutes={post.readingTimeMinutes} toc={toc} />
-        </div>
-
-        {/* Main article column */}
-        <div className="order-1 min-w-0 lg:order-2">
-
-
-          {/* Disclosure sits above the article, not after it. A notice a reader
-              only meets once they have finished, and scrolled past every buy
-              button, is not much of a disclosure. */}
-          <div className="mb-8 rounded-lg border border-ink/10 bg-muted/30 px-4 py-3 text-[13px] leading-6 text-ink/65">
-            <strong className="font-bold text-ink/80">Heads up:</strong> when you buy through links
-            on this page we may earn a commission, at no extra cost to you. It never changes which
-            products we recommend or what we say about them.{' '}
-            <Link href="/legal/disclosure" className="text-primary underline underline-offset-2 hover:text-primary-highlight">
-              Read our full disclosure
-            </Link>.
-          </div>
-
-          <div id="article-body" className="after:clear-both after:block after:content-['']">
-            <PostContent html={bodyIntro} />
-
-            {/* Both images sit in the article's opening half. They used to run
-                lower, with the second one immediately above the FAQ, which put a
-                photograph alongside a list of questions where it had nothing to
-                illustrate. Left float first, right float after the next block,
-                so two floats never share a line. */}
-
-            {galleryImages[0] && (
-              <figure className="mb-6 sm:float-left sm:mr-7 sm:mb-4 sm:w-[45%]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={galleryImages[0]}
-                  alt={post.gallery?.[0]?.alternativeText || post.title}
-                  className="aspect-[4/5] w-full rounded-lg object-cover"
-                  loading="lazy"
-                />
-                {post.gallery?.[0]?.alternativeText && (
-                  <figcaption className="mt-3 text-[13px] leading-5 text-ink/50">
-                    {post.gallery[0].alternativeText}
-                  </figcaption>
-                )}
-              </figure>
-            )}
-
-            {readAlsoRows.length === 2 && <ReadAlso rows={readAlsoRows} />}
-
-            {bodyMid && <PostContent html={bodyMid} />}
-            {/*
-              Gallery images are rendered here rather than embedded in the body.
-              The generator reports "embedded N contextual image(s)" for every
-              site, but the function behind that message returns early unless the
-              site is flightfares.one -- so 67 posts carry gallery images that
-              were never placed in their HTML, and only the cover ever showed.
-              Rendering from the relation keeps the stored content clean and
-              means the placement can change without rewriting every post.
-            */}
-
-            {/* Products, then two paragraphs, then the image. Previously they
-                rendered flush against the float and the pair read as one advert. */}
-            {inlineProducts.length >= 2 && <InlineProducts products={inlineProducts} />}
-
-            {bodyBeforeImage && <PostContent html={bodyBeforeImage} />}
-
-            {galleryImages[1] && (
-              <figure className="mb-6 sm:float-right sm:ml-7 sm:mb-4 sm:w-[45%]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={galleryImages[1]}
-                  alt={post.gallery?.[1]?.alternativeText || post.title}
-                  className="aspect-[4/3] w-full rounded-lg object-cover"
-                  loading="lazy"
-                />
-                {post.gallery?.[1]?.alternativeText && (
-                  <figcaption className="mt-3 text-[13px] leading-5 text-ink/50">
-                    {post.gallery[1].alternativeText}
-                  </figcaption>
-                )}
-              </figure>
-            )}
-
-
-            {pullQuote && <PullQuote text={pullQuote} />}
-
-            {bodyBeforeFaq ? <PostContent html={bodyBeforeFaq} /> : null}
-
-
-            {faqSection && <PostContent html={faqSection} />}
-          </div>
-
-          <PostFooterNav
-            title={post.title}
-            url={`${SITE.url}/${category}/${post.slug}`}
-            tags={[
-              { label: cat?.name ?? categoryName(category), href: `/${category}` },
-              ...(post.postType ? [{ label: post.postType.replace(/-/g, ' ') }] : []),
-            ]}
-            prev={prevPost}
-            next={nextPost}
-          >
-            {post.author?.bio && (
-              <div
-                className="mt-12 rounded-2xl border border-ink/10 bg-paper p-7 sm:p-8"
-                data-testid="author-card"
-              >
-                <div className="flex flex-col gap-5 sm:flex-row sm:gap-7">
-                  <AuthorAvatar name={post.author.name} src={post.author.avatarUrl} size={96} shape="square" />
-                  <div className="min-w-0">
-                    <p className="font-display !text-[22px] font-bold leading-tight text-ink">
-                      <Link href={`/authors/${post.author.slug}`} className="hover:text-primary">
-                        {post.author.name}
-                      </Link>
-                    </p>
-                    <p className="mt-3 text-[15px] leading-7 text-ink/65">{post.author.bio}</p>
-                    {/* The reference card carried five social icons. bls-author has
-                        name, slug, bio and avatarUrl and nothing else, so each one
-                        would link somewhere invented. An address that receives mail
-                        is worth more than five icons that go nowhere. */}
-                    <a
-                      href="mailto:contact@bestlooking.skin"
-                      className="mt-4 inline-flex items-center gap-2 text-[14px] font-semibold text-primary hover:underline"
-                    >
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-                        <rect x="3" y="5" width="18" height="14" rx="2" />
-                        <path d="m3.5 6.5 8.5 6 8.5-6" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                      contact@bestlooking.skin
-                    </a>
+      <article className="sec-1-single-3 pb-70" data-testid={`post-${post.slug}`} data-category={category} data-post-type={post.postType}>
+        <div className="position-relative block-banner">
+          <div className="container">
+            <div className="row">
+              <div className="col-lg-8">
+                <Breadcrumb items={[{ label: catName, href: `/${category}` }, { label: post.title }]} />
+                <div className="card-title post-hero">
+                  <div className="article card-info d-flex flex-wrap align-items-center gap-2 mt-2">
+                    <Link href={`/${category}`} className={`badge ${toCard(post).badgeTone} fs-8`}>
+                      {catName}
+                    </Link>
+                    {post.postType && post.postType !== 'other' && <span className="badge bg-100 fs-8 text-capitalize">{post.postType.replace(/-/g, ' ')}</span>}
+                    {post.author && post.readingTimeMinutes ? (
+                      <ul className="d-flex align-items-center text-600 m-0 ps-3">
+                        <li>
+                          <p className="fs-8 m-0">{post.readingTimeMinutes} min read</p>
+                        </li>
+                      </ul>
+                    ) : null}
                   </div>
+                  {/* Byline above the H1 (Tier A post template). */}
+                  <div className="d-flex flex-wrap align-items-center gap-2 pt-4">
+                    {post.author && (
+                      <Link href={`/authors/${post.author.slug}`} className="author d-flex align-items-center gap-2">
+                        <AuthorAvatar name={post.author.name} src={post.author.avatarUrl} size={36} />
+                        <span className="fs-7 text-dark fw-regular">{post.author.name}</span>
+                      </Link>
+                    )}
+                    <ul className="d-flex align-items-center gap-4 text-600 m-0 ps-3">
+                      <li>
+                        <time className="fs-8" dateTime={post.publishedAt}>
+                          {fmtDate(post.publishedAt)}
+                        </time>
+                      </li>
+                    </ul>
+                  </div>
+                  <h1 className="h3 mt-4 mb-0">{post.title}</h1>
+                  {post.excerpt && <p className="post-standfirst text-600 mt-3 mb-0">{post.excerpt}</p>}
                 </div>
               </div>
-            )}
-          </PostFooterNav>
-
-          <CommentForm
-            postTitle={post.title}
-            postUrl={`${SITE.url}/${category}/${post.slug}`}
-          />
-
-
-
-        </div>
-
-        {/* Right sidebar: post categories + trending */}
-        <div className="order-3">
-        <ArticleSidebar
-          categoryTiles={categoryTiles}
-          popular={popularRows}
-          recent={recentRows}
-        />
-        </div>
-      </div>
-
-    </article>
-
-    {related.length > 0 && (
-      <section className="border-t border-ink/10 bg-muted/40 py-14" data-testid="more-in-category">
-        <div className="mx-auto max-w-7xl px-6">
-          <h2 className="font-display text-2xl font-bold tracking-tight text-ink">More in {cat?.name ?? categoryName(category)}</h2>
-          <div className="mt-6">
-            <RelatedCarousel posts={related} />
+            </div>
           </div>
         </div>
-      </section>
-    )}
+
+        <div className="container">
+          <div className="row mt-4 g-5">
+            <div className="col-lg-8">
+              {cover && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img className="rounded-8 w-100 mb-4 cover-image post-cover" src={cover} alt={post.coverImage?.alternativeText || post.title} width={888} height={500} fetchPriority="high" />
+              )}
+
+              {/* Disclosure above the article, not after it. */}
+              <p className="affiliate-note fs-7 text-600 px-3 py-2 mb-4">
+                <strong className="text-dark">Heads up:</strong> when you buy through links on this page we may earn a commission, at no extra cost to you. It never changes which products
+                we recommend or what we say about them. <Link href="/legal/disclosure" className="text-dark text-decoration-underline">Read our full disclosure</Link>.
+              </p>
+
+              <div id="article-body" className="post-body">
+                <PostContent html={bodyIntro} />
+                {figure(0, 'start')}
+                {readAlsoRows.length === 2 && <ReadAlso rows={readAlsoRows} />}
+                {bodyMid && <PostContent html={bodyMid} />}
+                {inlineProducts.length >= 2 && <InlineProducts products={inlineProducts} />}
+                {bodyBeforeImage && <PostContent html={bodyBeforeImage} />}
+                {figure(1, 'end')}
+                {pullQuote && <PullQuote text={pullQuote} />}
+                {bodyBeforeFaq ? <PostContent html={bodyBeforeFaq} /> : null}
+                {faqSection && <PostContent html={faqSection} />}
+              </div>
+
+              <PostFooterNav
+                title={post.title}
+                url={`${SITE.url}/${category}/${post.slug}`}
+                tags={[{ label: catName, href: `/${category}` }, ...(post.postType && post.postType !== 'other' ? [{ label: post.postType.replace(/-/g, ' ') }] : [])]}
+                prev={prevPost}
+                next={nextPost}
+              >
+                {post.author?.bio && (
+                  <div className="author-card d-flex flex-column flex-sm-row gap-4 mt-5" data-testid="author-card">
+                    <AuthorAvatar name={post.author.name} src={post.author.avatarUrl} size={96} shape="square" />
+                    <div>
+                      <p className="h5 mb-2">
+                        <Link href={`/authors/${post.author.slug}`}>{post.author.name}</Link>
+                      </p>
+                      <p className="fs-7 text-600 mb-3">{post.author.bio}</p>
+                      {/* bls-author has name, slug, bio and avatarUrl only: no social profiles to link. */}
+                      <Link href={`/authors/${post.author.slug}`} className="fs-7 text-dark text-decoration-underline">
+                        More from {post.author.name}
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </PostFooterNav>
+
+              <CommentForm postTitle={post.title} postUrl={`${SITE.url}/${category}/${post.slug}`} />
+            </div>
+
+            <aside className="col-lg-4" aria-label="Article sidebar">
+              {recentRows.length > 0 && (
+                <div className="mb-5">
+                  <div className="d-flex align-items-center gap-2 mb-3">
+                    <h2 className="h5 mb-0">Latest guides</h2>
+                  </div>
+                  <div className="d-flex flex-column gap-3">
+                    {recentRows.map((row) => (
+                      <div className="article card-10 style-1" key={row.href}>
+                        <Link href={row.href} className="card-img">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          {row.img ? <img className="w-100 rounded-8" src={row.img} alt="" width={96} height={96} loading="lazy" /> : null}
+                        </Link>
+                        <div className="card-body">
+                          <Link href={row.href}>
+                            <span className="h6 fs-6 mb-2 text-truncate-2 d-block">{row.title}</span>
+                          </Link>
+                          <span className="fs-8 text-600">{row.date}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {topics.length > 0 && (
+                <div className="mb-5">
+                  <h2 className="h5 mb-3">Topics</h2>
+                  <ul className="list-unstyled d-flex flex-wrap gap-2 ps-0">
+                    {topics.map((t) => (
+                      <li key={t.href}>
+                        <Link href={t.href} className="tag-item">
+                          <span>{t.label}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <div className="post-sticky">
+                <ReadingRail minutes={post.author ? post.readingTimeMinutes : null} toc={toc} />
+              </div>
+            </aside>
+          </div>
+        </div>
+      </article>
+
+      {related.length > 0 && (
+        <section className="related-post sec-padding bg-white" data-testid="more-in-category">
+          <div className="container">
+            <div className="row g-4">
+              <div className="col-12">
+                <h2 className="h5 mb-0">More in {catName}</h2>
+              </div>
+              {related.map((p) => (
+                <div className="col-6 col-md-4 col-lg-3" key={p.id}>
+                  <TileCard card={toCard(p)} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </>
   );
 }

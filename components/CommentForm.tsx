@@ -59,69 +59,41 @@ export default function CommentForm({ postTitle, postUrl }: { postTitle: string;
     }
   }
 
-  const field = 'mt-2 w-full rounded-lg border border-ink/15 bg-white px-4 py-3 text-[15px] text-ink placeholder:text-ink/35 focus:border-primary focus:outline-none';
-  const label = 'text-[14px] font-semibold text-ink';
-
   return (
-    <div className="mt-10" data-testid="comment-form">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-[14px] font-bold text-white transition hover:opacity-90"
-      >
-        Add a comment
-        <svg
-          viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"
-          aria-hidden className={`transition-transform ${open ? 'rotate-180' : ''}`}
-        >
-          <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+    <div className="mt-5" data-testid="comment-form">
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="btn btn-dark">
+        {open ? 'Close the comment form' : 'Leave a comment'}
       </button>
 
       {open && (
-        <form onSubmit={onSubmit} className="mt-6 rounded-2xl border border-ink/10 bg-paper p-6 sm:p-8">
-          <p className="font-display !text-[20px] font-bold text-ink">Leave a Reply</p>
-          <p className="mt-2 text-[14px] leading-6 text-ink/55">
-            Your email address will not be published. Comments are read by our editors before they
-            appear. Required fields are marked <span className="text-primary">*</span>
+        <form onSubmit={onSubmit} className="comment-form rounded-16 p-4 p-md-5 mt-4">
+          <h2 className="h5 mb-2">Leave a comment</h2>
+          <p className="fs-7 text-600 mb-4">
+            Your email address will not be published. Comments are read by our editors before they appear. Required fields are marked *
           </p>
-
-          <div className="mt-6 grid gap-5 sm:grid-cols-2">
-            <div>
-              <label className={label} htmlFor="c-name">Name <span className="text-primary">*</span></label>
-              <input id="c-name" required value={name} onChange={(e) => setName(e.target.value)}
-                placeholder="Enter Your Name" className={field} autoComplete="name" />
+          <div className="row g-3">
+            <div className="col-md-6">
+              <label className="fs-7 fw-semi-bold text-dark mb-2 d-block" htmlFor="c-name">Name *</label>
+              <input id="c-name" required value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className="form-control mw-100" autoComplete="name" />
             </div>
-            <div>
-              <label className={label} htmlFor="c-email">E-mail <span className="text-primary">*</span></label>
-              <input id="c-email" required type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter Your E-mail" className={field} autoComplete="email" />
+            <div className="col-md-6">
+              <label className="fs-7 fw-semi-bold text-dark mb-2 d-block" htmlFor="c-email">Email *</label>
+              <input id="c-email" required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Your email" className="form-control mw-100" autoComplete="email" />
+            </div>
+            <div className="col-12">
+              <label className="fs-7 fw-semi-bold text-dark mb-2 d-block" htmlFor="c-message">Comment *</label>
+              <textarea id="c-message" required rows={5} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Your comment" className="form-control mw-100" />
             </div>
           </div>
-
-          <div className="mt-5">
-            <label className={label} htmlFor="c-message">Message <span className="text-primary">*</span></label>
-            <textarea id="c-message" required rows={5} value={message} onChange={(e) => setMessage(e.target.value)}
-              placeholder="Your Message" className={field} />
-          </div>
-
-          <label className="mt-5 flex items-start gap-3 text-[14px] leading-6 text-ink/60">
-            <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)}
-              className="mt-1 h-4 w-4 rounded border-ink/30" />
-            Save my name and e-mail in this browser for the next time I comment.
+          <label className="d-flex align-items-start gap-2 fs-7 text-600 mt-3">
+            <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="mt-1" />
+            Save my name and email in this browser for the next time I comment.
           </label>
-
-          <button
-            type="submit"
-            disabled={state === 'sending'}
-            className="mt-6 rounded-lg bg-primary px-5 py-3 text-[14px] font-bold text-white transition hover:opacity-90 disabled:opacity-60"
-          >
-            {state === 'sending' ? 'Sending…' : 'Submit Comment'}
+          <button type="submit" disabled={state === 'sending'} className="btn btn-dark mt-4">
+            {state === 'sending' ? 'Sending…' : 'Send comment'}
           </button>
-
           {note && (
-            <p role="status" className={`mt-4 text-[14px] ${state === 'error' ? 'text-red-600' : 'text-ink/70'}`}>
+            <p role="status" className={`fs-7 mt-3 mb-0 ${state === 'error' ? 'text-danger' : 'text-600'}`}>
               {note}
             </p>
           )}
