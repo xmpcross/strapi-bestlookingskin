@@ -757,7 +757,21 @@ html .sec-1-single-3 .post-layout-main h3 {
   width: 100%;
   margin: 0;
 }
-.post-figure-wide img {
-  max-height: 460px;
+/* Images within the article: 400px tall, cropped to fill the column (260px on phones, like the cover). Covers the
+   gallery figures placed between sections and any plain image the post body carries at its top level; product
+   shots inside comparison widgets and cards keep their own sizes. */
+.post-figure-wide img,
+.post-content > img,
+.post-content > figure > img {
+  width: 100%;
+  height: 400px;
+  max-height: none;
   object-fit: cover;
+}
+@media (max-width: 575.98px) {
+  .post-figure-wide img,
+  .post-content > img,
+  .post-content > figure > img {
+    height: 260px;
+  }
 }
