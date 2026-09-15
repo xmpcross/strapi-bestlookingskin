@@ -309,7 +309,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
             )}
 
             {/* Two columns under the title: price and buy panel in the middle, retailer offer list on the right. */}
-            <div className="row g-4 mt-3">
+            <div className="row mt-3">
               {/* Price + BUY */}
               <div className="col-xl-6 col-12">
                 {/* Key features, else the short description. With neither, nothing renders: the empty state
