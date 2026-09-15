@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import CategoryListWidget from '@/components/magzin/CategoryListWidget';
 
 /**
  * Shop sidebar filters, in the Sandbox "shop2" arrangement: a stack of widgets
@@ -71,6 +72,7 @@ export default function ShopFilters({
   ratings,
   prices,
   activeCategorySlug,
+  totalProducts = null,
 }: {
   basePath: string;
   state: ShopFilterState;
@@ -79,6 +81,8 @@ export default function ShopFilters({
   ratings: Facet[];
   prices: Facet[];
   activeCategorySlug: string;
+  /** Catalogue total for the "All products" row; null hides the count. */
+  totalProducts?: number | null;
 }) {
   const anyActive = Boolean(state.brand || state.rating || state.price);
 
@@ -93,22 +97,17 @@ export default function ShopFilters({
       )}
 
       {categories.length > 0 && (
-        <Widget title="Categories">
-          <ul className="list-unstyled ps-0 m-0">
-            {categories.map((c) => (
-              <li key={c.slug}>
-                <Link
-                  href={`/categories/${c.slug}`}
-                  className={`shop-filter-link ${c.slug === activeCategorySlug ? 'is-active' : ''}`}
-                  aria-current={c.slug === activeCategorySlug ? 'page' : undefined}
-                >
-                  <span className="label">{c.name}</span>
-                  <span className="count">({c.count})</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </Widget>
+        <div className="shop-widget">
+          {/* Same "Browse by category" list as the product page sidebar. */}
+          <CategoryListWidget
+            title="Browse by category"
+            allHref="/products"
+            allLabel="All products"
+            total={totalProducts}
+            rows={categories}
+            current={activeCategorySlug}
+          />
+        </div>
       )}
 
       {brands.length > 0 && (

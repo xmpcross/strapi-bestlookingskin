@@ -70,7 +70,12 @@ export default async function CategoryPage({
      holds 72, of which 5 qualify. */
   const all = (await listProducts({ category: slug, pageSize: 100 }).catch(() => null))?.data ?? [];
   const image = mediaUrl(category.image ?? null);
-  const categoryCounts = await listProductCategoryCounts().catch(() => []);
+  const [categoryCounts, productTotal] = await Promise.all([
+    listProductCategoryCounts().catch(() => []),
+    listProducts({ pageSize: 1 })
+      .then((r) => r.meta.pagination.total)
+      .catch(() => null),
+  ]);
 
   const state: ShopFilterState = { brand: sp.brand, rating: sp.rating, price: sp.price };
   const basePath = `/categories/${category.slug}`;
@@ -174,6 +179,7 @@ export default async function CategoryPage({
                 ratings={ratings}
                 prices={prices}
                 activeCategorySlug={category.slug}
+                totalProducts={productTotal}
               />
             </div>
 
