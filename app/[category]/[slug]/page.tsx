@@ -11,6 +11,7 @@ import { toCard } from '@/lib/post-card';
 import PostContent from '@/components/PostContent';
 import ArticleContents from '@/components/ArticleContents';
 import ShareRail from '@/components/ShareRail';
+import NextUp from '@/components/NextUp';
 import AuthorAvatar from '@/components/AuthorAvatar';
 import PullQuote from '@/components/PullQuote';
 import ReadAlso from '@/components/ReadAlso';
@@ -366,29 +367,18 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
                 {faqSection && <PostContent html={faqSection} />}
               </div>
 
-              <PostFooterNav
-                title={post.title}
+              <NextUp
+                posts={related.map(toCard)}
+                category={{ name: catName, href: `/${category}` }}
+                updatedAt={post.updatedAt}
+                updatedLabel={fmtDate(post.updatedAt)}
                 url={`${SITE.url}/${category}/${post.slug}`}
-                tags={[{ label: catName, href: `/${category}` }, ...(post.postType && post.postType !== 'other' ? [{ label: post.postType.replace(/-/g, ' ') }] : [])]}
-                prev={prevPost}
-                next={nextPost}
-              >
-                {post.author?.bio && (
-                  <div className="author-card d-flex flex-column flex-sm-row gap-4 mt-5" data-testid="author-card">
-                    <AuthorAvatar name={post.author.name} src={post.author.avatarUrl} size={96} shape="square" />
-                    <div>
-                      <p className="h5 mb-2">
-                        <Link href={`/authors/${post.author.slug}`}>{post.author.name}</Link>
-                      </p>
-                      <p className="fs-7 text-600 mb-3">{post.author.bio}</p>
-                      {/* bls-author has name, slug, bio and avatarUrl only: no social profiles to link. */}
-                      <Link href={`/authors/${post.author.slug}`} className="fs-7 text-dark text-decoration-underline">
-                        More from {post.author.name}
-                      </Link>
-                    </div>
-                  </div>
-                )}
-              </PostFooterNav>
+                title={post.title}
+              />
+
+              {/* End of article: previous / next only. The tags-and-share row and the author bio card were removed at
+                  the owner's request; sharing lives in the left rail, the byline in the top section. */}
+              <PostFooterNav title={post.title} url={`${SITE.url}/${category}/${post.slug}`} tags={[]} prev={prevPost} next={nextPost} showMeta={false} />
 
               <CommentForm postTitle={post.title} postUrl={`${SITE.url}/${category}/${post.slug}`} />
             </div>
