@@ -39,7 +39,7 @@ export async function getNav(): Promise<{ nav: NavItem[]; topics: NavGroup[] }> 
       : { label: 'Products', href: '/products' },
     { label: 'Brands', href: '/brands' },
     ...(topics.length ? [{ label: 'Topics', groups: topics }] : []),
-    { label: 'Articles', href: '/informative-articles', children: [{ label: 'All Articles', href: '/informative-articles' }, ...SECTIONS.filter((s) => !s.allPosts).map((s) => ({ label: s.title, href: `/${s.slug}` }))] },
+    { label: 'Articles', href: '/informative-articles', children: SECTIONS.filter((s) => !s.allPosts).map((s) => ({ label: s.title, href: `/${s.slug}` })) },
     { label: 'Contact', href: '/contact' },
   ];
   return { nav, topics };
