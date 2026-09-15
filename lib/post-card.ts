@@ -29,7 +29,8 @@ export function toCard(post: BlsPost | BlsPostSummary): PostCardData {
     href: postPath(post),
     title: post.title,
     excerpt,
-    image: mediaUrl(post.coverImage ?? null),
+    /* A cover under 5 KB is a failed render (three guides carry the same 3.79 KB all-black JPEG); show none. */
+    image: post.coverImage?.size !== undefined && post.coverImage.size < 5 ? null : mediaUrl(post.coverImage ?? null),
     imageAlt: post.coverImage?.alternativeText || post.title,
     category: cat ? { name: cat.name, href: `/${cat.slug}` } : null,
     author: post.author ? { name: post.author.name, href: `/authors/${post.author.slug}`, avatar: post.author.avatarUrl || null } : null,

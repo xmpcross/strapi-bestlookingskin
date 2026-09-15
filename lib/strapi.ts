@@ -47,7 +47,7 @@ export const CATEGORY_SLUGS = [
 const RAW_TOKEN = process.env.STRAPI_API_TOKEN || '';
 const TOKEN = RAW_TOKEN.startsWith('e7e531759e393ac2') ? '' : RAW_TOKEN;
 
-export type StrapiImage = { url: string; alternativeText?: string; width?: number; height?: number } | null;
+export type StrapiImage = { url: string; alternativeText?: string; width?: number; height?: number; /** KB */ size?: number } | null;
 
 export type BlsPostType =
   | 'product-comparison'
@@ -317,7 +317,7 @@ export async function listPostSummaries(
     sort: ['publishedAt:desc'],
     fields: ['title', 'slug', 'excerpt', 'publishedAt', 'updatedAt', 'readingTimeMinutes', 'postType', 'seoDescription'],
     populate: {
-      coverImage: { fields: ['url', 'alternativeText', 'width', 'height'] },
+      coverImage: { fields: ['url', 'alternativeText', 'width', 'height', 'size'] },
       categories: { fields: ['name', 'slug'] },
       author: { fields: ['name', 'slug', 'avatarUrl'] },
     },

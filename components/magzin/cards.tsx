@@ -94,6 +94,34 @@ export function FeatureCard({ card, priority = false }: { card: PostCardData; pr
   );
 }
 
+/* card-1: large image with the text panel overlapping its lower edge (Magzin home 2, "For you"). */
+export function OverlapCard({ card }: { card: PostCardData }) {
+  return (
+    <article className="article card-1">
+      <div className="card-img-top thumbnail position-relative">
+        <Link href={card.href}>
+          <Cover card={card} width={700} height={540} sizes="(min-width: 992px) 50vw, 100vw" />
+        </Link>
+        {card.category && (
+          <Link href={card.category.href} className={`badge ${card.badgeTone} fs-8 position-absolute top-0 start-0 m-3`}>
+            {card.category.name}
+          </Link>
+        )}
+      </div>
+      <div className="card-body position-relative">
+        <Corner href={card.href} label={card.title} />
+        <div className="left">
+          <Link href={card.href}>
+            <h3 className="h5 card-title mb-0">{card.title}</h3>
+          </Link>
+          {card.excerpt && <p className="card-text text-600 fs-7 mb-0 mt-4 text-truncate-3">{card.excerpt}</p>}
+          <Meta card={card} />
+        </div>
+      </div>
+    </article>
+  );
+}
+
 /* card-5: square image tile with a corner arrow and title below. */
 export function TileCard({ card, corner = '' }: { card: PostCardData; corner?: string }) {
   return (
@@ -214,13 +242,18 @@ export function ImageLinkCard({ href, title, image, alt }: { href: string; title
 }
 
 /* category-card style-2: a hub chip over its newest cover image. */
-export function CategoryChip({ href, name, image }: { href: string; name: string; image: string | null }) {
+export function CategoryChip({ href, name, image, count }: { href: string; name: string; image: string | null; count?: number }) {
   return (
     <div className="category-card style-2 w-100" style={image ? { backgroundImage: `linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.35)), url(${image})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
       <div className="post-content text-center">
         <Link href={href}>
-          <span className="h6 mb-0 changeless text-white">{name}</span>
+          <span className="h6 mb-0 changeless text-white d-block">{name}</span>
         </Link>
+        {typeof count === 'number' && count > 0 && (
+          <span className="post-count fs-8">
+            {count} {count === 1 ? 'post' : 'posts'}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -229,7 +262,7 @@ export function CategoryChip({ href, name, image }: { href: string; name: string
 /* Magzin section title with the four-point star and an optional "View more" link. */
 export function SectionTitle({ title, description, href, dark = false, as: Tag = 'h2' }: { title: string; description?: string; href?: string; dark?: boolean; as?: 'h2' | 'h3' }) {
   return (
-    <div className={`section-title ${dark ? 'dark bg-800 border-700' : ''} d-flex align-items-center justify-content-between flex-wrap gap-3`}>
+    <div className={`section-title ${dark ? 'dark' : ''} d-flex align-items-center justify-content-between flex-wrap gap-3`}>
       <div className="d-flex">
         <div className="d-flex align-items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden>

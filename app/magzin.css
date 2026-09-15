@@ -175,3 +175,24 @@ body {
     font-size: 30px;
   }
 }
+
+/* ---- Home (official Magzin Home 2) ---- */
+.home-subscribe-form {
+  max-width: 520px;
+}
+.home-subscribe-form .form-control {
+  max-width: 100%;
+}
+.section-title.dark .h5,
+.section-title.dark p {
+  color: var(--tc-system-white);
+}
+.sec-2-home-2 .category-card.style-2 .post-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.sec-8-home-2 .form-control {
+  max-width: 100%;
+}
