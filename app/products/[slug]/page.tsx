@@ -567,9 +567,21 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
           </div>
 
           {SHOW_PRODUCT_SIDEBAR && (
-            /* Right column: Featured Products (the highest-rated products not already on this page), then the
-               category list. */
+            /* Right column: the category list, then Featured Products (the best-rated products not already on this
+               page). */
             <aside className="col-lg-4 col-12" aria-label="Product sidebar">
+              {topicRows.length > 0 && (
+                <div className="mb-5" data-testid="browse-by-category">
+                  <CategoryListWidget
+                    title="Browse by category"
+                    allHref="/products"
+                    allLabel="All products"
+                    total={productTotal}
+                    rows={topicRows}
+                    current={cat?.slug}
+                  />
+                </div>
+              )}
               {featuredProducts.length > 0 && (
                 <div className="mb-5" data-testid="featured-products">
                   <SidebarTitle>Featured Products</SidebarTitle>
@@ -601,18 +613,6 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                       );
                     })}
                   </div>
-                </div>
-              )}
-              {topicRows.length > 0 && (
-                <div className="mb-5" data-testid="browse-by-category">
-                  <CategoryListWidget
-                    title="Browse by category"
-                    allHref="/products"
-                    allLabel="All products"
-                    total={productTotal}
-                    rows={topicRows}
-                    current={cat?.slug}
-                  />
                 </div>
               )}
             </aside>
