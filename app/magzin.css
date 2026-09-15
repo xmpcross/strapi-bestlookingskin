@@ -716,6 +716,67 @@ html .sec-1-single-3 .post-layout-main h3 {
   color: var(--tc-neutral-600);
 }
 
+/* ---- Affiliate links + tags (under Next Up) ---- */
+.post-affiliate-links {
+  padding-bottom: 28px;
+}
+.post-affiliate-title {
+  font-size: 1.05rem !important;
+  color: var(--tc-neutral-900);
+  margin: 0 0 8px;
+}
+.post-affiliate-note {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--tc-neutral-600);
+  margin: 0 0 14px;
+}
+.post-affiliate-note a,
+.post-affiliate-links li a {
+  color: var(--tc-neutral-900);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.post-affiliate-links li + li {
+  margin-top: 8px;
+}
+.post-affiliate-links li a {
+  font-weight: var(--tc-fw-semi-bold);
+}
+.post-affiliate-links li a:hover {
+  color: var(--tc-neutral-600);
+}
+.post-tags {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 18px 0 0;
+  border-top: 1px solid var(--tc-neutral-200);
+}
+.post-tags-label {
+  font-size: 14px;
+  color: var(--tc-neutral-500);
+  padding-top: 4px;
+}
+.post-tags ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.post-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--tc-neutral-100);
+  color: var(--tc-neutral-700);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.post-tag:hover {
+  background: var(--tc-neutral-200);
+  color: var(--tc-neutral-900);
+}
+
 /* ---- Comments toggle (label + "Add a comment" button in the template's dark button colours) ---- */
 .comments-label {
   font-size: 12px;

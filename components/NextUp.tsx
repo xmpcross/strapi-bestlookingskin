@@ -27,9 +27,9 @@ export default function NextUp({
     <section className="next-up mt-5" aria-labelledby="next-up-title" data-testid="next-up">
       {items.length > 0 && (
         <>
-          <h2 id="next-up-title" className="next-up-title mb-3">
+          <h3 id="next-up-title" className="next-up-title mb-3">
             Next Up
-          </h2>
+          </h3>
           <ul className="next-up-list list-unstyled m-0 p-0">
             {items.map((p) => (
               <li key={p.key}>

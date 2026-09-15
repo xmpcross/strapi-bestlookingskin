@@ -12,6 +12,7 @@ import PostContent from '@/components/PostContent';
 import ArticleContents from '@/components/ArticleContents';
 import ShareRail from '@/components/ShareRail';
 import NextUp from '@/components/NextUp';
+import PostAffiliateLinks, { affiliateLinksFor, tagsFromKeywords } from '@/components/PostAffiliateLinks';
 import AuthorAvatar from '@/components/AuthorAvatar';
 import PullQuote from '@/components/PullQuote';
 import ReadAlso from '@/components/ReadAlso';
@@ -201,6 +202,12 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
      at render time. */
   const inlineProducts = await listProductsForPost(post.title, category, 3).catch(() => []);
   const readAlsoRows = recentRows.filter((r) => r.href !== postPath(post)).slice(0, 2);
+  /* "Affiliate links" only when an offer really carries an affiliate URL; until then the same retailers are listed
+     under "Where to buy" (no catalogue offer has one as of Sep 2026). */
+  const buyLinks = (() => {
+    const affiliate = affiliateLinksFor(inlineProducts, 'affiliate');
+    return affiliate.length ? { mode: 'affiliate' as const, links: affiliate } : { mode: 'retailer' as const, links: affiliateLinksFor(inlineProducts, 'retailer') };
+  })();
 
   /* The contents box goes after the first top-level paragraph (on Tier A posts, the direct-answer paragraph). */
   const leadCut = topLevel.paragraphEnds[0] !== undefined && (topLevel.h2.length < 2 || topLevel.paragraphEnds[0] < topLevel.h2[1]) ? topLevel.paragraphEnds[0] : 0;
@@ -380,6 +387,8 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
                 url={`${SITE.url}/${category}/${post.slug}`}
                 title={post.title}
               />
+
+              <PostAffiliateLinks links={buyLinks.links} mode={buyLinks.mode} tags={tagsFromKeywords(post.seoKeywords)} />
 
               {/* End of article: previous / next only. The tags-and-share row and the author bio card were removed at
                   the owner's request; sharing lives in the left rail, the byline in the top section. */}
