@@ -366,12 +366,11 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                   </p>
                 )}
 
-                {(product.documentId || bestOffer?.url) && (
+                {product.documentId && (
                   <PriceAlertForm
                     productDocumentId={product.documentId}
                     currency={product.currency || 'USD'}
                     currentPrice={bestOffer?.price}
-                    buyHref={bestOffer?.url}
                   />
                 )}
 
@@ -391,61 +390,81 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                 </p>
               </div>
 
-              {/* Offers panel (right column) — first 9 prices, with a "view more" toggle for the
-                  rest (pure-CSS checkbox toggle so this stays a server component). */}
+              {/* Offer panel (right column): the lowest price and where, every retailer's price with a View link (first
+                  five, the rest behind a pure-CSS "view more" toggle so this stays a server component), when prices
+                  were last updated, a buy button for the lowest offer and the commission note. */}
               <div className="col-xl-6 col-12">
                 {offerRows.length > 0 ? (
-                  <div className="offer-list">
-                    <div className="offer-rows">
-                      {offerRows.slice(0, 9).map((row, i) => (
-                        <OfferRow
-                          key={i}
-                          merchant={row.merchant}
-                          logoUrl={row.logoUrl}
-                          price={row.price}
-                          currency={product.currency}
-                          url={row.url}
-                          outOfStock={!row.available}
-                        />
-                      ))}
-                    </div>
-                    {offerRows.length > 9 && (
+                  <div className="offer-panel" data-testid="offer-panel">
+                    {bestOffer?.price !== undefined && (
                       <>
-                        <input id="more-offers" type="checkbox" className="offer-toggle visually-hidden" />
-                        <div className="offer-more">
-                          {offerRows.slice(9).map((row, i) => (
-                            <OfferRow
-                              key={i + 9}
-                              merchant={row.merchant}
-                              logoUrl={row.logoUrl}
-                              price={row.price}
-                              currency={product.currency}
-                              url={row.url}
-                              outOfStock={!row.available}
-                            />
-                          ))}
-                        </div>
-                        <label htmlFor="more-offers" className="offer-show-more">
-                          View {offerRows.length - 9} more {offerRows.length - 9 === 1 ? 'price' : 'prices'}
-                        </label>
-                        <label htmlFor="more-offers" className="offer-show-less">
-                          Show fewer
-                        </label>
+                        <p className="offer-panel-eyebrow">Lowest price</p>
+                        <p className="offer-panel-price">{formatPrice(bestOffer.price, product.currency)}</p>
+                        <p className="offer-panel-sub">
+                          at {bestOffer.merchant} · {offerRows.length} {offerRows.length === 1 ? 'retailer' : 'retailers'} compared
+                        </p>
                       </>
                     )}
+                    <div className="offer-list">
+                      <div className="offer-rows">
+                        {offerRows.slice(0, 5).map((row, i) => (
+                          <OfferRow
+                            key={i}
+                            merchant={row.merchant}
+                            logoUrl={row.logoUrl}
+                            price={row.price}
+                            currency={product.currency}
+                            url={row.url}
+                            outOfStock={!row.available}
+                          />
+                        ))}
+                      </div>
+                      {offerRows.length > 5 && (
+                        <>
+                          <input id="more-offers" type="checkbox" className="offer-toggle visually-hidden" />
+                          <div className="offer-more">
+                            {offerRows.slice(5).map((row, i) => (
+                              <OfferRow
+                                key={i + 5}
+                                merchant={row.merchant}
+                                logoUrl={row.logoUrl}
+                                price={row.price}
+                                currency={product.currency}
+                                url={row.url}
+                                outOfStock={!row.available}
+                              />
+                            ))}
+                          </div>
+                          <label htmlFor="more-offers" className="offer-show-more">
+                            View {offerRows.length - 5} more {offerRows.length - 5 === 1 ? 'price' : 'prices'}
+                          </label>
+                          <label htmlFor="more-offers" className="offer-show-less">
+                            Show fewer
+                          </label>
+                        </>
+                      )}
+                    </div>
+                    {product.lastPriceSyncAt && (
+                      <p className="offer-panel-updated">
+                        Last price update was:{' '}
+                        {new Date(product.lastPriceSyncAt).toLocaleString('en-US', {
+                          year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+                        })}
+                      </p>
+                    )}
+                    {bestOffer?.url && (
+                      <a href={bestOffer.url} target="_blank" rel="noopener noreferrer sponsored" className="offer-panel-buy" data-testid="offer-panel-buy">
+                        Buy at {bestOffer.merchant}
+                      </a>
+                    )}
+                    <p className="offer-panel-note">
+                      We may earn a commission from links on this page, at no extra cost to you.{' '}
+                      <Link href="/legal/disclosure">Disclosure</Link>
+                    </p>
                   </div>
                 ) : (
                   <p className="fs-7 text-600 mb-0">
                     No retailer prices are listed for this product right now.
-                  </p>
-                )}
-
-                {product.lastPriceSyncAt && (
-                  <p className="fs-8 text-600 mt-2 mb-0">
-                    Last price update was:{' '}
-                    {new Date(product.lastPriceSyncAt).toLocaleString('en-US', {
-                      year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
-                    })}
                   </p>
                 )}
 
@@ -738,24 +757,19 @@ function OfferRow({
   return (
     <div className="offer-row">
       <span className="offer-merchant">
-        <MerchantLogo merchant={merchant} logoUrl={logoUrl} size={28} />
-        {merchant}
-      </span>
-      <span className="text-end">
-        {price !== undefined && (
-          <span className="d-block fs-7 fw-semi-bold text-dark">{formatPrice(price, currency)}</span>
-        )}
-        {outOfStock && (
-          <span className="d-block fs-8 shop-discount">out of stock</span>
+        {logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={logoUrl} alt={merchant} className="offer-merchant-logo" loading="lazy" />
+        ) : (
+          <span className="offer-merchant-chip">{merchant}</span>
         )}
       </span>
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer sponsored"
-        className="offer-cta"
-      >
-        See it
+      <span className="offer-price">
+        {price !== undefined && <span className="d-block">{formatPrice(price, currency)}</span>}
+        {outOfStock && <span className="d-block fs-8 shop-discount">Out of stock</span>}
+      </span>
+      <a href={url} target="_blank" rel="noopener noreferrer sponsored" className="offer-cta" aria-label={`View at ${merchant}`}>
+        View
       </a>
     </div>
   );

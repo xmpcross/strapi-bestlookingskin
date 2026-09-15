@@ -421,59 +421,230 @@
   opacity: 1;
 }
 
-/* Offers panel. The "view more" toggle is a hidden checkbox, so the page stays a server component. */
-.offer-list {
-  overflow: hidden;
+/* Price alert card (middle column, under the price). */
+.price-alert-card {
+  padding: 16px;
   border: 1px solid var(--tc-neutral-200);
-  border-radius: 16px;
+  border-radius: 12px;
   background: var(--tc-system-white);
+}
+.price-alert-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.price-alert-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--tc-neutral-100);
+  color: var(--tc-neutral-900);
+}
+.price-alert-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: var(--tc-fw-semi-bold);
+  color: var(--tc-neutral-900);
+}
+.price-alert-text {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--tc-neutral-600);
+}
+.price-alert-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 14px;
+  padding: 9px 14px;
+  border: 1px solid var(--tc-neutral-900);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--tc-neutral-900);
+  font-size: 14px;
+  font-weight: var(--tc-fw-semi-bold);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.price-alert-toggle:hover {
+  background: var(--tc-neutral-900);
+  color: var(--tc-system-white);
+}
+.price-alert-toggle svg {
+  width: 15px;
+  height: 15px;
+}
+.price-alert-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 14px;
+}
+.price-alert-label {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: var(--tc-fw-semi-bold);
+  color: var(--tc-neutral-700);
+}
+.price-alert-form .btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.price-alert-cancel {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 12px;
+  color: var(--tc-neutral-600);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Offer panel (product page right column). The "view more" toggle is a hidden checkbox, so the page stays a server
+   component. */
+.offer-panel-eyebrow {
+  margin: 0;
+  font-size: 13px;
+  font-weight: var(--tc-fw-semi-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tc-neutral-600);
+}
+.offer-panel-price {
+  margin: 2px 0 0;
+  font-size: 2rem;
+  font-weight: var(--tc-fw-bold);
+  line-height: 1.15;
+  color: var(--tc-neutral-900);
+}
+.offer-panel-sub {
+  margin: 4px 0 16px;
+  font-size: 14px;
+  color: var(--tc-neutral-600);
+}
+.offer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.offer-rows,
+.offer-more {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 .offer-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 12px;
-  padding: 6px 16px;
-}
-.offer-row + .offer-row,
-.offer-more {
-  border-top: 1px solid var(--tc-neutral-200);
-}
-/* Striped rows. Nine rows show first, so the hidden rows continue the pattern on even. */
-.offer-rows > .offer-row:nth-child(odd),
-.offer-more > .offer-row:nth-child(even) {
-  background: var(--tc-neutral-50);
+  min-height: 56px;
+  padding: 8px 10px 8px 12px;
+  border-radius: 10px;
+  background: var(--tc-neutral-100);
 }
 .offer-merchant {
   display: flex;
   align-items: center;
-  gap: 10px;
   min-width: 0;
-  font-size: var(--tc-fs-8);
+}
+.offer-merchant-logo {
+  max-width: 110px;
+  max-height: 28px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+/* Retailer logos are drawn for light backgrounds: give them a white tile in the dark theme. */
+[data-bs-theme='dark'] .offer-merchant-logo {
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: #fff;
+  box-sizing: content-box;
+}
+.offer-merchant-chip {
+  display: inline-block;
+  max-width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--tc-system-white);
   color: var(--tc-neutral-700);
-  overflow-wrap: anywhere;
+  font-size: 13px;
+  font-weight: var(--tc-fw-semi-bold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.offer-price {
+  text-align: right;
+  font-size: 15px;
+  font-weight: var(--tc-fw-bold);
+  color: var(--tc-neutral-900);
 }
 .offer-cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 7px 14px;
-  border-radius: 25px;
-  background: var(--tc-neutral-100);
-  color: var(--tc-neutral-900);
-  font-size: var(--tc-fs-8);
+  padding: 7px 16px;
+  border-radius: 6px;
+  background: var(--tc-neutral-900);
+  color: var(--tc-system-white);
+  font-size: 13px;
   font-weight: var(--tc-fw-semi-bold);
   white-space: nowrap;
 }
 .offer-cta:hover {
-  background: var(--tc-neutral-200);
+  background: var(--tc-neutral-700);
+  color: var(--tc-system-white);
+}
+.offer-panel-updated {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--tc-neutral-600);
+}
+.offer-panel-buy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: var(--tc-system-warning);
+  color: #0e0e0f;
+  font-size: 15px;
+  font-weight: var(--tc-fw-semi-bold);
+  transition: filter 0.15s ease;
+}
+.offer-panel-buy:hover {
+  color: #0e0e0f;
+  filter: brightness(0.95);
+}
+.offer-panel-note {
+  margin: 12px 0 0;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--tc-neutral-600);
+}
+.offer-panel-note a {
+  color: inherit;
+  text-decoration: underline;
 }
 .offer-more,
 .offer-show-less {
   display: none;
 }
 .offer-toggle:checked ~ .offer-more {
-  display: block;
+  display: flex;
 }
 .offer-toggle:checked ~ .offer-show-more {
   display: none;
@@ -485,8 +656,8 @@
 .offer-show-less {
   align-items: center;
   justify-content: center;
-  padding: 8px 16px;
-  border-top: 1px solid var(--tc-neutral-200);
+  padding: 6px 16px;
+  border-radius: 8px;
   font-size: var(--tc-fs-7);
   font-weight: var(--tc-fw-semi-bold);
   color: var(--tc-neutral-900);
