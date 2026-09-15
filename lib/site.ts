@@ -28,6 +28,10 @@ export type Section = {
   short: string;
   subtitle: string;
   blurb: string;
+  /** Search result title (the site name is appended); defaults to `title`. */
+  seoTitle?: string;
+  /** Meta description, 150-160 characters; defaults to the blurb, clipped. */
+  metaDescription?: string;
 };
 
 export const SECTIONS: Section[] = [
@@ -51,9 +55,12 @@ export const SECTIONS: Section[] = [
     slug: 'top-rated-products',
     title: 'Top-Rated Products',
     short: 'Top Rated',
-    subtitle: 'The best skincare products across every category, ranked.',
+    subtitle: 'Ranked roundups of the best skincare products for every skin type and concern.',
     blurb:
-      'The standouts — top-rated skincare products across cleansers, serums, moisturisers, sunscreens and targeted treatments. Editor-picked and ranked on the criteria that matter: ingredient quality, value for money and visible results in real use.',
+      'Looking for the best skincare products for your skin type? Our top-rated roundups rank six to eight picks per concern, from acne-fighting treatments, toners for oily skin and nourishing products for dry skin to hydrating eye creams, mineral sunscreens, oil cleansers and face masks. Every pick gets a score out of 10, a short verdict and the pros and cons worth knowing before you buy.',
+    seoTitle: 'Best Skincare Products, Ranked by Concern',
+    metaDescription:
+      'The best skincare products for acne, dry, oily and sensitive skin, ranked. Top-rated eye creams, sunscreens, cleansers and toners with scores, pros and cons.',
   },
   {
     slug: 'how-to-guides',

@@ -33,6 +33,8 @@ async function resolveCategory(slug: string) {
     /* A real description: the section's own blurb or the category's CMS description; never the site default. */
     description: section?.blurb ?? fromCms?.description ?? null,
     subtitle: section?.subtitle ?? null,
+    seoTitle: section?.seoTitle ?? null,
+    metaDescription: section?.metaDescription ?? null,
     known: Boolean(fromCms || section),
   };
 }
@@ -45,12 +47,13 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   const { page: pageRaw, topics } = await searchParams;
   const page = Math.max(1, Number(pageRaw) || 1);
   const c = await resolveCategory(category);
-  const description = c.description ? clip(c.description) : `${c.name}: guides and reviews from ${SITE.name}.`;
+  const description = c.metaDescription ?? (c.description ? clip(c.description) : `${c.name}: guides and reviews from ${SITE.name}.`);
+  const title = c.seoTitle ?? c.name;
   return {
-    title: page > 1 ? `${c.name} (page ${page})` : c.name,
+    title: page > 1 ? `${title} (page ${page})` : title,
     description,
     alternates: { canonical: page > 1 ? `/${category}?page=${page}` : `/${category}` },
-    openGraph: { title: c.name, description, url: `${SITE.url}/${category}` },
+    openGraph: { title, description, url: `${SITE.url}/${category}` },
     /* A combined-topics view is a filter of existing archives: keep it out of the index. */
     ...(topics ? { robots: { index: false, follow: true } } : {}),
   };
