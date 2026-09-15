@@ -233,6 +233,7 @@ function toLocalUploadUrl(url: string): string {
 
 export function mediaUrl(img: StrapiImage): string | null {
   if (!img?.url) return null;
+  if (img.url.startsWith('/cms-uploads/') || img.url.startsWith('/assets/')) return img.url;
   const absolute = img.url.startsWith('http') ? img.url : `${BASE}${img.url}`;
   return toLocalUploadUrl(absolute);
 }
@@ -260,13 +261,104 @@ function cleanDashes(s: string): string {
   return s ? s.replace(/&#8211;|&ndash;|–/g, '-') : s;
 }
 
+/** Custom featured cover image overrides for posts. */
+export const POST_COVER_OVERRIDES: Record<string, StrapiImage> = {
+  'top-6-must-have-products-nourishing-dry-skin': {
+    url: '/cms-uploads/top_6_must_have_products_nourishing_dry_skin_cover.jpg',
+    alternativeText: 'Top 6 Must-Have Products for Nourishing Dry Skin',
+    width: 1200,
+    height: 896,
+    size: 150,
+  },
+  'top-7-oil-cleansers-radiant-skin': {
+    url: '/cms-uploads/top_7_oil_cleansers_radiant_skin_cover.jpg',
+    alternativeText: 'Top 7 Oil Cleansers for Radiant Skin',
+    width: 1200,
+    height: 896,
+    size: 150,
+  },
+  'top-7-effective-face-masks-acne-prone-skin': {
+    url: '/cms-uploads/top_7_effective_face_masks_acne_prone_skin_cover.jpg',
+    alternativeText: 'Top 7 Effective Face Masks for Acne-Prone Skin',
+    width: 1200,
+    height: 896,
+    size: 150,
+  },
+  'nighttime-skincare-essentials-glowing-skin': {
+    url: '/cms-uploads/nighttime_skincare_essentials_glowing_skin_cover.jpg',
+    alternativeText: 'Top 7 Nighttime Skincare Essentials for Glowing Skin',
+    width: 1200,
+    height: 896,
+    size: 150,
+  },
+  'top-6-hydrating-eye-creams-try-today': {
+    url: '/cms-uploads/top_6_hydrating_eye_creams_try_today_cover.jpg',
+    alternativeText: 'Top 6 Hydrating Eye Creams You Need to Try Today!',
+    width: 1200,
+    height: 896,
+    size: 150,
+  },
+  '7-best-sensitive-skin-care-products-2024': {
+    url: '/cms-uploads/7_best_sensitive_skin_care_products_2024_cover.jpg',
+    alternativeText: '7 Best Sensitive Skin Care Products for 2024',
+    width: 1200,
+    height: 896,
+    size: 150,
+  },
+  'top-7-acne-fighting-products': {
+    url: '/cms-uploads/top_7_acne_fighting_products_cover.jpg',
+    alternativeText: 'Top 7 Acne-Fighting Products',
+    width: 1200,
+    height: 896,
+    size: 150,
+  },
+  '6-best-products-clear-radiant-skin-2024': {
+    url: '/cms-uploads/6_best_products_clear_radiant_skin_2024_cover.jpg',
+    alternativeText: '6 Best Products for Clear, Radiant Skin in 2024',
+    width: 1200,
+    height: 896,
+    size: 150,
+  },
+  'top-7-hydrating-skincare-glowing-skin': {
+    url: '/cms-uploads/top_7_hydrating_skincare_glowing_skin_cover.jpg',
+    alternativeText: 'Top 7 Hydrating Skincare Products for Glowing Skin',
+    width: 1200,
+    height: 896,
+    size: 150,
+  },
+  'top-7-toners-for-oily-skin-a-comprehensive-roundup-to-combat-excess-oil': {
+    url: '/cms-uploads/top_7_toners_for_oily_skin_cover.jpg',
+    alternativeText: 'Top 7 Toners for Oily Skin: A Comprehensive Roundup to Combat Excess Oil',
+    width: 1200,
+    height: 896,
+    size: 150,
+  },
+  'top-8-hyaluronic-acid-face-moisturizers-revealed': {
+    url: '/cms-uploads/top_8_hyaluronic_acid_face_moisturizers_cover.jpg',
+    alternativeText: 'Top 8 Hyaluronic Acid Face Moisturizers Revealed!',
+    width: 1200,
+    height: 896,
+    size: 150,
+  },
+  'top-6-exfoliating-face-scrubs-your-path-to-radiant-skin': {
+    url: '/cms-uploads/top_6_exfoliating_face_scrubs_cover.jpg',
+    alternativeText: 'Top 6 Exfoliating Face Scrubs: Your Path to Radiant Skin',
+    width: 1200,
+    height: 896,
+    size: 150,
+  },
+};
+
 /** Apply content + media rewrites to a single post. Idempotent. */
 function localizePost<T extends BlsPost>(post: T): T {
+  const overrideCover = POST_COVER_OVERRIDES[post.slug];
   return {
     ...post,
     title: cleanDashes(post.title),
     excerpt: post.excerpt ? cleanDashes(post.excerpt) : post.excerpt,
     content: cleanDashes(rewriteContentImages(post.content)),
+    coverImage: overrideCover ?? post.coverImage,
+    ogImage: overrideCover ?? post.ogImage ?? overrideCover,
   };
 }
 
@@ -312,7 +404,12 @@ export async function listPostSummaries(
   /* Tier A posts are the ones with a named author (see CLAUDE.md): the listing lead should be one of them. */
   if (opts.authored) filters.author = { id: { $notNull: true } };
   if (opts.exclude?.length) filters.slug = { $notIn: opts.exclude };
-  if (opts.withCover) filters.coverImage = { id: { $notNull: true } };
+  /* A post counts as having a cover when the CMS has one or it has a local override, so the CMS still does the
+     filtering and a page of `pageSize` results stays full. */
+  if (opts.withCover) {
+    const overrideSlugs = Object.keys(POST_COVER_OVERRIDES);
+    filters.$or = [{ coverImage: { id: { $notNull: true } } }, ...(overrideSlugs.length ? [{ slug: { $in: overrideSlugs } }] : [])];
+  }
   const res = await strapiFetch<ListResponse<BlsPostSummary>>('bls-posts', {
     sort: ['publishedAt:desc'],
     fields: ['title', 'slug', 'excerpt', 'publishedAt', 'updatedAt', 'readingTimeMinutes', 'postType', 'seoDescription'],
@@ -324,7 +421,13 @@ export async function listPostSummaries(
     pagination: { page: opts.page ?? 1, pageSize: opts.pageSize ?? 12 },
     filters,
   });
-  return { ...res, data: res.data.map((p) => ({ ...p, title: cleanDashes(p.title), excerpt: p.excerpt ? cleanDashes(p.excerpt) : p.excerpt })) };
+  const data = res.data.map((p) => ({
+    ...p,
+    title: cleanDashes(p.title),
+    excerpt: p.excerpt ? cleanDashes(p.excerpt) : p.excerpt,
+    coverImage: POST_COVER_OVERRIDES[p.slug] ?? p.coverImage,
+  }));
+  return { ...res, data };
 }
 
 export async function getPost(slug: string): Promise<BlsPost | null> {
