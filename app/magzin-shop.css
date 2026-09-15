@@ -995,6 +995,14 @@ html .product-page .product-accordion-title {
 .product-review-form {
   max-width: 640px;
 }
+.shop-lead-bullets {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  list-style: disc;
+}
+.shop-lead-bullets li + li {
+  margin-top: 4px;
+}
 .shop-lead {
   color: var(--tc-neutral-700);
   line-height: 1.6;

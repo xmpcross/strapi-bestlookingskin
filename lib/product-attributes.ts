@@ -239,3 +239,18 @@ export function productHighlights(attributes: { specifications: AttributeRow[]; 
   }
   return out;
 }
+
+/* A short description may be a sentence followed by "- " bullet lines. splitShortDescription separates the two for
+   the product page; plainShortDescription flattens it for meta tags, structured data and card excerpts. */
+export function splitShortDescription(text?: string | null): { intro: string; bullets: string[] } {
+  const lines = (text ?? '').replace(/\r\n/g, '\n').split('\n').map((l) => l.trim()).filter(Boolean);
+  const bullets = lines.filter((l) => /^[-*•]\s+/.test(l)).map((l) => l.replace(/^[-*•]\s+/, ''));
+  const intro = lines.filter((l) => !/^[-*•]\s+/.test(l)).join(' ');
+  return { intro, bullets };
+}
+
+export function plainShortDescription(text?: string | null): string {
+  const { intro, bullets } = splitShortDescription(text);
+  const tail = bullets.map((b) => b.replace(/[.;]\s*$/, '')).join('; ');
+  return [intro, tail && `${tail}.`].filter(Boolean).join(' ').trim();
+}

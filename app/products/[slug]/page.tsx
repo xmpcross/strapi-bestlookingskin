@@ -13,7 +13,7 @@ import PriceBadges from '@/components/PriceBadges';
 import ProductInfoAccordion from '@/components/ProductInfoAccordion';
 import SidebarTitle from '@/components/magzin/SidebarTitle';
 import CategoryListWidget from '@/components/magzin/CategoryListWidget';
-import { productAttributes, productHighlights, productLead } from '@/lib/product-attributes';
+import { plainShortDescription, productAttributes, productHighlights, productLead, splitShortDescription } from '@/lib/product-attributes';
 import ProductHighlights from '@/components/ProductHighlights';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
 
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   if (!p) return { title: 'Not found' };
 
   const cover = mediaUrl(p.primaryImage ?? null);
-  const description = p.seoDescription || p.shortDescription || `${p.brand ?? ''} ${p.name}`.trim();
+  const description = p.seoDescription || plainShortDescription(p.shortDescription) || `${p.brand ?? ''} ${p.name}`.trim();
 
   return {
     title: p.seoTitle || p.name,
@@ -169,7 +169,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
   // ---- Product JSON-LD (schema.org) for rich results ----
   const imageList = [cover, ...galleryImgs.map((g) => mediaUrl(g))].filter(Boolean) as string[];
   const plainDescription =
-    product.shortDescription ||
+    plainShortDescription(product.shortDescription) ||
     (product.description
       ? product.description.replace(/[#*_`>]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 5000)
       : undefined);
@@ -342,7 +342,22 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
 
                 {/* Short description: the product's own, else the description's opening. The price and "best deal"
                     line were removed from this column; the offer panel beside it shows the lowest price and where. */}
-                {lead && <p className="shop-lead fs-7 mb-0">{lead}</p>}
+                {lead &&
+                  (() => {
+                    const { intro, bullets } = splitShortDescription(lead);
+                    return (
+                      <div className="shop-lead fs-7" data-testid="product-short-description">
+                        {intro && <p className="mb-0">{intro}</p>}
+                        {bullets.length > 0 && (
+                          <ul className="shop-lead-bullets">
+                            {bullets.map((b) => (
+                              <li key={b}>{b}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                 <PriceBadges history={priceHistory} current={bestOffer?.price ?? product.currentPrice} />
 
@@ -643,7 +658,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                 background and 8px corners with no border or shadow, so the thumbnail inside drops its own frame. */}
             <ProductCarousel label={`More in ${cat?.name ?? 'this category'}`}>
               {related.map((r) => (
-                <ProductCard key={r.id} product={r} variant="tile" thumbBg="bg-transparent" />
+                <ProductCard key={r.id} product={r} variant="tile" thumbBg="bg-transparent" showCategory={false} />
               ))}
             </ProductCarousel>
           </aside>
