@@ -14,6 +14,25 @@ function clean(value: unknown, maxLength: number) {
   return typeof value === 'string' ? value.trim().slice(0, maxLength) : '';
 }
 
+/**
+ * A submitted value that is safe to place in a mail header.
+ *
+ * `clean` only trims the ends, so a CR or LF in the MIDDLE of a submitted
+ * subject survived into the Subject header. That is the header-injection shape:
+ * a newline ends the header, and whatever follows is read as headers of the
+ * sender's choosing -- a Bcc, a forged Reply-To.
+ *
+ * Every character that can end or fold a header is collapsed to a space rather
+ * than stripped, so two words cannot be silently glued into one. The message
+ * body deliberately does NOT go through this: newlines belong there.
+ */
+function cleanHeader(value: unknown, maxLength: number) {
+  return clean(value, maxLength)
+    .replace(/[\r\n\t\v\f\u0085\u2028\u2029]+/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
@@ -35,7 +54,9 @@ export async function POST(request: Request) {
 
   const name = clean(payload.name, 120);
   const email = clean(payload.email, 180).toLowerCase();
-  const subject = clean(payload.subject, 160) || 'New contact form message';
+  /* `email` needs no header cleaning: isValidEmail below rejects any whitespace,
+     newlines included, before it can reach replyTo. */
+  const subject = cleanHeader(payload.subject, 160) || 'New contact form message';
   const message = clean(payload.message, 4000);
 
   if (!name || !email || !message) {

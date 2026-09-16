@@ -2,7 +2,7 @@
   "name": "bestlooking-skin",
   "version": "1.0.0",
   "private": true,
-  "description": "BestLooking.Skin \u2014 Next.js frontend for the FXN Strapi CMS (skincare reviews, comparisons, roundups)",
+  "description": "BestLooking.Skin — Next.js frontend for the FXN Strapi CMS (skincare reviews, comparisons, roundups)",
   "scripts": {
     "dev": "next dev -p 3002",
     "build": "next build",
@@ -18,7 +18,7 @@
     "lottie-react": "^2.4.1",
     "next": "16.3.5",
     "nodemailer": "^8.0.7",
-    "qs": "^6.13.1",
+    "qs": "^6.16.0",
     "react": "19.2.5",
     "react-dom": "19.2.5",
     "swiper": "14.2.0"

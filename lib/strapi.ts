@@ -85,6 +85,8 @@ export type BlsPost = {
   sourceUrl?: string;
   legacyWpId?: number;
   readingTimeMinutes?: number;
+  /** Release date -- see the scheduled-publishing block above `withPublishedGate`. */
+  showFrom?: string;
   seoTitle?: string;
   seoDescription?: string;
   seoKeywords?: string;
@@ -219,16 +221,20 @@ async function strapiFetch<T>(path: string, params?: Record<string, unknown>, re
 
 /* ─── Scheduled publishing ───────────────────────────────────────────────────
  *
- * Strapi's own published flag is binary -- an entry is live or it is a draft --
- * so an entry whose `publishedAt` sits in the future is still returned by the
- * API. This gate is what turns that date into a release time: every post query
- * asks for `publishedAt <= now`, so a post queued in the CMS with next
- * Tuesday's date appears by itself on Tuesday, with nobody at a keyboard.
+ * `showFrom` is a datetime field on BLS · Post. A post whose `showFrom` is in
+ * the future is queued: written, saved and Published in Strapi, but invisible
+ * here until that moment passes. A post with `showFrom` empty behaves exactly
+ * as it always has, which is why adding the field did not hide the existing
+ * ~193 posts.
  *
- * Why it lives here and not in the page components: the sitemap and the RSS
- * feed read through these same functions. Gating at the query layer means a
- * queued post cannot leak out of a channel someone forgot about -- which is the
- * whole point, since a URL Google finds early is a URL it has already dated.
+ * Why not Strapi's own `publishedAt`: it is a system field, not editable in the
+ * admin, and timed publishing is a paid Strapi feature. `showFrom` is a plain
+ * field this site owns and reads.
+ *
+ * Why the gate lives at the query layer and not in the page components: the
+ * sitemap and the RSS feed read through these same functions. A queued post
+ * cannot leak out of a channel someone forgot about -- which is the whole
+ * point, since a URL Google reaches early is a URL Google has already dated.
  *
  * The cutoff is floored to the minute rather than taken to the second. The
  * query string is the Next.js fetch cache key, so a cutoff that changed on
@@ -250,13 +256,34 @@ export function publishedCutoff(): string {
 /**
  * Add the scheduled-publishing gate to a post filter.
  *
- * `publishedAt` is a top-level key, and Strapi ANDs top-level filter keys, so
- * this composes safely with the `$or` and `$and` groups these queries already
- * build (search terms, cover-image presence, pillar detection).
+ * Merged into `$and` rather than set as a top-level `$or`, because several of
+ * these queries already build their own top-level `$or` (search terms, cover
+ * image presence) and an assignment would silently discard it.
  */
 function withPublishedGate(filters: Record<string, unknown>): Record<string, unknown> {
   if (SHOW_SCHEDULED) return filters;
-  return { ...filters, publishedAt: { $lte: publishedCutoff() } };
+  const gate = {
+    $or: [
+      /* No release date set: an ordinary post, visible as always. */
+      { showFrom: { $null: true } },
+      { showFrom: { $lte: publishedCutoff() } },
+    ],
+  };
+  const existing = Array.isArray(filters.$and) ? filters.$and : [];
+  return { ...filters, $and: [...existing, gate] };
+}
+
+/**
+ * The date the post became public: its release date where one was set,
+ * otherwise Strapi's own publish timestamp.
+ *
+ * Applied when a post is read, so the byline, the Article structured data, the
+ * RSS `pubDate` and the sitemap all agree. Without it a cluster queued across
+ * six weeks would go live one post at a time but show the same date on every
+ * one -- the day they were all typed into the CMS.
+ */
+function withReleaseDate<T extends { publishedAt: string; showFrom?: string }>(post: T): T {
+  return post.showFrom ? { ...post, publishedAt: post.showFrom } : post;
 }
 
 // Local mirror of Strapi's `/uploads/*` tree, populated by
@@ -502,7 +529,7 @@ export const POST_COVER_OVERRIDES: Record<string, StrapiImage> = {
 function localizePost<T extends BlsPost>(post: T): T {
   const overrideCover = POST_COVER_OVERRIDES[post.slug];
   return {
-    ...post,
+    ...withReleaseDate(post),
     title: cleanDashes(post.title),
     excerpt: post.excerpt ? cleanDashes(post.excerpt) : post.excerpt,
     content: cleanDashes(rewriteContentImages(post.content)),
@@ -574,7 +601,7 @@ export async function listPostSummaries(
   }
   const res = await strapiFetch<ListResponse<BlsPostSummary>>('bls-posts', {
     sort: ['publishedAt:desc'],
-    fields: ['title', 'slug', 'excerpt', 'publishedAt', 'updatedAt', 'readingTimeMinutes', 'postType', 'seoDescription'],
+    fields: ['title', 'slug', 'excerpt', 'publishedAt', 'showFrom', 'updatedAt', 'readingTimeMinutes', 'postType', 'seoDescription'],
     populate: {
       coverImage: { fields: ['url', 'alternativeText', 'width', 'height', 'size'] },
       categories: { fields: ['name', 'slug'] },
@@ -584,7 +611,7 @@ export async function listPostSummaries(
     filters: withPublishedGate(filters),
   });
   const data = res.data.map((p) => ({
-    ...p,
+    ...withReleaseDate(p),
     title: cleanDashes(p.title),
     excerpt: p.excerpt ? cleanDashes(p.excerpt) : p.excerpt,
     coverImage: POST_COVER_OVERRIDES[p.slug] ?? p.coverImage,
@@ -636,7 +663,7 @@ export async function getAdjacentPosts(
   try {
     const res = await strapiFetch<ListResponse<BlsPost>>('bls-posts', {
       filters: withPublishedGate({ categories: { slug: { $eqi: category } } }),
-      fields: ['title', 'slug', 'publishedAt'],
+      fields: ['title', 'slug', 'publishedAt', 'showFrom'],
       populate: ['coverImage', 'categories'],
       sort: ['publishedAt:desc', 'slug:asc'],
       pagination: { pageSize: 100 },
