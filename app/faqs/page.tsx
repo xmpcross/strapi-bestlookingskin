@@ -7,7 +7,16 @@ import { postPath } from '@/lib/format';
 import { SITE } from '@/lib/site';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
 
-export const revalidate = 600;
+/*
+ * Daily, not every ten minutes.
+ *
+ * This page reads EVERY post's body to lift its FAQ section -- roughly 14 MB
+ * across two requests, which is over the 2 MB Next.js data-cache limit, so none
+ * of it is cached and each rebuild goes to Strapi in full. At 600s that was a
+ * 14 MB pull every ten minutes for a page whose content only changes when an
+ * article's FAQ section is edited.
+ */
+export const revalidate = 86400;
 
 export const metadata: Metadata = {
   title: 'FAQs',
@@ -72,7 +81,7 @@ function extract(post: BlsPost): Entry[] {
 async function allPosts(): Promise<BlsPost[]> {
   const out: BlsPost[] = [];
   for (let page = 1; page <= 5; page += 1) {
-    const res = await listPosts({ page, pageSize: 100 }).catch(() => null);
+    const res = await listPosts({ page, pageSize: 100, lean: true }).catch(() => null);
     if (!res?.data?.length) break;
     out.push(...res.data);
     const total = res.meta?.pagination?.pageCount ?? 1;

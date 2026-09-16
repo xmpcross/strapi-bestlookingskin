@@ -219,13 +219,13 @@ async function strapiFetch<T>(path: string, params?: Record<string, unknown>, re
   return res.json();
 }
 
-/* ─── Scheduled publishing ───────────────────────────────────────────────────
+/* ─── Scheduled publishing ─────────────────────────────────────────────────
  *
  * `showFrom` is a datetime field on BLS · Post. A post whose `showFrom` is in
  * the future is queued: written, saved and Published in Strapi, but invisible
  * here until that moment passes. A post with `showFrom` empty behaves exactly
  * as it always has, which is why adding the field did not hide the existing
- * ~193 posts.
+ * corpus.
  *
  * Why not Strapi's own `publishedAt`: it is a system field, not editable in the
  * admin, and timed publishing is a paid Strapi feature. `showFrom` is a plain
@@ -256,8 +256,8 @@ export function publishedCutoff(): string {
 /**
  * Add the scheduled-publishing gate to a post filter.
  *
- * Merged into `$and` rather than set as a top-level `$or`, because several of
- * these queries already build their own top-level `$or` (search terms, cover
+ * Merged into `$and` rather than assigned as a top-level `$or`, because several
+ * of these queries already build their own top-level `$or` (search terms, cover
  * image presence) and an assignment would silently discard it.
  */
 function withPublishedGate(filters: Record<string, unknown>): Record<string, unknown> {
@@ -541,7 +541,23 @@ function localizePost<T extends BlsPost>(post: T): T {
 const POST_POPULATE = ['coverImage', 'ogImage', 'categories', 'gallery', 'author'];
 
 export async function listPosts(
-  opts: { page?: number; pageSize?: number; category?: string; postType?: BlsPostType; q?: string; author?: string } = {},
+  opts: {
+    page?: number;
+    pageSize?: number;
+    category?: string;
+    postType?: BlsPostType;
+    q?: string;
+    author?: string;
+    /**
+     * Body and nothing else: for callers that read `content` but render no card.
+     *
+     * The default populate carries coverImage, ogImage, gallery and author for
+     * every row. /faqs walks the whole library to lift Q&A pairs out of article
+     * bodies and uses none of them, so it was pulling four relations per post
+     * across ~200 posts for nothing.
+     */
+    lean?: boolean;
+  } = {},
 ) {
   const filters: Record<string, unknown> = {};
   if (opts.category) filters.categories = { slug: { $eqi: opts.category } };
@@ -559,7 +575,15 @@ export async function listPosts(
 
   const res = await strapiFetch<ListResponse<BlsPost>>('bls-posts', {
     sort: ['publishedAt:desc'],
-    populate: POST_POPULATE,
+    ...(opts.lean
+      ? {
+          /* `publishedAt` and `showFrom` are not optional here even though nothing
+             renders them: withReleaseDate and the scheduled-publishing gate both
+             read them. */
+          fields: ['title', 'slug', 'content', 'excerpt', 'publishedAt', 'showFrom'],
+          populate: { categories: { fields: ['name', 'slug'] } },
+        }
+      : { populate: POST_POPULATE }),
     pagination: { page: opts.page ?? 1, pageSize: opts.pageSize ?? 12 },
     filters: withPublishedGate(filters),
   });
