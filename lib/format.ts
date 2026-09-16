@@ -9,6 +9,26 @@ export function fmtDate(iso?: string): string {
   }
 }
 
+/** "Sep 16" -- the day within a month-grouped listing, where the heading carries the year. */
+export function fmtShortDate(iso?: string): string {
+  if (!iso) return '';
+  try {
+    return format(parseISO(iso), 'MMM d');
+  } catch {
+    return '';
+  }
+}
+
+/** "September 2026" -- a month heading, and the key posts are grouped by. */
+export function fmtMonthYear(iso?: string): string {
+  if (!iso) return '';
+  try {
+    return format(parseISO(iso), 'MMMM yyyy');
+  } catch {
+    return '';
+  }
+}
+
 // Pick the canonical primary category for a post — the first one that's not "uncategorized".
 export function primaryCategorySlug(post: { categories?: { slug: string }[] }): string {
   const cats = post.categories ?? [];
