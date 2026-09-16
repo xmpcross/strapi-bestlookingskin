@@ -402,10 +402,16 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                   <div className="offer-panel" data-testid="offer-panel">
                     {bestOffer?.price !== undefined && (
                       <>
-                        <p className="offer-panel-eyebrow">Lowest price</p>
+                        {/* "Lowest price ... N retailers compared" was a price-comparison claim, and it
+                            rendered "1 retailer compared" whenever a product had a single offer -- one
+                            merchant's price with nothing to check it against. This site is editorial: it
+                            says what a product costs and where, and only says "From" when there is more
+                            than one price for that to mean anything. */}
+                        <p className="offer-panel-eyebrow">{offerRows.length > 1 ? 'From' : 'Price'}</p>
                         <p className="offer-panel-price">{formatPrice(bestOffer.price, product.currency)}</p>
                         <p className="offer-panel-sub">
-                          at {bestOffer.merchant} · {offerRows.length} {offerRows.length === 1 ? 'retailer' : 'retailers'} compared
+                          at {bestOffer.merchant}
+                          {offerRows.length > 1 ? ` · also stocked at ${offerRows.length - 1} other ${offerRows.length - 1 === 1 ? 'retailer' : 'retailers'}` : ''}
                         </p>
                       </>
                     )}

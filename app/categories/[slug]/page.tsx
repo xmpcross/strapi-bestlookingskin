@@ -43,7 +43,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const category = await getCategory(slug);
   if (!category) return { title: 'Category not found' };
   const description =
-    category.description || `Compare ${category.name} products and prices at ${SITE.name}.`;
+    category.description ||
+    `${category.name} products covered by ${SITE.name}, with the latest price we recorded and where to buy.`;
   return {
     title: `${category.name} — Products & Prices`,
     description,

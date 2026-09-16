@@ -26,8 +26,12 @@ export default async function CategoriesPage() {
             <div className="col-lg-8 col-12">
               <div className="title">
                 <h1 className="h4 mb-0 ds-4">Product Categories</h1>
+                {/* Not a price-comparison claim. This site is editorial: it writes about
+                    products and lists where to buy them at the price last checked. Promising
+                    a comparison commits every product page to more than one offer, which the
+                    catalogue does not always have. */}
                 <p className="fs-7 mb-0 mt-3">
-                  Browse skincare by category and compare prices across merchants.
+                  Browse skincare by category. Every product shows its latest price and where to buy it.
                 </p>
               </div>
             </div>
