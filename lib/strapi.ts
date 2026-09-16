@@ -1317,6 +1317,52 @@ export async function listAllPostSlugs(): Promise<{ slug: string; category: stri
   return all;
 }
 
+/** One row of the /posts index: enough to link, date and label a post, nothing more. */
+export type BlsPostRow = {
+  id: number;
+  documentId?: string;
+  title: string;
+  slug: string;
+  publishedAt: string;
+  showFrom?: string;
+  categories?: BlsCategory[];
+};
+
+/**
+ * Every published post, newest first, for the /posts index.
+ *
+ * Its own query rather than a loop over `listPostSummaries`: that one populates
+ * cover images, excerpts and authors, none of which a text index renders -- so
+ * looping it would pull the media payload of all ~190 posts on every
+ * revalidate to throw it away.
+ *
+ * Ordered here in JS, not by Strapi, because the sort key is the release date
+ * -- `showFrom` where the post has one, otherwise Strapi's `publishedAt` -- and
+ * Strapi cannot sort on a coalesce of two fields. Sorting on `publishedAt`
+ * alone would put a scheduled post in the position of the day it was typed
+ * rather than the day it went live, which is the date this page prints next to
+ * it. `withReleaseDate` has already collapsed the two by the time we sort.
+ */
+export async function listAllPostRows(): Promise<BlsPostRow[]> {
+  const all: BlsPostRow[] = [];
+  let page = 1;
+  while (true) {
+    const res = await strapiFetch<ListResponse<BlsPostRow>>('bls-posts', {
+      fields: ['title', 'slug', 'publishedAt', 'showFrom'],
+      populate: { categories: { fields: ['name', 'slug'] } },
+      /* Paged, not one big request: Strapi caps pageSize at 100 (see listAllPostSlugs). */
+      sort: ['publishedAt:desc'],
+      pagination: { page, pageSize: 100 },
+      filters: withPublishedGate({}),
+    });
+    all.push(...res.data.map((p) => ({ ...withReleaseDate(p), title: cleanDashes(p.title) })));
+    const pageCount = res.meta?.pagination?.pageCount ?? 1;
+    if (page >= pageCount) break;
+    page++;
+  }
+  return all.sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+}
+
 export async function listAllProductSlugs(): Promise<{ slug: string; updatedAt: string }[]> {
   const all: { slug: string; updatedAt: string }[] = [];
   let page = 1;
