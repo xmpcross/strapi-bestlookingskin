@@ -5,7 +5,7 @@ import '../../article.css';
 import '../../top-rated.css';
 import { getPost, listPostSummaries, listProductsForPost, getAdjacentPosts, mediaUrl, type BlsPostSummary } from '@/lib/strapi';
 import { PILLAR_SLUGS, SECTIONS, SITE } from '@/lib/site';
-import { fmtDate, primaryCategorySlug, postPath } from '@/lib/format';
+import { fmtDate, primaryCategorySlug, postPath, descriptionFromBody } from '@/lib/format';
 import { withHeadingIds, decodeEntities } from '@/lib/toc';
 import { cleanProductRoundupHtml } from '@/lib/legacy-product-roundup';
 import { isMarkdownBody, markdownToHtml } from '@/lib/markdown';
@@ -44,28 +44,43 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const post = await getPost(slug).catch(() => null);
   if (!post) return { title: 'Not found' };
 
-  const cover = mediaUrl(post.coverImage ?? null) || mediaUrl(post.ogImage ?? null);
-  const description = post.seoDescription || post.excerpt || SITE.description;
+  /* `ogImage` first: where an editor has set one it is the image chosen for
+     sharing, while `coverImage` is chosen to sit at the top of the article.
+     The site default backstops both so no post shares as a bare link. */
+  const cover = mediaUrl(post.ogImage ?? null) || mediaUrl(post.coverImage ?? null) || SITE.ogImage;
+
+  /* Description, in order of how well it was written for the job: the editor's
+     own, the excerpt, then the body's opening prose. SITE.description is last
+     and should now be unreachable for any post with a body -- it was previously
+     second in line, which is how all 120 legacy posts came to share the
+     homepage's description word for word. */
+  const description =
+    post.seoDescription || post.excerpt || descriptionFromBody(post.content) || SITE.description;
+
+  const title = post.seoTitle || post.title;
 
   return {
-    title: post.seoTitle || post.title,
+    title,
     description,
     keywords: post.seoKeywords,
     alternates: { canonical: `/${category}/${post.slug}` },
     openGraph: {
       type: 'article',
-      title: post.seoTitle || post.title,
+      title,
       description,
       url: `${SITE.url}/${category}/${post.slug}`,
-      images: cover ? [{ url: cover }] : undefined,
+      images: [{ url: cover }],
       publishedTime: post.publishedAt,
       modifiedTime: post.updatedAt,
     },
     twitter: {
-      card: cover ? 'summary_large_image' : 'summary',
-      title: post.seoTitle || post.title,
+      /* Always the large card: there is now always an image behind it. Legacy
+         posts used to fall through to `summary` while the site default said
+         `summary_large_image`, so the same site produced two card shapes. */
+      card: 'summary_large_image',
+      title,
       description,
-      images: cover ? [cover] : undefined,
+      images: [cover],
     },
   };
 }

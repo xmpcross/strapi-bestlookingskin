@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getProduct, listProducts, getPriceHistory, listProductReviews, mediaUrl, type BlsProduct, listProductCategoryCounts } from '@/lib/strapi';
 import { SITE } from '@/lib/site';
+import { descriptionFromBody } from '@/lib/format';
 import ProductCard from '@/components/ProductCard';
 import ProductCarousel from '@/components/ProductCarousel';
 import PriceAlertForm from '@/components/PriceAlertForm';
@@ -15,7 +16,7 @@ import ProductInfoAccordion from '@/components/ProductInfoAccordion';
 import ReadMore from '@/components/ReadMore';
 import SidebarTitle from '@/components/magzin/SidebarTitle';
 import CategoryListWidget from '@/components/magzin/CategoryListWidget';
-import { plainShortDescription, productAttributes, productHighlights, productLead, splitShortDescription } from '@/lib/product-attributes';
+import { dedupeLeadingBrand, plainShortDescription, productAttributes, productFullName, productHighlights, productLead, splitShortDescription } from '@/lib/product-attributes';
 import ProductHighlights from '@/components/ProductHighlights';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
 
@@ -37,26 +38,38 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const p = await getProduct(slug).catch(() => null);
   if (!p) return { title: 'Not found' };
 
-  const cover = mediaUrl(p.primaryImage ?? null);
-  const description = p.seoDescription || plainShortDescription(p.shortDescription) || `${p.brand ?? ''} ${p.name}`.trim();
+  const cover = mediaUrl(p.primaryImage ?? null) || SITE.ogImage;
+
+  /* Title: the editor's, with a doubled brand repaired, else brand + name built
+     so the brand appears once. */
+  const title = dedupeLeadingBrand(p.seoTitle, p.brand) || productFullName(p.brand, p.name);
+
+  /* Description: the editor's, the short description, then the opening of the
+     product copy. The last resort is the product's name -- a weak description,
+     but a unique one, where the previous fallback printed the brand twice. */
+  const description =
+    p.seoDescription ||
+    plainShortDescription(p.shortDescription) ||
+    descriptionFromBody(p.description) ||
+    productFullName(p.brand, p.name);
 
   return {
-    title: p.seoTitle || p.name,
+    title,
     description,
     keywords: p.seoKeywords,
     alternates: { canonical: `/products/${p.slug}` },
     openGraph: {
       type: 'website',
-      title: p.seoTitle || p.name,
+      title,
       description,
       url: `${SITE.url}/products/${p.slug}`,
-      images: cover ? [{ url: cover }] : undefined,
+      images: [{ url: cover }],
     },
     twitter: {
-      card: cover ? 'summary_large_image' : 'summary',
-      title: p.seoTitle || p.name,
+      card: 'summary_large_image',
+      title,
       description,
-      images: cover ? [cover] : undefined,
+      images: [cover],
     },
   };
 }

@@ -217,6 +217,48 @@ async function strapiFetch<T>(path: string, params?: Record<string, unknown>, re
   return res.json();
 }
 
+/* ─── Scheduled publishing ───────────────────────────────────────────────────
+ *
+ * Strapi's own published flag is binary -- an entry is live or it is a draft --
+ * so an entry whose `publishedAt` sits in the future is still returned by the
+ * API. This gate is what turns that date into a release time: every post query
+ * asks for `publishedAt <= now`, so a post queued in the CMS with next
+ * Tuesday's date appears by itself on Tuesday, with nobody at a keyboard.
+ *
+ * Why it lives here and not in the page components: the sitemap and the RSS
+ * feed read through these same functions. Gating at the query layer means a
+ * queued post cannot leak out of a channel someone forgot about -- which is the
+ * whole point, since a URL Google finds early is a URL it has already dated.
+ *
+ * The cutoff is floored to the minute rather than taken to the second. The
+ * query string is the Next.js fetch cache key, so a cutoff that changed on
+ * every request would make every listing uncacheable and put the full load on
+ * Strapi. Flooring to the minute matches the 60s revalidate these fetches
+ * already use, so a queued post goes live within about a minute of its time.
+ *
+ * Set SHOW_SCHEDULED_POSTS=1 (server-side only -- never in a NEXT_PUBLIC_ var)
+ * in a preview deployment to see the queue. Leave it unset in production.
+ */
+const SHOW_SCHEDULED = process.env.SHOW_SCHEDULED_POSTS === '1';
+
+/** Now, floored to the minute, as an ISO string. */
+export function publishedCutoff(): string {
+  const now = Date.now();
+  return new Date(now - (now % 60_000)).toISOString();
+}
+
+/**
+ * Add the scheduled-publishing gate to a post filter.
+ *
+ * `publishedAt` is a top-level key, and Strapi ANDs top-level filter keys, so
+ * this composes safely with the `$or` and `$and` groups these queries already
+ * build (search terms, cover-image presence, pillar detection).
+ */
+function withPublishedGate(filters: Record<string, unknown>): Record<string, unknown> {
+  if (SHOW_SCHEDULED) return filters;
+  return { ...filters, publishedAt: { $lte: publishedCutoff() } };
+}
+
 // Local mirror of Strapi's `/uploads/*` tree, populated by
 // `scripts/migrate-cms-images.mjs`. Frontend always serves the local copy
 // so a slow/down CMS host never blocks page loads.
@@ -492,7 +534,7 @@ export async function listPosts(
     sort: ['publishedAt:desc'],
     populate: POST_POPULATE,
     pagination: { page: opts.page ?? 1, pageSize: opts.pageSize ?? 12 },
-    filters,
+    filters: withPublishedGate(filters),
   });
   return { ...res, data: res.data.map(localizePost) };
 }
@@ -539,7 +581,7 @@ export async function listPostSummaries(
       author: { fields: ['name', 'slug', 'avatarUrl'] },
     },
     pagination: { page: opts.page ?? 1, pageSize: opts.pageSize ?? 12 },
-    filters,
+    filters: withPublishedGate(filters),
   });
   const data = res.data.map((p) => ({
     ...p,
@@ -552,7 +594,10 @@ export async function listPostSummaries(
 
 export async function getPost(slug: string): Promise<BlsPost | null> {
   const res = await strapiFetch<ListResponse<BlsPost>>('bls-posts', {
-    filters: { slug: { $eq: slug } },
+    /* Gated too, so a queued post 404s on a direct hit rather than being merely
+       absent from listings -- otherwise the URL is live for anyone who guesses
+       or is sent it, and Googlebot dates it from that first visit. */
+    filters: withPublishedGate({ slug: { $eq: slug } }),
     populate: POST_POPULATE,
     pagination: { pageSize: 1 },
   });
@@ -590,7 +635,7 @@ export async function getAdjacentPosts(
 ): Promise<{ prev: BlsPost | null; next: BlsPost | null }> {
   try {
     const res = await strapiFetch<ListResponse<BlsPost>>('bls-posts', {
-      filters: { categories: { slug: { $eqi: category } } },
+      filters: withPublishedGate({ categories: { slug: { $eqi: category } } }),
       fields: ['title', 'slug', 'publishedAt'],
       populate: ['coverImage', 'categories'],
       sort: ['publishedAt:desc', 'slug:asc'],
@@ -1206,6 +1251,9 @@ export async function listAllPostSlugs(): Promise<{ slug: string; category: stri
       populate: { categories: { fields: ['slug'] } },
       sort: ['publishedAt:desc'],
       pagination: { page, pageSize: 100 },
+      /* The sitemap is the one channel that must never run ahead: a queued URL
+         listed here is a URL Google crawls today and dates today. */
+      filters: withPublishedGate({}),
     });
     for (const p of res.data) {
       const cat = p.categories?.[0]?.slug ?? 'uncategorized';

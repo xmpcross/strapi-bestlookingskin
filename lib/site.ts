@@ -5,6 +5,11 @@ export const SITE = {
   description:
     'Honest skincare reviews, side-by-side product comparisons, best-of roundups and how-to guides for the products people are actually shopping for.',
   url: (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.bestlooking.skin').replace(/\/$/, ''),
+  /* Social card shown when a page has no image of its own. Without this, the 120
+     legacy posts shared to Facebook, X or WhatsApp rendered as a bare link with
+     no picture, and their twitter:card silently downgraded to `summary`.
+     1200x630 — the size every platform crops from. */
+  ogImage: '/og-default.jpg',
   amazonAffiliateTag: process.env.NEXT_PUBLIC_AMAZON_AFFILIATE_TAG || '',
   social: {
     facebook: 'https://www.facebook.com/1bestlookingskin/',

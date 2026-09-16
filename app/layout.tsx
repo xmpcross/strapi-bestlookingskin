@@ -25,8 +25,15 @@ export const metadata: Metadata = {
     template: `%s · ${SITE.name}`,
   },
   description: SITE.description,
-  openGraph: { type: 'website', siteName: SITE.name, locale: 'en_US' },
-  twitter: { card: 'summary_large_image' },
+  // A default image here means no page can ship a link preview with no picture;
+  // pages with their own cover override it in their generateMetadata.
+  openGraph: {
+    type: 'website',
+    siteName: SITE.name,
+    locale: 'en_US',
+    images: [{ url: SITE.ogImage, width: 1200, height: 630, alt: SITE.name }],
+  },
+  twitter: { card: 'summary_large_image', images: [SITE.ogImage] },
   alternates: {
     canonical: '/',
     types: {

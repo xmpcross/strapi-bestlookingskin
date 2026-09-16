@@ -254,3 +254,38 @@ export function plainShortDescription(text?: string | null): string {
   const tail = bullets.map((b) => b.replace(/[.;]\s*$/, '')).join('; ');
   return [intro, tail && `${tail}.`].filter(Boolean).join(' ').trim();
 }
+
+
+/**
+ * The product's full name without saying the brand twice.
+ *
+ * Catalogue names arrive from the source feed with the brand already in them
+ * ("The Ordinary Hyaluronic Acid 2% + B5"), so prefixing `brand` produced
+ * "The Ordinary The Ordinary Hyaluronic Acid 2% + B5" on every one of the 243
+ * product pages -- in the title tag, the meta description and the social card.
+ */
+export function productFullName(brand?: string | null, name?: string | null): string {
+  const n = (name ?? '').trim();
+  const b = (brand ?? '').trim();
+  if (!b) return n;
+  if (!n) return b;
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  return norm(n).startsWith(norm(b)) ? n : `${b} ${n}`;
+}
+
+/**
+ * Collapse a brand that already appears twice at the start of a string.
+ *
+ * `productFullName` stops us creating the duplicate; this repairs the ones that
+ * arrive pre-duplicated in a CMS field (`seoTitle`, mostly) so the fix does not
+ * wait on 243 rows being edited by hand. Only a repeat at the very start is
+ * touched -- "Bioderma Sensibio H2O" keeps its single brand, and a name that
+ * legitimately repeats a word later on is left alone.
+ */
+export function dedupeLeadingBrand(text?: string | null, brand?: string | null): string {
+  const t = (text ?? '').trim();
+  const b = (brand ?? '').trim();
+  if (!t || !b) return t;
+  const esc = b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return t.replace(new RegExp(`^(${esc})[\\s\\-–—:]+(?=${esc}\\b)`, 'i'), '').trim();
+}

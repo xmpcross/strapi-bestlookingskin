@@ -130,6 +130,35 @@ This storefront renders only products tagged `bestlooking-skin`. If product
 routes go empty, check the tag before assuming the code is broken — this has
 happened before, and the filter was correct while the data had gone.
 
+### Scheduled publishing
+
+`showFrom` (datetime, on BLS · Post) is the release date. A post whose
+`showFrom` is in the **future** is queued, not live. The gate is
+`withPublishedGate()` in `lib/strapi.ts`, applied to every `bls-posts` query —
+listings, `getPost`, adjacent posts, the sitemap and the RSS feed.
+
+Strapi's own `publishedAt` is a system field, not editable in the admin, and
+timed publishing is a paid Strapi feature — hence a field of our own.
+
+- Queue a post by setting a future `showFrom` and clicking **Publish** as normal.
+- It appears by itself within ~60s of that time (the cutoff is floored to the
+  minute so the Next fetch cache still works).
+- **`showFrom` empty = ordinary post**, visible immediately. That is why adding
+  the field did not hide the existing corpus. Never backfill it.
+- A queued post **404s on its own URL**. That is deliberate — a URL Google
+  reaches early is a URL Google has already dated.
+- Where `showFrom` is set it also becomes the post's displayed date, its
+  Article `datePublished` and its RSS `pubDate` (`withReleaseDate`), so a
+  cluster released over six weeks does not show six identical dates.
+- `SHOW_SCHEDULED_POSTS=1` reveals the queue. Preview environments only, and
+  never rename it to `NEXT_PUBLIC_*`.
+
+Use this to space a cluster out over weeks rather than publishing it in one
+burst. **Do not backdate posts to fake a publishing history** — Google dates a
+URL from its own first crawl, so the claim contradicts its records, and the
+usual result is that it stops trusting the site's dates. Posts migrated from
+WordPress keep their real May 2026 dates; that is history, not backdating.
+
 ---
 
 ## The single most important thing to know
@@ -265,9 +294,14 @@ evidential standard.
 
 - **Canonical host is `www`, no trailing slash.** Every internal link root-relative.
 - **Meta descriptions are per-page, 150–160 chars.** Never fall back to the site
-  default — that bug is why 120 posts share one description.
+  default — that bug is why 29 posts still share one description. The code now
+  derives one from the body (`descriptionFromBody` in `lib/format.ts`) before it
+  will reach for `SITE.description`, but a written description beats a clipped
+  opening paragraph every time.
 - **Every post needs an author.** The `/authors/{slug}` system exists and works.
 - **Every post needs `og:image` and `twitter:image`**, `summary_large_image`.
+  `SITE.ogImage` (`public/og-default.jpg`, 1200×630) backstops any page without
+  one, so the card is never empty — but a post-specific image is the point.
 - **Cover images go on `cms.fxnstudio.com`**, never hotlinked from a merchant.
 - **No years in titles.** Six posts still say "2024". Evergreen titles do not need
   re-editing every January.
