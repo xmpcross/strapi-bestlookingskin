@@ -14,3 +14,15 @@ preview.log
 # ".env.local.bak-20260814", which sat untracked but committable.
 .env*.bak*
 .env.local.*
+
+# Scraper output, not source.
+#
+# data/iherb-flash-deals.json is written into this tree by nxt.discount's
+# scripts/fetch-iherb-flash-deals.mjs, so on the deployment host it is modified
+# whenever that scraper runs -- and deploy.sh refuses a dirty tree, which made
+# every deploy need --allow-dirty. Tracking a file that another process rewrites
+# is the actual bug; ignoring it is the fix.
+#
+# Safe to ignore: lib/iherb-deals.ts returns null when the file is absent and
+# the widget simply does not render, by design ("must never fail a build").
+data/iherb-flash-deals.json

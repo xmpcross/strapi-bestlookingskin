@@ -316,7 +316,17 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                 <span className="fs-7 fw-semi-bold text-dark">{ratingValue.toFixed(1)}</span>
                 {ratingCount > 0 && (
                   <span className="fs-7 text-600">
-                    ({ratingCount} {ratingIsReviews ? (ratingCount === 1 ? 'review' : 'reviews') : 'ratings'})
+                    ({ratingCount.toLocaleString('en')}{' '}
+                    {ratingIsReviews ? (ratingCount === 1 ? 'review' : 'reviews') : 'ratings'})
+                  </span>
+                )}
+                {/* Where the number came from. An imported aggregate shown bare reads as this site's
+                    own rating -- to a visitor, and to Google, whose review-snippet guidelines expect a
+                    published rating to come from the publisher's own users. Attribution is the honest
+                    version and keeps the stars. */}
+                {!ratingIsReviews && (
+                  <span className="fs-8 text-600 fst-italic" data-testid="rating-source">
+                    from retailer data
                   </span>
                 )}
               </div>
