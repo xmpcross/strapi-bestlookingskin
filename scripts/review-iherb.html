@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iHerb import review</title>
+<!--
+  Review and edit scraped iHerb products before they go into Strapi.
+
+  Open this file directly in a browser (double-click it). Nothing is uploaded
+  anywhere; it reads the JSON you pick, keeps your edits in this browser, and
+  exports a new file when you are done.
+
+  Deliberately a local file rather than a hosted page: the job here ends in
+  downloading an edited JSON, and sandboxed pages cannot start a download.
+-->
+<style>
+  :root{
+    --bg:#f7f7f5; --panel:#fff; --ink:#1b1a18; --muted:#6b6862; --line:#e4e2dd;
+    --accent:#3f6d52; --accent-soft:#eaf1ec; --warn:#8c3b2e; --warn-soft:#fbeeeb;
+    --ok:#2f6b4f; --radius:10px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+       color:var(--ink);background:var(--bg)}
+  header{position:sticky;top:0;z-index:10;background:var(--panel);border-bottom:1px solid var(--line);
+         padding:12px 18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  h1{font-size:15px;margin:0;font-weight:650;letter-spacing:-.01em}
+  .muted{color:var(--muted)}
+  .pill{background:var(--accent-soft);color:var(--accent);border-radius:99px;padding:2px 9px;
+        font-size:12px;font-weight:600}
+  button{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);
+         padding:6px 12px;border-radius:8px;cursor:pointer}
+  button:hover{border-color:#c9c6bf}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.primary:hover{filter:brightness(1.08)}
+  input[type=search],input[type=text],textarea,select{font:inherit;width:100%;padding:7px 9px;
+    border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+  textarea{resize:vertical;min-height:64px}
+  main{display:grid;grid-template-columns:minmax(280px,380px) 1fr;gap:0;height:calc(100vh - 57px)}
+  @media(max-width:900px){main{grid-template-columns:1fr;height:auto}}
+  #list{overflow:auto;border-right:1px solid var(--line);background:var(--panel)}
+  #detail{overflow:auto;padding:20px 24px}
+  .row{display:flex;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);cursor:pointer;
+       align-items:flex-start}
+  .row:hover{background:#faf9f7}
+  .row.sel{background:var(--accent-soft)}
+  .row img{width:44px;height:44px;object-fit:contain;background:#fff;border:1px solid var(--line);
+           border-radius:6px;flex:none}
+  .row .nm{font-size:13px;line-height:1.35;font-weight:550}
+  .row .sub{font-size:12px;color:var(--muted);margin-top:2px}
+  .row .chk{flex:none;margin-top:2px}
+  .tag{display:inline-block;font-size:11px;padding:1px 6px;border-radius:5px;border:1px solid var(--line);
+       color:var(--muted);margin-right:4px}
+  .tag.var{background:#fff5e6;border-color:#e8d5b0;color:#7a5a20}
+  .tag.dup{background:var(--warn-soft);border-color:#e8c9c2;color:var(--warn)}
+  fieldset{border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin:0 0 16px;
+           background:var(--panel)}
+  legend{font-size:12px;font-weight:650;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+         padding:0 6px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+  label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px}
+  .field{margin-bottom:12px}
+  .prose{background:var(--warn-soft);border:1px solid #e8c9c2;border-radius:var(--radius);padding:12px 14px}
+  .prose h3{margin:0 0 6px;font-size:13px;color:var(--warn)}
+  .prose p{margin:0 0 8px;font-size:13px;white-space:pre-wrap}
+  .empty{padding:60px 24px;text-align:center;color:var(--muted)}
+  .count{font-size:12px;color:var(--muted)}
+  .vg{border:1px solid #e8d5b0;background:#fffdf8;border-radius:var(--radius);padding:12px 14px;margin-bottom:12px}
+  .vg h4{margin:0 0 8px;font-size:13px}
+  .vg table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .vg td{padding:4px 6px;border-top:1px solid #f0e6d2}
+  .vg td:first-child{width:22px}
+  code{background:#f1efe9;padding:1px 5px;border-radius:4px;font-size:12px}
+  .hint{font-size:12px;color:var(--muted);margin-top:4px}
+  a{color:var(--accent)}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>iHerb import review</h1>
+  <input type="file" id="file" accept="application/json" style="width:auto">
+  <button id="sample">Load sample</button>
+  <input type="search" id="q" placeholder="Filter by name or brand…" style="max-width:260px">
+  <select id="filter" style="width:auto">
+    <option value="all">All</option>
+    <option value="included">Included only</option>
+    <option value="excluded">Excluded only</option>
+    <option value="variants">In a variant group</option>
+  </select>
+  <span class="count" id="counts"></span>
+  <span style="flex:1"></span>
+  <button id="export" class="primary">Export edited JSON</button>
+</header>
+
+<main>
+  <div id="list"><div class="empty">Pick a JSON file from <code>data/</code>, or load the sample.</div></div>
+  <div id="detail"><div class="empty">Nothing selected.</div></div>
+</main>
+
+<script>
+/* ── state ──────────────────────────────────────────────────────────────── */
+
+let DATA = null;          // the loaded file
+let EDITS = {};           // iherbId -> { include, fields... }
+let SELECTED = null;
+const KEY = 'iherb-review-edits-v1';
+
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* Edits survive a refresh. Wrapped because storage throws in private windows. */
+function saveEdits(){ try{ localStorage.setItem(KEY, JSON.stringify(EDITS)); }catch{} }
+function loadEdits(){ try{ return JSON.parse(localStorage.getItem(KEY) || '{}'); }catch{ return {}; } }
+
+/* ── loading ────────────────────────────────────────────────────────────── */
+
+function ingest(json){
+  DATA = json;
+  EDITS = loadEdits();
+  for (const r of DATA.products ?? []){
+    const id = r.facts?.iherbId;
+    if (!id) continue;
+    if (!EDITS[id]) EDITS[id] = defaults(r);
+  }
+  SELECTED = DATA.products?.[0]?.facts?.iherbId ?? null;
+  render();
+}
+
+/* A starting point for the fields you will author, seeded from the facts —
+   never from sourceProse, which is the manufacturer's copy. */
+function defaults(r){
+  const f = r.facts || {};
+  return {
+    include: true,
+    name: f.name || '',
+    brand: f.brand || '',
+    sku: f.sku || '',
+    upc: f.upc || '',
+    size: f.packageQuantity || '',
+    price: f.price ?? '',
+    currency: f.currency || 'AUD',
+    ingredients: f.ingredients || '',
+    shortDescription: '',
+    keyFeatures: '',
+    seoTitle: '',
+    seoDescription: '',
+    category: '',
+    notes: '',
+  };
+}
+
+$('#file').addEventListener('change', async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  try { ingest(JSON.parse(await file.text())); }
+  catch (err) { alert('Could not read that file as JSON.\n\n' + err.message); }
+});
+
+$('#sample').addEventListener('click', () => ingest(SAMPLE));
+
+/* ── variant lookup ─────────────────────────────────────────────────────── */
+
+function variantIdsSet(){
+  const s = new Set();
+  for (const g of DATA?.variantGroups ?? []) for (const v of g.variants) s.add(v.iherbId);
+  return s;
+}
+
+/* ── list ───────────────────────────────────────────────────────────────── */
+
+function visibleProducts(){
+  const q = $('#q').value.trim().toLowerCase();
+  const mode = $('#filter').value;
+  const inVariant = variantIdsSet();
+  return (DATA?.products ?? []).filter((r) => {
+    const f = r.facts || {}, e = EDITS[f.iherbId] || {};
+    if (q && !((f.name||'') + ' ' + (f.brand||'')).toLowerCase().includes(q)) return false;
+    if (mode === 'included' && !e.include) return false;
+    if (mode === 'excluded' && e.include) return false;
+    if (mode === 'variants' && !inVariant.has(f.iherbId)) return false;
+    return true;
+  });
+}
+
+function renderList(){
+  const rows = visibleProducts();
+  const inVariant = variantIdsSet();
+  if (!rows.length){ $('#list').innerHTML = '<div class="empty">Nothing matches.</div>'; return; }
+  $('#list').innerHTML = rows.map((r) => {
+    const f = r.facts || {}, e = EDITS[f.iherbId] || {};
+    return `<div class="row ${f.iherbId===SELECTED?'sel':''}" data-id="${esc(f.iherbId)}">
+      <input class="chk" type="checkbox" ${e.include?'checked':''} data-toggle="${esc(f.iherbId)}" title="Include in export">
+      ${f.image?`<img src="${esc(f.image)}" alt="" loading="lazy">`:'<div class="row-img"></div>'}
+      <div>
+        <div class="nm">${esc(e.name || f.name || '(no name)')}</div>
+        <div class="sub">
+          ${f.price!=null?`${esc(f.currency||'')} ${esc(f.price)}`:'<span class="muted">no price</span>'}
+          ${f.ratingCount?` · ${Number(f.ratingCount).toLocaleString()} ratings`:''}
+        </div>
+        <div class="sub">
+          ${inVariant.has(f.iherbId)?'<span class="tag var">size variant</span>':''}
+          ${f.ingredients?'':'<span class="tag dup">no ingredients</span>'}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+$('#list').addEventListener('click', (e) => {
+  const toggle = e.target.closest('[data-toggle]');
+  if (toggle){
+    const id = toggle.dataset.toggle;
+    EDITS[id].include = toggle.checked;
+    saveEdits(); renderCounts();
+    e.stopPropagation();
+    return;
+  }
+  const row = e.target.closest('[data-id]');
+  if (row){ SELECTED = row.dataset.id; render(); }
+});
+
+/* ── detail ─────────────────────────────────────────────────────────────── */
+
+function field(id, label, value, opts = {}){
+  const ro = opts.readonly ? ' readonly style="background:#f4f3f0"' : '';
+  const hint = opts.hint ? `<div class="hint">${esc(opts.hint)}</div>` : '';
+  const control = opts.multiline
+    ? `<textarea id="f_${id}" data-edit="${id}" rows="${opts.rows || 3}"${ro}>${esc(value ?? '')}</textarea>`
+    : `<input id="f_${id}" data-edit="${id}" type="text" value="${esc(value ?? '')}"${ro}>`;
+  return `<div class="field"><label for="f_${id}">${esc(label)}</label>${control}${hint}</div>`;
+}
+
+function renderDetail(){
+  if (!SELECTED){ $('#detail').innerHTML = '<div class="empty">Nothing selected.</div>'; return; }
+  const r = (DATA.products||[]).find((x) => x.facts?.iherbId === SELECTED);
+  if (!r){ $('#detail').innerHTML = '<div class="empty">Not found.</div>'; return; }
+  const f = r.facts || {}, e = EDITS[SELECTED] || {};
+  const group = (DATA.variantGroups||[]).find((g) => g.variants.some((v) => v.iherbId === SELECTED));
+
+  $('#detail').innerHTML = `
+    <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:16px">
+      ${f.image?`<img src="${esc(f.image)}" alt="" style="width:96px;height:96px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:#fff">`:''}
+      <div>
+        <div style="font-weight:650;font-size:15px;line-height:1.35">${esc(f.name||'(no name)')}</div>
+        <div class="muted" style="font-size:12.5px;margin-top:4px">
+          ${esc(f.brand||'')} ${f.sku?`· <code>${esc(f.sku)}</code>`:''} ${f.upc?`· UPC ${esc(f.upc)}`:''}
+        </div>
+        <div style="margin-top:6px"><a href="${esc(f.url||'#')}" target="_blank" rel="noopener">View on iHerb ↗</a></div>
+      </div>
+    </div>
+
+    ${group?`<div class="vg">
+      <h4>Same formula, ${group.variants.length} sizes</h4>
+      <div class="hint" style="margin:0 0 8px">Publish ONE page for this formula. Tick the size to build it around; leave the rest excluded.</div>
+      <table>${group.variants.map((v)=>`<tr>
+        <td><input type="checkbox" ${EDITS[v.iherbId]?.include?'checked':''} data-toggle="${esc(v.iherbId)}"></td>
+        <td>${esc(v.size||'')}</td>
+        <td>${esc(v.currency||'')} ${esc(v.price??'')}</td>
+        <td class="muted">${v.ratingCount?Number(v.ratingCount).toLocaleString()+' ratings':''}</td>
+      </tr>`).join('')}</table>
+    </div>`:''}
+
+    <fieldset><legend>Facts — safe to publish</legend>
+      <div class="grid">
+        ${field('name','Product name',e.name)}
+        ${field('brand','Brand',e.brand)}
+        ${field('size','Size / package',e.size)}
+        ${field('sku','SKU',e.sku)}
+        ${field('upc','UPC',e.upc)}
+        ${field('price','Price',e.price)}
+        ${field('currency','Currency',e.currency,{hint:'AUD unless you converted it'})}
+        ${field('category','Strapi category slug',e.category,{hint:'e.g. hyaluronic-acid'})}
+      </div>
+      ${field('ingredients','Ingredients',e.ingredients,{multiline:true,rows:3})}
+      ${f.supplementFacts?`<div class="field"><label>Supplement facts (from iHerb)</label>
+        <textarea readonly rows="4" style="background:#f4f3f0">${esc(f.supplementFacts)}</textarea></div>`:''}
+      ${f.suggestedUse?`<div class="field"><label>Suggested use (from iHerb)</label>
+        <textarea readonly rows="2" style="background:#f4f3f0">${esc(f.suggestedUse)}</textarea></div>`:''}
+    </fieldset>
+
+    <fieldset><legend>Your copy — write this yourself</legend>
+      ${field('shortDescription','Short description',e.shortDescription,{multiline:true,rows:3,
+        hint:'Two or three sentences in your own words. This is what appears on the product page.'})}
+      ${field('keyFeatures','Key features (one per line)',e.keyFeatures,{multiline:true,rows:4})}
+      ${field('seoTitle','SEO title',e.seoTitle,{hint:'Under 60 characters'})}
+      ${field('seoDescription','SEO description',e.seoDescription,{multiline:true,rows:2,
+        hint:'150–160 characters. Unique per product — this is the line Google shows.'})}
+      ${field('notes','Notes to self',e.notes,{multiline:true,rows:2})}
+    </fieldset>
+
+    ${r.sourceProse && (r.sourceProse.description || r.sourceProse.overview) ? `
+    <div class="prose">
+      <h3>iHerb's own copy — reference only, do not publish</h3>
+      <div class="hint" style="color:var(--warn);margin-bottom:8px">
+        This is the manufacturer's text. Read it, then write your own above. It is not exported.
+      </div>
+      <p>${esc(r.sourceProse.description||'')}</p>
+      ${r.sourceProse.overview?`<p>${esc(r.sourceProse.overview)}</p>`:''}
+    </div>`:''}
+  `;
+}
+
+$('#detail').addEventListener('input', (e) => {
+  const key = e.target.dataset.edit;
+  if (!key || !SELECTED) return;
+  EDITS[SELECTED][key] = e.target.value;
+  saveEdits();
+  if (key === 'name') renderList();
+});
+
+$('#detail').addEventListener('change', (e) => {
+  const t = e.target.closest('[data-toggle]');
+  if (!t) return;
+  EDITS[t.dataset.toggle].include = t.checked;
+  saveEdits(); renderList(); renderCounts();
+});
+
+/* ── counts, export ─────────────────────────────────────────────────────── */
+
+function renderCounts(){
+  const all = DATA?.products ?? [];
+  const inc = all.filter((r) => EDITS[r.facts?.iherbId]?.include).length;
+  const written = all.filter((r) => (EDITS[r.facts?.iherbId]?.shortDescription||'').trim()).length;
+  $('#counts').innerHTML = all.length
+    ? `<span class="pill">${inc} of ${all.length} included</span> <span class="muted">· ${written} with your copy written</span>`
+    : '';
+}
+
+function render(){ renderList(); renderDetail(); renderCounts(); }
+
+$('#q').addEventListener('input', renderList);
+$('#filter').addEventListener('change', renderList);
+
+$('#export').addEventListener('click', () => {
+  if (!DATA){ alert('Load a file first.'); return; }
+  const out = {
+    source: DATA.source, category: DATA.category,
+    scrapedAt: DATA.fetchedAt, reviewedAt: new Date().toISOString(),
+    note: 'Reviewed for import. sourceProse deliberately omitted — it is the manufacturer\'s copy.',
+    products: (DATA.products||[])
+      .filter((r) => EDITS[r.facts?.iherbId]?.include)
+      .map((r) => {
+        const e = EDITS[r.facts.iherbId];
+        return {
+          iherbId: r.facts.iherbId, url: r.facts.url, image: r.facts.image,
+          name: e.name, brand: e.brand, sku: e.sku, gtin: e.upc,
+          packageQuantity: e.size, price: e.price === '' ? null : Number(e.price),
+          currency: e.currency, category: e.category,
+          rating: r.facts.rating, ratingCount: r.facts.ratingCount,
+          ingredients: e.ingredients,
+          supplementFacts: r.facts.supplementFacts ?? null,
+          shortDescription: e.shortDescription,
+          keyFeatures: (e.keyFeatures||'').split('\n').map((s)=>s.trim()).filter(Boolean),
+          seoTitle: e.seoTitle, seoDescription: e.seoDescription,
+          notes: e.notes,
+        };
+      }),
+  };
+  const blob = new Blob([JSON.stringify(out, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `iherb-${DATA.category||'review'}-reviewed.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+/* ── sample, so the tool can be tried before a scrape finishes ──────────── */
+
+const SAMPLE = {
+  source:'https://au.iherb.com/c/hyaluronic-acid', category:'hyaluronic-acid',
+  fetchedAt:new Date().toISOString(),
+  counts:{discovered:3,new:3,skipped:0,failed:0,formulasWithMultipleSizes:1},
+  variantGroups:[{formula:'California Gold Nutrition, CollagenUP, Unflavored',
+    variants:[
+      {iherbId:'64902',size:'464 g',price:62.37,currency:'AUD',ratingCount:1204},
+      {iherbId:'64903',size:'206 g',price:27.94,currency:'AUD',ratingCount:890}]}],
+  products:[
+    {facts:{iherbId:'64903',url:'https://au.iherb.com/pr/x/64903',
+      name:'California Gold Nutrition, CollagenUP, Unflavored, 7.26 oz (206 g)',
+      brand:'California Gold Nutrition',sku:'CGN-01033',upc:'898220010332',
+      packageQuantity:'206 g',price:27.94,currency:'AUD',rating:4.7,ratingCount:890,
+      image:null,ingredients:'Hydrolyzed marine collagen peptides, hyaluronic acid, vitamin C.',
+      supplementFacts:'Serving size 1 scoop (10 g). Collagen peptides 10 g.',
+      suggestedUse:'Mix one scoop into 250 ml of water.'},
+     sourceProse:{description:'Manufacturer marketing copy would appear here. Read it, write your own, do not publish it.'}},
+    {facts:{iherbId:'64902',url:'https://au.iherb.com/pr/x/64902',
+      name:'California Gold Nutrition, CollagenUP, Unflavored, 1.02 lb (464 g)',
+      brand:'California Gold Nutrition',sku:'CGN-01034',upc:'898220010349',
+      packageQuantity:'464 g',price:62.37,currency:'AUD',rating:4.7,ratingCount:1204,
+      image:null,ingredients:'Hydrolyzed marine collagen peptides, hyaluronic acid, vitamin C.'},
+     sourceProse:{description:'More manufacturer copy.'}},
+    {facts:{iherbId:'69436',url:'https://au.iherb.com/pr/y/69436',
+      name:'NOW Foods, Hyaluronic Acid With MSM, 60 Veg Capsules',
+      brand:'NOW Foods',sku:'NOW-03172',upc:'733739031723',
+      packageQuantity:'60 Veg Capsules',price:21.54,currency:'AUD',rating:4.6,ratingCount:3100,
+      image:null,ingredients:null},
+     sourceProse:{description:'Joint support copy.'}}],
+  skipped:[], failures:[],
+};
+</script>
+</body>
+</html>

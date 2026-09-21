@@ -1,0 +1,302 @@
+{
+  "source": "https://au.iherb.com/c/hyaluronic-acid",
+  "category": "hyaluronic-acid",
+  "fetchedAt": "2026-09-16T09:26:42.280Z",
+  "counts": {
+    "discovered": 43,
+    "new": 2,
+    "skipped": 41,
+    "failed": 0,
+    "formulasWithMultipleSizes": 0
+  },
+  "variantGroups": [],
+  "note": "facts.* is publishable. sourceProse.* is the manufacturer's copy — reference only, never import it into Strapi. Rewrite from the facts.",
+  "products": [
+    {
+      "facts": {
+        "iherbId": "88693",
+        "url": "https://au.iherb.com/pr/california-gold-nutrition-collagenup-hydrolyzed-marine-collagen-peptides-with-hyaluronic-acid-and-vitamin-c-unflavored-10-packets-0-18-oz-5-g-each/88693",
+        "name": "California Gold Nutrition, CollagenUP®, Hydrolyzed Marine Collagen Peptides with Hyaluronic Acid and Vitamin C, Unflavored, 10 Packets, 0.18 oz (5 g) Each",
+        "brand": "California Gold Nutrition",
+        "brandCode": "CGN",
+        "sku": "CGN-01344",
+        "upc": "898220013449",
+        "packageQuantity": "10 count",
+        "dimensions": "8.9 x 8.5 x 5.6 cm , 0.07 kg",
+        "shippingWeight": "0.08 kg Shipping weight The Shipping Weight includes the product, protective packaging material and the actual shipping box. In addition, the Shipping Weight may be adjusted for the Dimensional Weight (e.g. length, width & height) of a package. It is important to note that certain types of products (e.g. glass containers, liquids, fragile, refrigerated or ice packed) will often require protective packaging material. As such, these products will reflect a higher Shipping Weight compared to the unprotected product.",
+        "firstAvailable": "03/2019",
+        "price": 22.57,
+        "currency": "AUD",
+        "availability": "OutOfStock",
+        "rating": 4.6,
+        "ratingCount": 3126,
+        "image": "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/cgn/cgn01344/g/127.jpg",
+        "ingredients": null,
+        "supplementFacts": null,
+        "suggestedUse": null,
+        "warnings": null,
+        "specs": {
+          "First available": "03/2019",
+          "Shipping weight": "0.08 kg Shipping weight The Shipping Weight includes the product, protective packaging material and the actual shipping box. In addition, the Shipping Weight may be adjusted for the Dimensional Weight (e.g. length, width & height) of a package. It is important to note that certain types of products (e.g. glass containers, liquids, fragile, refrigerated or ice packed) will often require protective packaging material. As such, these products will reflect a higher Shipping Weight compared to the unprotected product.",
+          "Product code": "CGN-01344",
+          "UPC": "898220013449",
+          "Package quantity": "10 count",
+          "Dimensions": "8.9 x 8.5 x 5.6 cm , 0.07 kg"
+        }
+      },
+      "sourceProse": {
+        "_warning": "Manufacturer copy. Not yours. Read it, write your own, do not publish this.",
+        "description": "California Gold Nutrition CollagenUP, 10 Packets, 0.18 oz (5 g) Each Marine Sourced Collagen Peptides + Hyaluronic Acid + Vitamin C Featuring Unflavored, Non-Bovine, Hydrolyzed Fish Collagen With Non-Animal Source Hyaluronic Acid and Vitamin C Support for Healthy Hair, Skin, Nails, Joints and Bones* Enzymatically Hydrolyzed Collagen Broken Down into Bioavailable Peptides Formulated without Gluten, GMOs, or Soy Produced in a 3rd Party Audited cGMP Registered (Certified) Facility 100% Gold Guarantee Now in a Resealable Pouch for Easier Storage Collagen, hyaluronic acid, and vitamin C all contribute to the health and wellbeing of the musculoskeletal system. California Gold Nutrition CollagenUP contains all three of these ingredients to help support healthy hair, skin, nails, joints, and bones.* The unflavored powder can be quickly added to your favorite drink, providing a convenient way to add collagen to your diet. Types of Collagen Collagen is the primary structural protein found throughout the body and provides crucial infrastructure, both inside and out. There are many types of collagen that differ by how the molecules are assembled and where the collagen is used in your body. Our CollagenUP powder contains both type I and type III collagen, which are 2 of the 5 main types of collagen: Type I : This type of collagen makes up 80 to 90% of your body’s total collagen. Because it is densely packed, type I collagen provides structure to skin, bones, tendons, and ligaments. Type II : Found in elastic cartilage, such as knees and shoulders, this type of collagen provides support for joints. Type III : This type of collagen is commonly present with Type I and is found in muscles, arteries, and organs. Type IV : Found in the layers of your skin, type IV collagen helps support various functions of the skin. Type V : This type of collagen is found in the cornea of your eyes, bones, some layers of skin, hair, and tissue of the placenta. Plus Hyaluronic Acid and Vitamin C Our advanced collagen formula also includes two additional powerhouse ingredients – hyaluronic acid and vitamin C. Hyaluronic acid is a component of connective tissue and can provide the fluid matrix for joint lubrication, skin hydration, and repair.* Vitamin C plays a role in the production of collagen and assists in antioxidant protection.* Research suggests that regular consumption of these nutrients can provide the body with the fundamental building blocks that can help to support the health of joints, bones, skin, hair, and nails.* California Gold Nutrition CollagenUP features non-bovine, marine-sourced collagen peptides with hyaluronic acid and vitamin C. The specially processed fish collagen is enzymatically hydrolyzed (broken down) into low molecular weight component amino acid peptides in order to help ensure optimal absorption and bioavailability.* Typical Amino Acids Profile (mg) Per Serving^ Alanine 457 Hydroxylysine 57 Phenylalanine* 102 Arginine 475 Hydroxyproline 447 Proline 531 Aspartic Acid 277 Isoleucine* 57 Serine 225 Glutamic Acid 543 Leucine* 126 Threonine* 159 Glycine 1,071 Lysine* 189 Tyrosine 19 Histidine* 76 Methionine* 75 Valine* 101 ^May vary slightly from batch to batch *Essential Amino Acids Third-Party Tested Our products undergo quality testing where they are evaluated by an independent ISO-certified lab using scientifically-validated test methods to ensure authenticity, purity, and potency of ingredients. For added transparency, we make the results available to you in our iTested Verified Reports so you can see for yourself. Check out the iTested Report for this product to see the analysis.",
+        "overview": null
+      },
+      "fetchedAt": "2026-09-16T09:26:35.418Z"
+    },
+    {
+      "facts": {
+        "iherbId": "117378",
+        "url": "https://au.iherb.com/pr/evlution-nutrition-hyaluronic-acid-200-mg-30-veggie-capsules/117378",
+        "name": "EVLution Nutrition, Hyaluronic Acid, 200 mg, 30 Veggie Capsules",
+        "brand": "EVLution Nutrition",
+        "brandCode": "EVL",
+        "sku": "EVL-02812",
+        "upc": "818901028128",
+        "packageQuantity": "30 count",
+        "dimensions": "11 x 5.8 x 5.8 cm , 0.05 kg",
+        "shippingWeight": "0.07 kg Shipping weight The Shipping Weight includes the product, protective packaging material and the actual shipping box. In addition, the Shipping Weight may be adjusted for the Dimensional Weight (e.g. length, width & height) of a package. It is important to note that certain types of products (e.g. glass containers, liquids, fragile, refrigerated or ice packed) will often require protective packaging material. As such, these products will reflect a higher Shipping Weight compared to the unprotected product.",
+        "firstAvailable": "03/2023",
+        "price": 16.25,
+        "currency": "AUD",
+        "availability": "OutOfStock",
+        "rating": 4.7,
+        "ratingCount": 1867,
+        "image": "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/evl/evl02812/g/32.jpg",
+        "ingredients": null,
+        "supplementFacts": null,
+        "suggestedUse": null,
+        "warnings": null,
+        "specs": {
+          "First available": "03/2023",
+          "Shipping weight": "0.07 kg Shipping weight The Shipping Weight includes the product, protective packaging material and the actual shipping box. In addition, the Shipping Weight may be adjusted for the Dimensional Weight (e.g. length, width & height) of a package. It is important to note that certain types of products (e.g. glass containers, liquids, fragile, refrigerated or ice packed) will often require protective packaging material. As such, these products will reflect a higher Shipping Weight compared to the unprotected product.",
+          "Product code": "EVL-02812",
+          "UPC": "818901028128",
+          "Package quantity": "30 count",
+          "Dimensions": "11 x 5.8 x 5.8 cm , 0.05 kg"
+        }
+      },
+      "sourceProse": {
+        "_warning": "Manufacturer copy. Not yours. Read it, write your own, do not publish this.",
+        "description": "Dietary Supplement Hyaluronic Acid Key Product Features: Supports joints Supports skin health & hydration Vegan/Non-GMO",
+        "overview": null
+      },
+      "fetchedAt": "2026-09-16T09:26:42.278Z"
+    }
+  ],
+  "skipped": [
+    {
+      "iherbId": "64903",
+      "url": "https://au.iherb.com/pr/california-gold-nutrition-collagenup-hydrolyzed-marine-collagen-peptides-with-hyaluronic-acid-and-vitamin-c-unflavored-7-26-oz-206-g/64903",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "64902",
+      "url": "https://au.iherb.com/pr/california-gold-nutrition-collagenup-hydrolyzed-marine-collagen-peptides-with-hyaluronic-acid-and-vitamin-c-unflavored-1-02-lb-464-g/64902",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "69436",
+      "url": "https://au.iherb.com/pr/california-gold-nutrition-glucosamine-chondroitin-msm-plus-hyaluronic-acid-120-veggie-caps/69436",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "109491",
+      "url": "https://au.iherb.com/pr/california-gold-nutrition-collagenup-hydrolyzed-marine-collagen-peptides-with-hyaluronic-acid-and-vitamin-c-unflavored-2-2-lb-1-kg/109491",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "160310",
+      "url": "https://au.iherb.com/pr/k2o-by-kylie-jenner-advanced-skin-hydration-mix-strawberry-lychee-20-sticks-0-26-oz-7-5-g-each/160310",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "96246",
+      "url": "https://au.iherb.com/pr/california-gold-nutrition-glucosamine-chondroitin-msm-plus-hyaluronic-acid-60-veggie-capsules/96246",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "74182",
+      "url": "https://au.iherb.com/pr/california-gold-nutrition-total-veggie-joint-support-formula-with-glucosamine-chondroitin-msm-and-hyaluronic-acid-90-veggie-capsules/74182",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "135741",
+      "url": "https://au.iherb.com/pr/force-factor-hyaluronic-acid-200-mg-60-vegetable-capsules/135741",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "126557",
+      "url": "https://au.iherb.com/pr/vitamatic-hyaluronic-acid-high-potency-120-vegetable-capsules/126557",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "39935",
+      "url": "https://au.iherb.com/pr/now-foods-hyaluronic-acid-100-mg-120-veg-capsules/39935",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "16756",
+      "url": "https://au.iherb.com/pr/neocell-marine-collagen-peptides-hyaluronic-acid-120-capsules/16756",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "67458",
+      "url": "https://au.iherb.com/pr/california-gold-nutrition-hyaluronic-acid-complex-with-l-proline-french-grape-seed-and-french-maritime-pine-bark-extract-60-veggie-capsules/67458",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "155872",
+      "url": "https://au.iherb.com/pr/vitauthority-marine-collagen-with-vitamin-c-hyaluronic-acid-120-capsules/155872",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "160312",
+      "url": "https://au.iherb.com/pr/k2o-by-kylie-jenner-advanced-skin-hydration-mix-variety-pack-20-sticks-5-63-oz-159-7-g/160312",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "23083",
+      "url": "https://au.iherb.com/pr/doctor-s-best-hyaluronic-acid-chondroitin-sulfate-180-veggie-capsules/23083",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "16750",
+      "url": "https://au.iherb.com/pr/neocell-liquid-hyaluronic-acid-vitamin-c-delicious-blueberry-16-fl-oz-473-ml/16750",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "128923",
+      "url": "https://au.iherb.com/pr/nutricost-hyaluronic-acid-100-mg-120-capsules/128923",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "12491",
+      "url": "https://au.iherb.com/pr/solgar-collagen-hyaluronic-acid-complex-30-tablets/12491",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "4457",
+      "url": "https://au.iherb.com/pr/doctor-s-best-hyaluronic-acid-chondroitin-sulfate-with-biocell-collagen-60-veggie-capsules/4457",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "116549",
+      "url": "https://au.iherb.com/pr/neocell-marine-collagen-peptides-hyaluronic-acid-msm-vitamin-c-unflavored-7-oz-200-g/116549",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "3325",
+      "url": "https://au.iherb.com/pr/now-foods-hyaluronic-acid-50-mg-120-veg-capsules/3325",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "160309",
+      "url": "https://au.iherb.com/pr/k2o-by-kylie-jenner-advanced-skin-hydration-mix-peach-20-sticks-0-27-oz-7-6-g-each/160309",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "641",
+      "url": "https://au.iherb.com/pr/now-foods-hyaluronic-acid-with-msm-60-veg-capsules/641",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "39054",
+      "url": "https://au.iherb.com/pr/now-foods-liquid-hyaluronic-acid-berry-100-mg-16-fl-oz-473-ml/39054",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "8929",
+      "url": "https://au.iherb.com/pr/jarrow-formulas-hyaluronic-acid-120-veggie-capsules/8929",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "38814",
+      "url": "https://au.iherb.com/pr/doctor-s-best-hyaluronic-acid-chondroitin-sulfate-60-tablets/38814",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "24530",
+      "url": "https://au.iherb.com/pr/natural-factors-vegan-hyabest-hyaluronic-acid-120-mg-60-vegetarian-capsules/24530",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "8227",
+      "url": "https://au.iherb.com/pr/now-foods-hyaluronic-acid-with-l-proline-alpha-lipoic-acid-and-grape-seed-extract-100-mg-60-veg-capsules/8227",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "156080",
+      "url": "https://au.iherb.com/pr/doctor-s-best-pure-collagen-peptides-with-added-hyaluronic-acid-vitamin-c-biotin-14-8-oz-417-g/156080",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "59092",
+      "url": "https://au.iherb.com/pr/youtheory-hyaluronic-acid-advanced-formula-120-vegetarian-capsules/59092",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "125101",
+      "url": "https://au.iherb.com/pr/best-naturals-hyaluronic-acid-200-mg-120-tablets/125101",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "144822",
+      "url": "https://au.iherb.com/pr/toniiq-hyaluronic-acid-360-capsules/144822",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "30671",
+      "url": "https://au.iherb.com/pr/hyalogic-hyaluronic-acid-for-joints-skin-eyes-synthovial-seven-1-oz-30-ml/30671",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "152163",
+      "url": "https://au.iherb.com/pr/micro-ingredients-hyaluronic-acid-powder-3-52-oz-100-g/152163",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "38449",
+      "url": "https://au.iherb.com/pr/hyalogic-hylavision-hyaluronic-acid-lutein-zeaxathin-vitamins-120-capsules/38449",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "146522",
+      "url": "https://au.iherb.com/pr/micro-ingredients-biotin-365-softgels/146522",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "2497",
+      "url": "https://au.iherb.com/pr/jarrow-formulas-vegan-hyaluronic-acid-60-veggie-capsules/2497",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "113269",
+      "url": "https://au.iherb.com/pr/garden-of-life-wild-caught-grass-fed-collagen-hyaluronic-acid-unflavored-9-52-oz-270-g/113269",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "160311",
+      "url": "https://au.iherb.com/pr/k2o-by-kylie-jenner-advanced-skin-hydration-mix-watermelon-lime-20-sticks-0-33-oz-9-3-g-each/160311",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "118609",
+      "url": "https://au.iherb.com/pr/swanson-vitamins-injuv-hyaluronic-acid-standardized-70-mg-90-softgels/118609",
+      "reason": "iherb id already in Strapi"
+    },
+    {
+      "iherbId": "3317",
+      "url": "https://au.iherb.com/pr/nature-s-way-hydraplenish-60-capsules-0-5-g-per-capsule/3317",
+      "reason": "iherb id already in Strapi"
+    }
+  ],
+  "failures": []
+}
