@@ -176,7 +176,13 @@ function buildPrompt(post, bg) {
   } else if (text.includes('serum')) {
     subject = 'An elegant apothecary glass serum dropper bottle with pure hydrating liquid, on a simple pedestal with a few water droplets.';
   } else {
-    subject = `A premium skincare product arrangement for ${title.replace(/[^\w\s-]/g, '')}, featuring minimalist bottles and jars.`;
+    /* Never put the title in the prompt: titles are full of brand names ("Era Organics vs Eminence Stone Crop"),
+       and the model prints them on the packaging despite UNBRANDED. Describe the product type instead. */
+    const type = ['moisturizer', 'cream', 'gel', 'serum', 'toner', 'oil', 'lotion', 'balm', 'mist'].find((t) => text.includes(t));
+    const products = type ? `${type} products` : 'skincare products';
+    subject = /\bvs\.?\b|versus|showdown|battle|compar/.test(text)
+      ? `Two contrasting unbranded ${products} standing side by side, one jar and one bottle, suggesting a head-to-head comparison.`
+      : `A small arrangement of unbranded ${products} in minimalist bottles and jars.`;
   }
 
   return `${subject} ${UNBRANDED} ${baseStyle(bg)}`;
