@@ -24,6 +24,9 @@ const HIDDEN_KEYS = new Set(
     'howToUse',
     'goodToKnow',
     'faqs',
+    /* Provenance notes for editors (which model wrote the copy, which sources it used): never shown. */
+    'contentSource',
+    'contentSources',
     'skinTypes',
     'ingredients',
     'seoTitle',
