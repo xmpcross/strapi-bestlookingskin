@@ -9,7 +9,9 @@
  *   without the link);
  * - every other link to Amazon or an affiliate network is unwrapped: its text stays, the link goes;
  * - images hosted by Amazon are removed (they may only be shown by an active Associate);
- * - Content Egg prices, stock lines and "Amazon price updated" disclaimers are removed.
+ * - Content Egg prices, stock lines and "Amazon price updated" disclaimers are removed;
+ * - the Content Egg review markup (JSON-LD Product blocks with an Amazon ASIN or image and a self-assigned score)
+ *   is removed.
  * Idempotent.
  */
 const AFFILIATE_HREF = new RegExp(
@@ -56,5 +58,28 @@ export function stripAffiliateLinks(html: string): string {
     .replace(/<div class="[^"]*\bcegg-price-disclaimer\b[^"]*">\s*<small>[\s\S]*?<\/small>\s*<\/div>/gi, '')
     .replace(/<(div|span|del|s)\s+class="[^"]*\bcegg-(?:old-)?price\b[^"]*">(?:\s|<br\s*\/?>|&nbsp;)*[^<]*<\/\1>/gi, '')
     .replace(/<div class="[^"]*\bcegg-stock-status\b[^"]*">[\s\S]*?<\/div>/gi, '')
-    .replace(/Amazon price updated:[^<]*/gi, '');
+    .replace(/Amazon price updated:[^<]*/gi, '')
+    .replace(/<script\b[^>]*application\/ld\+json[^>]*>[\s\S]*?<\/script>/gi, (block) =>
+      /"asin"|amazon\.com|media-amazon/i.test(block) ? '' : block,
+    );
+}
+
+/**
+ * A retailer link with the affiliate wrapper taken off, or undefined when it is nothing but an affiliate link.
+ * Some offers store the affiliate redirect as their product URL: Walmart's goto.walmart.com carries the real
+ * product page in its `u` parameter, and eBay Partner Network links are the product page plus campaign params.
+ */
+export function plainRetailerUrl(url: string | undefined): string | undefined {
+  if (!url) return url;
+  try {
+    const u = new URL(url);
+    if (/(^|\.)goto\.walmart\.com$/i.test(u.hostname)) return u.searchParams.get('u') || undefined;
+    if (/(^|\.)ebay\.[a-z.]+$/i.test(u.hostname)) {
+      for (const p of ['campid', 'mkcid', 'mkevt', 'mkrid', 'toolid', 'customid', 'siteid']) u.searchParams.delete(p);
+      return u.toString();
+    }
+  } catch {
+    return url;
+  }
+  return isAffiliate(url) ? undefined : url;
 }

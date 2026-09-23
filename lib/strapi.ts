@@ -2,7 +2,7 @@ import { readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import qs from 'qs';
 import { AFFILIATE_LINKS_ENABLED, PILLAR_SLUGS } from '@/lib/site';
-import { stripAffiliateLinks } from '@/lib/affiliate';
+import { plainRetailerUrl, stripAffiliateLinks } from '@/lib/affiliate';
 
 const BASE = (process.env.NEXT_PUBLIC_STRAPI_URL || 'https://cms.fxnstudio.com').replace(/\/$/, '');
 // commerce-products is a Strapi pool SHARED with other sites (e.g. nxt.bargains).
@@ -1040,7 +1040,9 @@ function merchantSlug(offer?: CommerceOffer): string {
 
 function normalizeCommerceProduct(product: CommerceProduct): BlsProduct {
   /* Affiliates off (lib/site.ts): drop every offer's affiliate URL so all retailer links are plain product pages. */
-  const offers = (product.offers ?? []).map((offer) => (AFFILIATE_LINKS_ENABLED ? offer : { ...offer, affiliateUrl: undefined }));
+  const offers = (product.offers ?? []).map((offer) =>
+    AFFILIATE_LINKS_ENABLED ? offer : { ...offer, affiliateUrl: undefined, productUrl: plainRetailerUrl(offer.productUrl) },
+  );
   const availableOffers = offers.filter((offer) => offer.status !== 'expired' && offer.availability !== 'out_of_stock');
   const pricedOffers = availableOffers.filter((offer) => offer.price !== undefined);
   const bestOffer = [...pricedOffers].sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity))[0] ?? availableOffers[0];
