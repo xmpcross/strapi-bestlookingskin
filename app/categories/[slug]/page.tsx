@@ -31,8 +31,8 @@ const GUIDE_HUB: Record<string, string> = {
 };
 type Search = { brand?: string; rating?: string; price?: string; page?: string };
 
-/* Products per page: four rows of three at desktop width. */
-const PAGE_SIZE = 12;
+/* Products per page: seven rows of three at desktop width. */
+const PAGE_SIZE = 21;
 
 /* Price bands, fixed rather than derived from the data: a band that moves when
    the catalogue changes makes a bookmarked filter mean something different next
