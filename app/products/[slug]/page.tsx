@@ -757,19 +757,6 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
           </section>
         )}
 
-        {relatedGuides.length > 0 && (
-          <section className="mt-5 pt-4" data-testid="related-guides">
-            <h2 className="h4 mb-4">Related guides</h2>
-            <div className="row g-4">
-              {relatedGuides.map((card) => (
-                <div className="col-md-6 col-12" key={card.key}>
-                  <RowCard card={card} />
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
         {related.length > 0 && (
           <aside className="mt-5 pt-4" data-testid="related-products">
             <h3 className="h4 mb-4">More in {cat?.name ?? 'this category'}</h3>
@@ -781,6 +768,20 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
               ))}
             </ProductCarousel>
           </aside>
+        )}
+
+        {/* Related guides at the very bottom, after the related products. */}
+        {relatedGuides.length > 0 && (
+          <section className="mt-5 pt-4" data-testid="related-guides">
+            <h2 className="h4 mb-4">Related guides</h2>
+            <div className="row g-4">
+              {relatedGuides.map((card) => (
+                <div className="col-md-6 col-12" key={card.key}>
+                  <RowCard card={card} />
+                </div>
+              ))}
+            </div>
+          </section>
         )}
       </div>
     </article>
