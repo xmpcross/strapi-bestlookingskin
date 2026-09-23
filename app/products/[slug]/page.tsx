@@ -259,6 +259,18 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
           }
         : undefined;
 
+  const iherbForLd = (product.offers ?? []).find((o) => o.merchant?.slug === 'iherb' && typeof o.price === 'number');
+  const iherbOfferLd = iherbForLd
+    ? {
+        '@type': 'Offer',
+        price: iherbForLd.price,
+        priceCurrency: iherbForLd.currency || currency,
+        availability: iherbForLd.availability === 'out_of_stock' ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
+        url: iherbForLd.affiliateUrl || iherbForLd.productUrl || `${SITE.url}/products/${product.slug}`,
+        seller: { '@type': 'Organization', name: 'iHerb' },
+      }
+    : undefined;
+
   const productJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -268,9 +280,12 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
     brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
     sku: product.skuOrModel || undefined,
     gtin: product.gtin && /^\d{8,14}$/.test(product.gtin) ? product.gtin : undefined,
-    offers: infoOnly ? undefined : offersLd,
+    /* Info-only products show one reference price (iHerb), so their markup carries that one Offer. */
+    offers: infoOnly ? iherbOfferLd : offersLd,
+    /* Only ratings collected on bestlooking.skin. Retailer ratings (product.rating) may be shown as visible text
+       ("from retailer data") but Google does not allow them in Product markup (GSC audit 24 Sep 2026). */
     aggregateRating:
-      ratingValue > 0 && ratingCount > 0
+      ratingIsReviews && ratingValue > 0 && ratingCount > 0
         ? {
             '@type': 'AggregateRating',
             ratingValue: Number(Math.min(5, ratingValue).toFixed(1)),
