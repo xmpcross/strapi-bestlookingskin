@@ -108,7 +108,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             }
           />
           <div className="row align-items-end">
-            <div className="col-lg-8 col-12">
+            <div className="col-12">
               <div className="title">
                 <p className="shop-eyebrow mb-2">Product Category</p>
                 <h1 className="h4 mb-0 ds-4">{pageTitle}</h1>

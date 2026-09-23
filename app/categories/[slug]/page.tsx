@@ -140,7 +140,7 @@ export default async function CategoryPage({
         <div className="container">
           <Breadcrumb items={[{ label: 'Products', href: '/products' }, { label: category.name }]} />
           <div className="row align-items-end">
-            <div className="col-lg-8 col-12">
+            <div className="col-12">
               <div className="title d-flex flex-column flex-sm-row align-items-sm-center gap-3">
                 {image && (
                   // eslint-disable-next-line @next/next/no-img-element
