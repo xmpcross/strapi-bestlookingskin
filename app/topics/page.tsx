@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getTopicGroups } from '@/lib/nav';
-import { listPostSummaries, type BlsPostSummary } from '@/lib/strapi';
+import { listPostSummaries, listProductCategoryCounts, listProducts, type BlsPostSummary } from '@/lib/strapi';
+import AdSlot from '@/components/AdSlot';
+import FeaturedPostsSlider from '@/components/FeaturedPostsSlider';
 import { postPath } from '@/lib/format';
 import { toCard } from '@/lib/post-card';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
@@ -49,11 +51,22 @@ export default async function TopicsPage({ searchParams }: { searchParams: Promi
   const groups = await getTopicGroups();
   const hubs = groups.flatMap((g) => g.items);
 
-  const [counts, latest, pillars] = await Promise.all([
+  const [counts, latest, pillars, newest, productCats, productTotal] = await Promise.all([
     Promise.all(hubs.map((h) => listPostSummaries({ category: h.href.replace(/^\//, ''), pageSize: 1 }).catch(() => empty))),
     Promise.all(hubs.map((h) => listPostSummaries({ category: h.href.replace(/^\//, ''), pageSize: 1, withCover: true }).catch(() => empty))),
     listPostSummaries({ pillar: true, pageSize: 4 }).catch(() => empty),
+    listPostSummaries({ authored: true, withCover: true, pageSize: 12 }).catch(() => empty),
+    listProductCategoryCounts().catch(() => []),
+    listProducts({ pageSize: 1 })
+      .then((r) => r.meta.pagination.total)
+      .catch(() => null),
   ]);
+  /* Sidebar widgets below the filters: newest guides, then the featured slider from the next few. */
+  const newestCards = newest.data.map(toCard).filter((c) => c.image);
+  const latestGuides = newestCards.slice(0, 4);
+  const featured = newestCards
+    .slice(4, 7)
+    .map((c) => ({ href: c.href, title: c.title, image: c.image as string, imageAlt: c.imageAlt, author: c.author?.name ?? null, date: c.date }));
 
   const info = new Map(
     hubs.map((h, i) => {
@@ -160,6 +173,49 @@ export default async function TopicsPage({ searchParams }: { searchParams: Promi
                       );
                     })}
                   </ul>
+                </div>
+              )}
+
+              <AdSlot kind="display" className="mb-5" />
+
+              {latestGuides.length > 0 && (
+                <div className="shop-widget" data-testid="topics-latest">
+                  <SidebarTitle>Latest guides</SidebarTitle>
+                  <div className="d-flex flex-column gap-3">
+                    {latestGuides.map((card) => (
+                      <div className="article card-10 style-2 sidebar-trending" key={card.key}>
+                        <Link href={card.href} className="card-img" tabIndex={-1} aria-hidden>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img className="w-100" src={card.image as string} alt="" width={108} height={83} loading="lazy" />
+                        </Link>
+                        <div className="card-body">
+                          <Link href={card.href}>
+                            <span className="h6 mb-2 text-truncate-2 archive-side-title">{card.title}</span>
+                          </Link>
+                          <span className="fs-8 text-600">{card.date}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {productCats.length > 0 && (
+                <div className="shop-widget">
+                  <CategoryListWidget
+                    title="Shop by category"
+                    allHref="/products"
+                    allLabel="All products"
+                    total={productTotal}
+                    rows={productCats}
+                  />
+                </div>
+              )}
+
+              {featured.length > 0 && (
+                <div className="shop-widget" data-testid="topics-featured-posts">
+                  <SidebarTitle>Featured Posts</SidebarTitle>
+                  <FeaturedPostsSlider posts={featured} />
                 </div>
               )}
             </aside>

@@ -1,9 +1,13 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { SITE } from '@/lib/site';
+import { SITE, INFO_ONLY_CATEGORY_SLUGS } from '@/lib/site';
 import { descriptionFromBody } from '@/lib/format';
-import { listProductCategories, listProductCategoryCounts, listProducts, mediaUrl } from '@/lib/strapi';
+import { listPostSummaries, listProductCategories, listProductCategoryCounts, listProducts, mediaUrl } from '@/lib/strapi';
+import { toCard } from '@/lib/post-card';
+import SidebarTitle from '@/components/magzin/SidebarTitle';
+import AdSlot from '@/components/AdSlot';
+import FeaturedPostsSlider from '@/components/FeaturedPostsSlider';
 import ProductCard from '@/components/ProductCard';
 import ShopFilters, { type Facet, type ShopFilterState } from '@/components/ShopFilters';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
@@ -13,6 +17,17 @@ export const revalidate = 60;
 export const dynamicParams = true;
 
 type Params = { slug: string };
+
+/* The editorial hub whose guides sit beside each product category ("Guides" widget). A category without a hub
+   falls back to guides that mention its name in the title. */
+const GUIDE_HUB: Record<string, string> = {
+  'facial-serums': 'serums',
+  moisturisers: 'moisturizers',
+  'facial-cleansers': 'cleansers',
+  'toners-and-astringents': 'exfoliants',
+  'exfoliators-and-scrubs': 'exfoliants',
+  'anti-aging': 'anti-aging',
+};
 type Search = { brand?: string; rating?: string; price?: string };
 
 /* Price bands, fixed rather than derived from the data: a band that moves when
@@ -73,12 +88,27 @@ export default async function CategoryPage({
      holds 72, of which 5 qualify. */
   const all = (await listProducts({ category: slug, pageSize: 100 }).catch(() => null))?.data ?? [];
   const image = mediaUrl(category.image ?? null);
-  const [categoryCounts, productTotal] = await Promise.all([
+  const hub = GUIDE_HUB[slug];
+  const [categoryCounts, productTotal, guidesRes, featuredRes] = await Promise.all([
     listProductCategoryCounts().catch(() => []),
     listProducts({ pageSize: 1 })
       .then((r) => r.meta.pagination.total)
       .catch(() => null),
+    (hub
+      ? listPostSummaries({ category: hub, withCover: true, pageSize: 4 })
+      : listPostSummaries({ titleMentions: [category.name.split(' ')[0]], withCover: true, pageSize: 4 })
+    ).catch(() => null),
+    listPostSummaries({ authored: true, withCover: true, pageSize: 12 }).catch(() => null),
   ]);
+  const infoOnly = INFO_ONLY_CATEGORY_SLUGS.includes(slug);
+  /* Sidebar widgets below the filters. */
+  const guides = (guidesRes?.data ?? []).map(toCard).filter((c) => c.image).slice(0, 4);
+  const guideKeys = new Set(guides.map((g) => g.href));
+  const featured = (featuredRes?.data ?? [])
+    .map(toCard)
+    .filter((c) => c.image && !guideKeys.has(c.href))
+    .slice(0, 3)
+    .map((c) => ({ href: c.href, title: c.title, image: c.image as string, imageAlt: c.imageAlt, author: c.author?.name ?? null, date: c.date }));
 
   const state: ShopFilterState = { brand: sp.brand, rating: sp.rating, price: sp.price };
   const basePath = `/categories/${category.slug}`;
@@ -101,6 +131,9 @@ export default async function CategoryPage({
   };
 
   const products = all.filter((p) => matchesBrand(p) && matchesRating(p) && matchesPrice(p));
+  /* "Top rated" widget: weighted towards products with more ratings, so four ratings at 5.0 do not outrank thousands. */
+  const score = (p: (typeof all)[number]) => ((p.rating ?? 0) * (p.ratingCount ?? 0) + 4 * 20) / ((p.ratingCount ?? 0) + 20);
+  const topRated = [...all].filter((p) => (p.ratingCount ?? 0) > 0).sort((a, b) => score(b) - score(a)).slice(0, 4);
 
   /*
    * Facet counts are taken against the OTHER active filters, not against the
@@ -180,10 +213,57 @@ export default async function CategoryPage({
                 categories={categoryCounts}
                 brands={brands}
                 ratings={ratings}
-                prices={prices}
+                prices={infoOnly ? [] : prices}
                 activeCategorySlug={category.slug}
                 totalProducts={productTotal}
               />
+
+              {guides.length > 0 && (
+                <div className="shop-widget" data-testid="category-guides">
+                  <SidebarTitle>{hub ? 'Guides' : `Guides on ${category.name}`}</SidebarTitle>
+                  <div className="d-flex flex-column gap-3">
+                    {guides.map((card) => (
+                      <div className="article card-10 style-2 sidebar-trending" key={card.key}>
+                        <Link href={card.href} className="card-img" tabIndex={-1} aria-hidden>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img className="w-100" src={card.image as string} alt="" width={108} height={83} loading="lazy" />
+                        </Link>
+                        <div className="card-body">
+                          <Link href={card.href}>
+                            <span className="h6 mb-2 text-truncate-2 archive-side-title">{card.title}</span>
+                          </Link>
+                          <span className="fs-8 text-600">{card.date}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {hub && (
+                    <Link href={`/${hub}`} className="bls-link fs-7 fw-medium d-inline-block mt-3">
+                      All {hub.replace(/-/g, ' ')} guides
+                    </Link>
+                  )}
+                </div>
+              )}
+
+              <AdSlot kind="display" className="mb-5" />
+
+              {topRated.length > 0 && (
+                <div className="shop-widget" data-testid="category-top-rated">
+                  <SidebarTitle>Top rated</SidebarTitle>
+                  <div className="d-flex flex-column gap-3">
+                    {topRated.map((p) => (
+                      <ProductCard key={p.id} product={p} variant="compact" thumbBg="bg-transparent" />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {featured.length > 0 && (
+                <div className="shop-widget" data-testid="category-featured-posts">
+                  <SidebarTitle>Featured Posts</SidebarTitle>
+                  <FeaturedPostsSlider posts={featured} />
+                </div>
+              )}
             </div>
 
             <div className="col-lg-9 col-12">
