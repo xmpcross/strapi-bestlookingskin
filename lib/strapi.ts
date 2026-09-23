@@ -754,6 +754,8 @@ export async function listPosts(
  * post's HTML (pages of 5-10 MB that Next cannot cache), which listings never render.
  */
 export type BlsPostSummary = Omit<BlsPost, 'content' | 'gallery' | 'ogImage'>;
+
+export type ProductFaq = { question: string; answer: string };
 export async function listPostSummaries(
   opts: {
     page?: number;
@@ -766,10 +768,18 @@ export async function listPostSummaries(
     exclude?: string[];
     /** Only pillar pages: post type `pillar`, or a slug in PILLAR_SLUGS. */
     pillar?: boolean;
+    /** Posts whose title or body contains every one of these terms (product pages' "Related guides"). */
+    mentions?: string[];
+    /** Posts whose title contains every one of these terms. */
+    titleMentions?: string[];
   } = {},
 ) {
   const filters: Record<string, unknown> = {};
-  if (opts.pillar) filters.$and = [{ $or: [{ postType: { $eq: 'pillar' } }, { slug: { $in: [...PILLAR_SLUGS] } }] }];
+  const and: Record<string, unknown>[] = [];
+  if (opts.pillar) and.push({ $or: [{ postType: { $eq: 'pillar' } }, { slug: { $in: [...PILLAR_SLUGS] } }] });
+  for (const term of opts.mentions ?? []) and.push({ $or: [{ title: { $containsi: term } }, { content: { $containsi: term } }] });
+  for (const term of opts.titleMentions ?? []) and.push({ title: { $containsi: term } });
+  if (and.length) filters.$and = and;
   if (opts.category) filters.categories = { slug: { $eqi: opts.category } };
   if (opts.postType) filters.postType = { $eq: opts.postType };
   if (opts.categories?.length) filters.categories = { slug: { $in: opts.categories } };
@@ -917,6 +927,11 @@ export type BlsProduct = {
   shortDescription?: string;
   description?: string;
   keyFeatures?: string[];
+  /* Editorial product content, kept in the product's specs JSON (no CMS schema change): shown as the How to use,
+     Good to know and FAQ sections on the product page. */
+  howToUse?: string[];
+  goodToKnow?: string[];
+  faqs?: ProductFaq[];
   primaryImage?: StrapiImage;
   gallery?: NonNullable<StrapiImage>[];
   asin?: string;
@@ -953,6 +968,9 @@ export type BlsProduct = {
     keyFeatures?: string[];
     skinTypes?: string[];
     ingredients?: string;
+    howToUse?: string[];
+    goodToKnow?: string[];
+    faqs?: ProductFaq[];
     technicalSpecs?: Record<string, string | number>;
   };
 };
@@ -1014,6 +1032,9 @@ export type CommerceProduct = Omit<
     keyFeatures?: string[];
     skinTypes?: string[];
     ingredients?: string;
+    howToUse?: string[];
+    goodToKnow?: string[];
+    faqs?: ProductFaq[];
     technicalSpecs?: Record<string, string | number>;
     seoTitle?: string;
     seoDescription?: string;
@@ -1060,6 +1081,9 @@ function normalizeCommerceProduct(product: CommerceProduct): BlsProduct {
     offers,
     brand: product.brandRef?.name || product.brand,
     keyFeatures: product.specs?.keyFeatures ?? [],
+    howToUse: product.specs?.howToUse ?? [],
+    goodToKnow: product.specs?.goodToKnow ?? [],
+    faqs: (product.specs?.faqs ?? []).filter((f) => f?.question && f?.answer),
     skuOrModel: product.mpn || product.sku,
     skinTypes: product.specs?.skinTypes ?? [],
     ingredients: product.specs?.ingredients,

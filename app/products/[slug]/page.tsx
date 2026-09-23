@@ -2,7 +2,9 @@ import Link from 'next/link';
 import { Fragment } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getProduct, listProducts, getPriceHistory, listProductReviews, mediaUrl, type BlsProduct, listProductCategoryCounts } from '@/lib/strapi';
+import { getProduct, listProducts, getPriceHistory, listProductReviews, listPostSummaries, mediaUrl, type BlsProduct, type BlsPostSummary, listProductCategoryCounts } from '@/lib/strapi';
+import { toCard } from '@/lib/post-card';
+import { RowCard } from '@/components/magzin/cards';
 import { SITE, AFFILIATE_LINKS_ENABLED } from '@/lib/site';
 import { descriptionFromBody } from '@/lib/format';
 import ProductCard from '@/components/ProductCard';
@@ -103,6 +105,35 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
   const ratingValue = fpCount ? fpAvg : (product.rating ?? 0);
   const ratingCount = fpCount || product.ratingCount || 0;
   const ratingIsReviews = fpCount > 0;
+
+  /*
+   * Related guides: posts that mention this product (its brand and its core name, e.g. "La Roche-Posay" +
+   * "Hyalu B5"), topped up with guides whose title names its main ingredient. Four at most, newest first.
+   */
+  const relatedGuides = await (async () => {
+    const none: BlsPostSummary[] = [];
+    const core = coreProductName(product.name, product.brand);
+    const ingredient = String((product.specs as Record<string, unknown> | undefined)?.Ingredient ?? '').split(',')[0].trim();
+    const [byProduct, byIngredient] = await Promise.all([
+      product.brand && core
+        ? listPostSummaries({ mentions: [product.brand, core], withCover: true, pageSize: 4 }).then((r) => r.data).catch(() => none)
+        : none,
+      ingredient.length > 3
+        ? listPostSummaries({ titleMentions: [ingredient], authored: true, withCover: true, pageSize: 8 }).then((r) => r.data).catch(() => none)
+        : none,
+    ]);
+    const seen = new Set<string>();
+    return [...byProduct, ...byIngredient].filter((p) => !seen.has(p.slug) && seen.add(p.slug)).slice(0, 4).map(toCard);
+  })();
+
+  /* FAQ structured data, only when the product carries written FAQs. */
+  const faqJsonLd = product.faqs && product.faqs.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: product.faqs.map((f) => ({ '@type': 'Question', name: f.question, acceptedAnswer: { '@type': 'Answer', text: f.answer } })),
+      }
+    : null;
 
   // Attribute rows for the Specifications and Additional Info tabs, and the lead under the title.
   const attributes = productAttributes(product.specs as Record<string, unknown> | undefined);
@@ -256,6 +287,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
       />
+      {faqJsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />}
 
       <div className="container">
         <Breadcrumb
@@ -603,6 +635,41 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
               </section>
             )}
 
+            {/* Editorial sections from the product's specs JSON; each renders only when it has content. */}
+            {product.howToUse && product.howToUse.length > 0 && (
+              <section className="mt-5 product-howto" data-testid="product-how-to-use">
+                <h2 className="h4 mb-3">How to use</h2>
+                <ol className="fs-7 mb-0 ps-3" style={{ lineHeight: 1.8 }}>
+                  {product.howToUse.map((step, i) => (
+                    <li key={i}>{step}</li>
+                  ))}
+                </ol>
+              </section>
+            )}
+
+            {product.goodToKnow && product.goodToKnow.length > 0 && (
+              <section className="mt-5 product-good-to-know" data-testid="product-good-to-know">
+                <h2 className="h4 mb-3">Good to know</h2>
+                <ul className="fs-7 mb-0 ps-3" style={{ lineHeight: 1.8 }}>
+                  {product.goodToKnow.map((point, i) => (
+                    <li key={i}>{point}</li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {product.faqs && product.faqs.length > 0 && (
+              <section className="mt-5 product-faq" data-testid="product-faq">
+                <h2 className="h4 mb-3">Questions and answers</h2>
+                {product.faqs.map((f, i) => (
+                  <div key={i} className="mb-3">
+                    <h3 className="h6 mb-1">{f.question}</h3>
+                    <p className="fs-7 mb-0 text-600" style={{ lineHeight: 1.8 }}>{f.answer}</p>
+                  </div>
+                ))}
+              </section>
+            )}
+
           </div>
 
           {SHOW_PRODUCT_SIDEBAR && (
@@ -683,6 +750,19 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
           <section className="mt-5 pt-4" data-testid="price-history">
             <h2 className="h4 mb-4">Price History</h2>
             <PriceHistoryChart points={priceHistory} />
+          </section>
+        )}
+
+        {relatedGuides.length > 0 && (
+          <section className="mt-5 pt-4" data-testid="related-guides">
+            <h2 className="h4 mb-4">Related guides</h2>
+            <div className="row g-4">
+              {relatedGuides.map((card) => (
+                <div className="col-md-6 col-12" key={card.key}>
+                  <RowCard card={card} />
+                </div>
+              ))}
+            </div>
           </section>
         )}
 
@@ -989,4 +1069,18 @@ function AttributeTable({ rows, testId }: { rows: [string, string][]; testId: st
       </tbody>
     </table>
   );
+}
+
+/* The part of a product name that identifies it, without the brand or generic words: "La Roche-Posay Hyalu B5
+   Hyaluronic Acid Serum Pure" -> "Hyalu B5". Used to find posts that mention the product. */
+const GENERIC_NAME_WORD = /^(serum|cream|face|facial|pure|hyaluronic|acid|with|for|and|the|moisturizer|moisturiser|cleanser|lotion|gel|oil|mask|toner|spf|fl|oz|ml|\d+(\.\d+)?(ml|oz|%)?)$/i;
+function coreProductName(name: string, brand?: string): string {
+  let rest = name.trim();
+  if (brand && rest.toLowerCase().startsWith(brand.toLowerCase())) rest = rest.slice(brand.length).trim();
+  const words: string[] = [];
+  for (const w of rest.split(/\s+/)) {
+    if (GENERIC_NAME_WORD.test(w) || words.length === 2) break;
+    words.push(w);
+  }
+  return words.join(' ');
 }
