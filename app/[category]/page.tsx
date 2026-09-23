@@ -14,6 +14,7 @@ import CategoryListWidget from '@/components/magzin/CategoryListWidget';
 import FeaturedPostsSlider from '@/components/FeaturedPostsSlider';
 import PillarBanner from '@/components/pillar/PillarBanner';
 import CategoryIntro from '@/components/CategoryIntro';
+import HubGroupPage, { HUB_GROUP_INTROS } from '@/components/HubGroupPage';
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -50,6 +51,9 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   if (RESERVED.has(category)) return {};
   const retiredTo = SECTIONS.find((sec) => sec.slug === category)?.redirectTo;
   if (retiredTo) permanentRedirect(retiredTo);
+  /* Hub-group pages list their hubs (components/HubGroupPage). */
+  const group = HUB_GROUP_INTROS[category];
+  if (group) return { title: group.title, description: group.description, alternates: { canonical: `/${category}` }, openGraph: { title: group.title, description: group.description, url: `${SITE.url}/${category}` } };
   const { page: pageRaw, topics, type, sort } = await searchParams;
   const page = Math.max(1, Number(pageRaw) || 1);
   const c = await resolveCategory(category);
@@ -87,6 +91,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
   /* Retired format archives (reviews, comparisons, top-rated, how-to): their posts live in the topic hubs now. */
   const retiredTo = SECTIONS.find((sec) => sec.slug === category)?.redirectTo;
   if (retiredTo) permanentRedirect(retiredTo);
+  if (HUB_GROUP_INTROS[category]) return <HubGroupPage slug={category} />;
   const { page: pageRaw, topics: topicsRaw, type: typeRaw, sort: sortRaw } = await searchParams;
   const page = Math.max(1, Number(pageRaw) || 1);
   const sort: Sort = sortRaw === 'oldest' || sortRaw === 'az' ? sortRaw : 'newest';
