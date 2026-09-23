@@ -621,25 +621,21 @@
   margin-bottom: 0;
 }
 
-/* "Read more" after the first paragraph: a native <details>, styled as a text link. */
-.bls-category-intro-more > summary {
-  display: inline-block;
-  margin: 0 0 0.75rem;
-  cursor: pointer;
-  list-style: none;
+/* Inline "Read more" / "Read less" at the end of the intro text: a button styled as a text link. */
+.bls-category-intro-toggle {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
   font-size: 1rem;
   font-weight: 600;
   color: var(--tc-neutral-900);
   text-decoration: underline;
   text-underline-offset: 3px;
+  cursor: pointer;
 }
-.bls-category-intro-more > summary::-webkit-details-marker { display: none; }
-.bls-category-intro-more > summary::marker { content: ''; }
-.bls-category-intro-more > summary:hover { color: var(--tc-neutral-600); }
-.bls-category-intro-more > summary:focus-visible { outline: 2px solid var(--tc-neutral-900); outline-offset: 2px; }
-.bls-category-intro-more .less,
-.bls-category-intro-more[open] .more { display: none; }
-.bls-category-intro-more[open] .less { display: inline; }
-/* Open: the link moves below the revealed paragraphs. */
-.bls-category-intro-more[open] { display: flex; flex-direction: column; }
-.bls-category-intro-more[open] > summary { order: 1; margin: 0.6rem 0 0; align-self: flex-start; }
+.bls-category-intro-toggle:hover { color: var(--tc-neutral-600); }
+.bls-category-intro-toggle:focus-visible { outline: 2px solid var(--tc-neutral-900); outline-offset: 2px; }
+.bls-category-intro p[hidden] { display: none; }
+.bls-category-intro p:has(+ p[hidden]) { margin-bottom: 0; }
