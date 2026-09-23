@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  BestLooking.Skin — Master Vector Logo, LIGHT variant (for dark backgrounds).
+
+  A copy of bestlookingskin_logo.svg with one change: the "BESTLOOKING"
+  wordmark is filled with #F3F4F6 instead of currentColor.
+
+  Why a second file rather than relying on currentColor: the master logo was
+  drawn to inherit the page's text colour, but both logos are loaded through an
+  <img> tag, and an external SVG referenced that way is its own document — it
+  cannot see the host page's `color`, so currentColor falls back to black and
+  the wordmark disappears on a dark background.
+
+  #F3F4F6 is --tc-neutral-dark-900, the template's own dark-theme foreground, so
+  the wordmark matches body text in dark mode rather than being pure white.
+
+  Everything else is identical and deliberately so: the coral droplet, the
+  sparkles and the ".SKIN" accent read correctly on both light and dark grounds.
+  KEEP THE TWO FILES IN SYNC — a change to the master needs repeating here.
+-->
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 350 72"
+  role="img"
+  aria-label="BestLooking.Skin"
+  preserveAspectRatio="xMinYMid meet"
+>
+  <defs>
+    <linearGradient id="bls-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FB7185" />
+      <stop offset="50%" stop-color="#E11D48" />
+      <stop offset="100%" stop-color="#BE123C" />
+    </linearGradient>
+    <linearGradient id="bls-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF5A5F" />
+      <stop offset="100%" stop-color="#E11D48" />
+    </linearGradient>
+  </defs>
+
+  <!-- Serum Droplet + Radiant Sparkle Icon -->
+  <g transform="translate(4, 6)">
+    <!-- Droplet outer contour -->
+    <path
+      d="M30 4C30 4 10 28 10 40C10 51.0457 18.9543 60 30 60C41.0457 60 50 51.0457 50 40C50 28 30 4 30 4Z"
+      fill="url(#bls-gradient)"
+    />
+    <!-- Inner soft light reflection -->
+    <path
+      d="M22 36C22 43 26 49 32 51C28 51 18 46 18 38C18 31 25 21 27 18C25 22 22 30 22 36Z"
+      fill="#FFFFFF"
+      opacity="0.4"
+    />
+    <!-- 4-point radiant star sparkle inside droplet -->
+    <path
+      d="M35 25C35 29.2 39.2 33.4 43.4 33.4C39.2 33.4 35 37.6 35 41.8C35 37.6 30.8 33.4 26.6 33.4C30.8 33.4 35 29.2 35 25Z"
+      fill="#FFFFFF"
+    />
+    <!-- Small accent sparkle dot -->
+    <circle cx="23" cy="24" r="2.2" fill="#FFFFFF" opacity="0.9" />
+  </g>
+
+  <!-- Typography -->
+  <g fill="#F3F4F6" font-family="'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+    <!-- BESTLOOKING -->
+    <text x="66" y="44" font-weight="800" font-size="28" letter-spacing="-0.2">BESTLOOKING</text>
+    <!-- .SKIN accent text -->
+    <text x="274" y="44" font-weight="900" font-size="28" fill="url(#bls-glow)" letter-spacing="0">.SKIN</text>
+
+    <!-- Tagline / Sub-descriptor -->
+    <text x="67" y="58" font-weight="700" font-size="8.5" fill="url(#bls-glow)" letter-spacing="2.6" opacity="0.95">REVIEWS &amp; SCIENCE</text>
+  </g>
+</svg>

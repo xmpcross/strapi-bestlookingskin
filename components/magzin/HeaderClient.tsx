@@ -118,7 +118,9 @@ export default function HeaderClient({
               <div className="d-flex align-items-center">
                 <Link className="navbar-brand" href="/" aria-label={`${SITE.name} home`} data-testid="logo-link">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/bestlookingskin_logo.svg" width={175} height={36} alt={SITE.name} />
+                  <img className="logo-light" src="/bestlookingskin_logo.svg" width={175} height={36} alt={SITE.name} />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img className="logo-dark" src="/bestlookingskin_logo-light.svg" width={175} height={36} alt="" aria-hidden="true" />
                 </Link>
               </div>
               <div className="navbar-collapse d-none d-lg-block">{menu}</div>

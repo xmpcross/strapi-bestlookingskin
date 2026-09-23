@@ -271,20 +271,85 @@ body {
 .section-footer-4 .border-top-300 {
   border-top: 0;
 }
+/*
+ * Footer ground: a soft vertical wash rather than a flat panel.
+ *
+ * Built from --tc-neutral-50 and --tc-neutral-100, which the template reassigns
+ * under [data-bs-theme="dark"], so the same two lines give #f7f8f9 -> #eaecee in
+ * light and #151616 -> #181818 in dark. No second rule, and no chance of the two
+ * themes drifting apart.
+ */
+.section-footer-4 {
+  background: linear-gradient(180deg, var(--tc-neutral-50) 0%, var(--tc-neutral-100) 100%);
+}
+
+/*
+ * Logo swap.
+ *
+ * The master SVG fills its wordmark with `currentColor` so it should follow the
+ * page. It cannot: both marks load through an <img>, and an externally
+ * referenced SVG is its own document with no access to this page's `color`, so
+ * currentColor resolves to black and the wordmark vanishes on a dark ground.
+ *
+ * Hence two files and a CSS swap. The theme is stamped on <html> before paint by
+ * the inline script in app/layout.tsx, so the right mark is showing on the first
+ * frame -- no flash of the wrong logo.
+ */
+.logo-dark {
+  display: none;
+}
+[data-bs-theme='dark'] .logo-light {
+  display: none;
+}
+[data-bs-theme='dark'] .logo-dark {
+  display: inline-block;
+}
+
 /* Footer bottom bar: copyright and legal links on one baseline. */
 .footer-bottom p,
 .footer-bottom nav a {
   line-height: 1.5;
 }
-/* Footer columns on wide screens: brand block 55%, each link column 15%. */
+/*
+ * Footer columns on wide screens.
+ *
+ * The three link columns are fixed; the BRAND block is the flexible one and
+ * absorbs whatever is left over (`flex: 1 1 0`). That way a gap can be widened
+ * or a column resized without re-deriving every other width to keep the row at
+ * 100% -- get the arithmetic wrong with fixed widths and the last column wraps
+ * onto its own line.
+ *
+ * Current layout, left to right:
+ *   brand  = remainder (~30%)
+ *   gap    = 15%   (--footer-brand-gap)
+ *   Topics = 15%
+ *   gap    = 5%    (--footer-col-gap)
+ *   Start Here = 15%
+ *   gap    = 5%    (--footer-col-gap)
+ *   Products   = 15%
+ */
 @media (min-width: 992px) {
+  .section-footer-4 .row {
+    --footer-brand-gap: 15%;
+    /* One value for every gap between link columns, so they stay even. */
+    --footer-col-gap: 5%;
+  }
   .section-footer-4 .row > .footer-col-brand {
-    flex: 0 0 auto;
-    width: 55%;
+    flex: 1 1 0;
+    width: auto;
+    max-width: none;
+    margin-right: var(--footer-brand-gap);
   }
   .section-footer-4 .row > .footer-col-links {
     flex: 0 0 auto;
     width: 15%;
+  }
+  /* Every link column except the last carries the gap, so Topics->Start Here and
+     Start Here->Products are spaced identically. Targeting :nth-child would have
+     to be restated each time a column is added or removed; :not(:last-child)
+     does not. */
+  .section-footer-4 .row > .footer-col-links:not(:last-child) {
+    margin-right: var(--footer-col-gap);
   }
 }
 /* Footer link columns (Topics, About, Products): 14px links; the site description at 1rem. */
