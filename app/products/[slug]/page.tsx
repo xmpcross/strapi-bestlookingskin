@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 import { getProduct, listProducts, getPriceHistory, listProductReviews, listPostSummaries, mediaUrl, type BlsProduct, type BlsPostSummary, listProductCategoryCounts } from '@/lib/strapi';
 import { toCard } from '@/lib/post-card';
 import { RowCard } from '@/components/magzin/cards';
-import { SITE, AFFILIATE_LINKS_ENABLED } from '@/lib/site';
+import { SITE, AFFILIATE_LINKS_ENABLED, PRICE_ALERTS_ENABLED } from '@/lib/site';
 import { descriptionFromBody } from '@/lib/format';
 import ProductCard from '@/components/ProductCard';
 import ProductCarousel from '@/components/ProductCarousel';
@@ -410,7 +410,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
 
                 <PriceBadges history={priceHistory} current={bestOffer?.price ?? product.currentPrice} />
 
-                {product.documentId && (
+                {PRICE_ALERTS_ENABLED && product.documentId && (
                   <PriceAlertForm
                     productDocumentId={product.documentId}
                     currency={product.currency || 'USD'}

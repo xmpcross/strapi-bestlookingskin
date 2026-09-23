@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
+import { PRICE_ALERTS_ENABLED } from '@/lib/site';
 
 const BASE = (process.env.NEXT_PUBLIC_STRAPI_URL || 'https://cms.fxnstudio.com').replace(/\/$/, '');
 // Writes need a token with create permission on commerce-price-alert.
@@ -18,6 +19,9 @@ function isValidEmail(value: string) {
 }
 
 export async function POST(request: Request) {
+  if (!PRICE_ALERTS_ENABLED) {
+    return NextResponse.json({ message: 'Price alerts are not available.' }, { status: 410 });
+  }
   let payload: AlertPayload;
   try {
     payload = await request.json();

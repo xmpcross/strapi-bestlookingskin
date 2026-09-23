@@ -48,6 +48,12 @@ export const SITE = {
 export const AFFILIATE_LINKS_ENABLED = false;
 
 /**
+ * Price-drop email alerts on product pages. Off: the form is not rendered and /api/price-alert refuses new
+ * sign-ups. The cancel link in alerts already sent keeps working, so existing subscribers can still opt out.
+ */
+export const PRICE_ALERTS_ENABLED = false;
+
+/**
  * Google AdSense, placed manually (Auto ads are off in the AdSense account). The loader script is in
  * app/layout.tsx; each placement is an <AdSlot kind=... /> (components/AdSlot.tsx) that renders nothing until its
  * slot id is filled in here. Create the four units in AdSense (Ads > By ad unit) and paste their data-ad-slot ids:
