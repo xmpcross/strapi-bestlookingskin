@@ -34,16 +34,21 @@ export default function CategoryIntro({ text }: { text: string }) {
       ctx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
       const toggle = getComputedStyle(el.querySelector('button') ?? el);
       const suffix = ctx.measureText('… ').width + measureWith(ctx, 'Read more', `${toggle.fontWeight} ${toggle.fontSize} ${toggle.fontFamily}`, ctx.font);
-      /* Words wrap whole, so each line loses a little width to the gap at its end: allow for it. */
-      const budget = el.clientWidth * LINES - suffix - el.clientWidth * 0.06;
-      const words = first.split(' ');
+      /* Lay the words out line by line, the way the browser wraps them: fill the first line, then take
+         the second up to about half its width (with room for "… Read more"). */
+      const W = el.clientWidth;
+      const space = ctx.measureText(' ').width;
+      let line = 0;
+      let lineWidth = 0;
       let best = 0;
-      let acc = '';
-      for (const word of words) {
-        const next = acc ? `${acc} ${word}` : word;
-        if (ctx.measureText(next).width > budget) break;
-        acc = next;
-        best = next.length;
+      let pos = 0;
+      for (const word of first.split(' ')) {
+        const w = ctx.measureText(word).width;
+        const next = lineWidth ? lineWidth + space + w : w;
+        if (next > W) { line += 1; lineWidth = w; } else lineWidth = next;
+        if (line > 1 || (line === 1 && lineWidth + suffix > W * (LINES - 1))) break;
+        pos += (pos ? 1 : 0) + word.length;
+        best = pos;
       }
       setCut(best);
     };
@@ -58,6 +63,8 @@ export default function CategoryIntro({ text }: { text: string }) {
 
   const at = cut ?? cutAtWord(first, DEFAULT_CUT);
   const truncates = paras.length > 1 || at < first.length;
+  /* Visible part, without trailing punctuation before the ellipsis; the rest stays in the HTML. */
+  const shown = first.slice(0, at).replace(/[\s,;:.\u2014-]+$/, '');
 
   const toggle = (label: string) => (
     <>
@@ -83,8 +90,8 @@ export default function CategoryIntro({ text }: { text: string }) {
           first
         ) : (
           <>
-            {first.slice(0, at).trimEnd()}
-            <span hidden>{first.slice(at)}</span>…
+            {shown}
+            <span hidden>{first.slice(shown.length)}</span>…
           </>
         )}
         {!open && toggle('Read more')}
