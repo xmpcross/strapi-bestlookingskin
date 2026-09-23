@@ -642,4 +642,4 @@
 .bls-category-intro-more[open] .less { display: inline; }
 /* Open: the link moves below the revealed paragraphs. */
 .bls-category-intro-more[open] { display: flex; flex-direction: column; }
-.bls-category-intro-more[open] > summary { order: 1; margin: 0.25rem 0 0; align-self: flex-start; }
+.bls-category-intro-more[open] > summary { order: 1; margin: 0.6rem 0 0; align-self: flex-start; }
