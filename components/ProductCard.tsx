@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { mediaUrl, type BlsProduct } from '@/lib/strapi';
 import { plainShortDescription } from '@/lib/product-attributes';
+import { isInfoOnlyProduct } from '@/lib/site';
 
 type Variant = 'tile' | 'compact';
 
@@ -24,6 +25,8 @@ export default function ProductCard({
   const href = `/products/${product.slug}`;
   const cat = product.categories?.[0];
   const brandName = product.brandRef?.name || product.brand;
+  /* Info-only categories (lib/site.ts) are presented as product information: no price on the card. */
+  const showPrice = !isInfoOnlyProduct(product);
   const hasDiscount =
     product.originalPrice && product.currentPrice && product.originalPrice > product.currentPrice;
   const thumbClass = `shop-thumb ${thumbBg === 'bg-transparent' ? 'is-plain' : ''}`;
@@ -43,7 +46,7 @@ export default function ProductCard({
           <span className="d-block" style={{ minWidth: 0 }}>
             {brandName && <span className="product-brand d-block">{brandName}</span>}
             <span className="product-name d-block mt-1 text-truncate-2">{product.name}</span>
-            {product.currentPrice !== undefined && (
+            {showPrice && product.currentPrice !== undefined && (
               <span className="product-price d-block fs-7 mt-2">
                 {formatPrice(product.currentPrice, product.currency)}
               </span>
@@ -77,17 +80,17 @@ export default function ProductCard({
           <p className="fs-7 text-600 mt-2 mb-0 text-truncate-2">{plainShortDescription(product.shortDescription)}</p>
         )}
         <div className="d-flex flex-wrap align-items-baseline gap-2 mt-3">
-          {product.currentPrice !== undefined && (
+          {showPrice && product.currentPrice !== undefined && (
             <span className="product-price fs-5">
               {formatPrice(product.currentPrice, product.currency)}
             </span>
           )}
-          {hasDiscount && (
+          {showPrice && hasDiscount && (
             <span className="fs-7 shop-was">
               {formatPrice(product.originalPrice!, product.currency)}
             </span>
           )}
-          {hasDiscount && (
+          {showPrice && hasDiscount && (
             <span className="shop-discount">
               -{Math.round((1 - product.currentPrice! / product.originalPrice!) * 100)}%
             </span>

@@ -1,7 +1,7 @@
 import { readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import qs from 'qs';
-import { AFFILIATE_LINKS_ENABLED, PILLAR_SLUGS } from '@/lib/site';
+import { AFFILIATE_LINKS_ENABLED, INFO_ONLY_CATEGORY_SLUGS, PILLAR_SLUGS } from '@/lib/site';
 import { plainRetailerUrl, stripAffiliateLinks } from '@/lib/affiliate';
 
 const BASE = (process.env.NEXT_PUBLIC_STRAPI_URL || 'https://cms.fxnstudio.com').replace(/\/$/, '');
@@ -161,7 +161,15 @@ function scopeFor(collection: CommerceCollection): Record<string, unknown> {
        * meta.pagination honest; filtering in JS silently broke the page counts
        * on /products.
        */
-      return { site: { slug: { $eq: SITE_SLUG } }, productStatus: { $eq: 'active' } };
+      return {
+        site: { slug: { $eq: SITE_SLUG } },
+        /* INFO_ONLY_CATEGORY_SLUGS (lib/site.ts) are never hidden for having one offer: a 'draft' there still lists.
+           'archived' stays out everywhere. */
+        $or: [
+          { productStatus: { $eq: 'active' } },
+          { productStatus: { $eq: 'draft' }, categories: { slug: { $in: INFO_ONLY_CATEGORY_SLUGS } } },
+        ],
+      };
     /*
      * Categories are NOT scoped by their `sites` relation, deliberately.
      *
@@ -772,6 +780,8 @@ export async function listPostSummaries(
     mentions?: string[];
     /** Posts whose title contains every one of these terms. */
     titleMentions?: string[];
+    /** Listing order: newest first (default), oldest first, or title A–Z. */
+    sort?: 'newest' | 'oldest' | 'az';
   } = {},
 ) {
   const filters: Record<string, unknown> = {};
@@ -793,8 +803,9 @@ export async function listPostSummaries(
      larger page so `pageSize` results still come back. No caller pages past page 1 with withCover. */
   const pageSize = opts.pageSize ?? 12;
   const fetchSize = opts.withCover ? Math.min(100, Math.max(pageSize * 2, pageSize + 10)) : pageSize;
+  const sort = opts.sort === 'oldest' ? ['publishedAt:asc'] : opts.sort === 'az' ? ['title:asc'] : ['publishedAt:desc'];
   const res = await strapiFetch<ListResponse<BlsPostSummary>>('bls-posts', {
-    sort: ['publishedAt:desc'],
+    sort,
     fields: ['title', 'slug', 'excerpt', 'publishedAt', 'showFrom', 'updatedAt', 'readingTimeMinutes', 'postType', 'seoDescription'],
     populate: {
       coverImage: { fields: ['url', 'alternativeText', 'width', 'height', 'size'] },

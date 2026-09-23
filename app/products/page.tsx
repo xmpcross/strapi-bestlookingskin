@@ -207,7 +207,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                 <div className="row g-3 g-md-4 mt-2">
                   {products.map((p) => (
                     <div className={VIEW_GRID[view]} key={p.id}>
-                      <ProductCard product={p} variant="tile" />
+                      <ProductCard product={p} variant="tile" showCategory={!activeCategory} />
                     </div>
                   ))}
                 </div>

@@ -204,7 +204,7 @@ export default async function CategoryPage({
                 <div className="row g-3 g-md-4 mt-2">
                   {products.map((p) => (
                     <div className="col-xl-4 col-sm-6 col-12" key={p.id}>
-                      <ProductCard product={p} variant="tile" />
+                      <ProductCard product={p} variant="tile" showCategory={false} />
                     </div>
                   ))}
                 </div>

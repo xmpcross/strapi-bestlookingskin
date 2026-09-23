@@ -671,3 +671,41 @@
 .topics-start li + li { margin-top: 0.9rem; }
 .topics-start img { width: 64px; height: 48px; object-fit: cover; border-radius: 6px; flex: none; }
 @media (prefers-reduced-motion: reduce) { .topic-card { transition: none; } .topic-card:hover { transform: none; } }
+
+/* ---- Post category archive: article-type filter rows in the left sidebar ---- */
+.archive-filter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  color: var(--tc-neutral-800, #26272b);
+  text-decoration: none;
+  font-size: var(--tc-fs-7);
+}
+.archive-filter:hover { background: var(--tc-neutral-100); color: var(--tc-neutral-900); }
+.archive-filter .number {
+  font-size: var(--tc-fs-8);
+  padding: 1px 8px;
+  border-radius: 6px;
+  background: var(--tc-neutral-100);
+  color: var(--tc-neutral-700);
+}
+.archive-filter.is-active { background: var(--tc-neutral-900); color: var(--tc-system-white); }
+.archive-filter.is-active .number { background: rgba(255, 255, 255, 0.2); color: var(--tc-system-white); }
+.archive-filter-list li + li { margin-top: 2px; }
+
+/* ---- Product information panel (info-only categories, in place of the price panel) ---- */
+.product-info-list { margin: 0.5rem 0 0; }
+.product-info-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--tc-neutral-200);
+  font-size: var(--tc-fs-7);
+}
+.product-info-list > div:last-child { border-bottom: 0; }
+.product-info-list dt { font-weight: 500; color: var(--tc-neutral-600); }
+.product-info-list dd { margin: 0; text-align: right; color: var(--tc-neutral-900); }

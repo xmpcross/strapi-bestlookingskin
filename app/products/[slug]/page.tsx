@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 import { getProduct, listProducts, getPriceHistory, listProductReviews, listPostSummaries, mediaUrl, type BlsProduct, type BlsPostSummary, listProductCategoryCounts } from '@/lib/strapi';
 import { toCard } from '@/lib/post-card';
 import { RowCard } from '@/components/magzin/cards';
-import { SITE, AFFILIATE_LINKS_ENABLED, PRICE_ALERTS_ENABLED } from '@/lib/site';
+import { SITE, AFFILIATE_LINKS_ENABLED, PRICE_ALERTS_ENABLED, isInfoOnlyProduct } from '@/lib/site';
 import { descriptionFromBody } from '@/lib/format';
 import ProductCard from '@/components/ProductCard';
 import ProductCarousel from '@/components/ProductCarousel';
@@ -96,6 +96,8 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
 
   // Price-history points (from commerce-price-snapshots) for the Price History tab.
   const priceHistory = await getPriceHistory(product.documentId ?? '');
+  /* Info-only categories (lib/site.ts): product information in place of prices. */
+  const infoOnly = isInfoOnlyProduct(product);
   const productReviews = await listProductReviews(product.documentId ?? '');
 
   // Rating summary shown under the product title — prefer first-party reviews,
@@ -266,7 +268,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
     brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
     sku: product.skuOrModel || undefined,
     gtin: product.gtin && /^\d{8,14}$/.test(product.gtin) ? product.gtin : undefined,
-    offers: offersLd,
+    offers: infoOnly ? undefined : offersLd,
     aggregateRating:
       ratingValue > 0 && ratingCount > 0
         ? {
@@ -409,7 +411,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                     );
                   })()}
 
-                <PriceBadges history={priceHistory} current={bestOffer?.price ?? product.currentPrice} />
+                {!infoOnly && <PriceBadges history={priceHistory} current={bestOffer?.price ?? product.currentPrice} />}
 
                 {PRICE_ALERTS_ENABLED && product.documentId && (
                   <PriceAlertForm
@@ -419,6 +421,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                   />
                 )}
 
+                {!infoOnly && (
                 <p className="fs-8 text-500 mt-3 mb-0">
                   <strong>Affiliate disclosure</strong>
                   <span className="shop-tip">
@@ -433,13 +436,57 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                     </span>
                   </span>
                 </p>
+                )}
               </div>
 
               {/* Offer panel (right column): the lowest price and where, every retailer's price with a View link (first
                   five, the rest behind a pure-CSS "view more" toggle so this stays a server component), when prices
                   were last updated, a buy button for the lowest offer and the commission note. */}
               <div className="col-xl-6 col-12">
-                {offerRows.length > 0 ? (
+                {infoOnly ? (
+                  (() => {
+                    const spec = (product.specs ?? {}) as Record<string, unknown>;
+                    const str = (k: string) => (typeof spec[k] === 'string' && (spec[k] as string).trim()) || null;
+                    const factsRows = (product.supplementFacts ?? '').split('\n');
+                    const factLine = (label: RegExp) => factsRows.find((r) => label.test(r))?.split(': ').slice(1).join(': ') || null;
+                    const rows = [
+                      ['Brand', product.brand],
+                      ['Size', str('Package quantity') ?? str('Size')],
+                      ['Form', str('Form')],
+                      ['Serving size', factLine(/^serving size/i)],
+                      ['Servings', factLine(/^servings? per container/i)],
+                    ].filter((r): r is [string, string] => Boolean(r[1]));
+                    const stores = offerRows.filter((r) => r.available);
+                    return (
+                      <div className="offer-panel product-info-panel" data-testid="product-info-panel">
+                        <p className="offer-panel-eyebrow">Product information</p>
+                        {rows.length > 0 && (
+                          <dl className="product-info-list">
+                            {rows.map(([k, v]) => (
+                              <div key={k}>
+                                <dt>{k}</dt>
+                                <dd>{v}</dd>
+                              </div>
+                            ))}
+                          </dl>
+                        )}
+                        {stores.length > 0 && (
+                          <p className="fs-7 mb-0 mt-3">
+                            Available from{' '}
+                            {stores.map((r, i) => (
+                              <span key={r.url}>
+                                {i > 0 && ', '}
+                                <a href={r.url} target="_blank" rel="noopener noreferrer nofollow" className="bls-link">
+                                  {r.merchant}
+                                </a>
+                              </span>
+                            ))}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })()
+                ) : offerRows.length > 0 ? (
                   <div className="offer-panel" data-testid="offer-panel">
                     {bestOffer?.price !== undefined && (
                       <>
@@ -802,7 +849,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
         {/* Price History, just above "More in {category}". Shown only with two or more recorded price snapshots: no
             bestlooking.skin product has any yet (offers were last refreshed 11 Sep 2026), so it stays hidden until
             real prices are recorded. */}
-        {priceHistory.length >= 2 && (
+        {!infoOnly && priceHistory.length >= 2 && (
           <section className="mt-5 pt-4" data-testid="price-history">
             <h2 className="h4 mb-4">Price History</h2>
             <PriceHistoryChart points={priceHistory} />

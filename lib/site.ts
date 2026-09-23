@@ -54,6 +54,15 @@ export const AFFILIATE_LINKS_ENABLED = false;
 export const PRICE_ALERTS_ENABLED = false;
 
 /**
+ * Product categories presented as product information, not price comparison: always listed (even with a single
+ * retailer offer, which otherwise keeps a product out of the grids), and their pages show label and product details
+ * in place of prices, price history and price structured data.
+ */
+export const INFO_ONLY_CATEGORY_SLUGS = ['hyaluronic-acid'];
+export const isInfoOnlyProduct = (p: { categories?: { slug: string }[] | null }) =>
+  (p.categories ?? []).some((c) => INFO_ONLY_CATEGORY_SLUGS.includes(c.slug));
+
+/**
  * Google AdSense, placed manually (Auto ads are off in the AdSense account). The loader script is in
  * app/layout.tsx; each placement is an <AdSlot kind=... /> (components/AdSlot.tsx) that renders nothing until its
  * slot id is filled in here. Create the four units in AdSense (Ads > By ad unit) and paste their data-ad-slot ids:
