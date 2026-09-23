@@ -60,7 +60,7 @@ export const ADSENSE = {
   client: 'ca-pub-2867376862905050',
   slots: {
     inArticle: '1488791118',
-    display: '',
+    display: '3912783634',
     multiplex: '',
   },
 };
