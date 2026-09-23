@@ -22,7 +22,7 @@ export default function Page() {
           price comparisions (<strong>Services</strong>).
         </li>
         <li>
-          The Website is operated by FXN Holdings (ABN ). Access to and use of the Website, or any of
+          The Website is operated by FXN Holdings (ABN {SITE.business.abnDisplay}), trading as {SITE.business.tradingName}. Access to and use of the Website, or any of
           its associated Products or Services, is provided by FXN Holdings. Please read these terms
           and conditions (<strong>Terms</strong>) carefully. By using, browsing and/or reading the
           Website, this signifies that you have read, understood and agree to be bound by the Terms.

@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import '../../article.css';
 import '../../top-rated.css';
 import { getPost, listPostSummaries, listProductsForPost, getAdjacentPosts, mediaUrl, type BlsPostSummary } from '@/lib/strapi';
-import { PILLAR_SLUGS, SECTIONS, SITE } from '@/lib/site';
+import { PILLAR_SLUGS, SECTIONS, SITE, publisherJsonLd } from '@/lib/site';
 import { fmtDate, primaryCategorySlug, postPath, descriptionFromBody } from '@/lib/format';
 import { withHeadingIds, decodeEntities } from '@/lib/toc';
 import { cleanProductRoundupHtml } from '@/lib/legacy-product-roundup';
@@ -98,7 +98,7 @@ function articleJsonLdBase(post: NonNullable<Awaited<ReturnType<typeof getPost>>
        on affiliate content; without it an Article carries a publisher and no
        human behind it. */
     author: post.author ? { '@type': 'Person', name: post.author.name, url: `${SITE.url}/authors/${post.author.slug}` } : undefined,
-    publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+    publisher: publisherJsonLd(),
     mainEntityOfPage: `${SITE.url}/${category}/${post.slug}`,
   };
 }

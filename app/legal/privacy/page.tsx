@@ -356,7 +356,8 @@ export default function Page() {
       {/* 15. Contact */}
       <h3>15. How to contact us about privacy</h3>
       <p>
-        Data Controller: FXN Holdings, Western Australia.<br />
+        Data Controller: FXN Holdings (ABN {SITE.business.abnDisplay}), trading as {SITE.business.tradingName}, Western Australia.<br />
+        Postal address: {SITE.business.postalAddressInline}.<br />
         Privacy queries, access requests, complaints and CCPA / GDPR rights requests:{' '}
         <a href="mailto:privacy@bestlooking.skin">privacy@bestlooking.skin</a>.
       </p>

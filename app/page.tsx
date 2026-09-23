@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { listPostSummaries, type BlsPostSummary } from '@/lib/strapi';
-import { FEATURED_POST_SLUGS, PILLAR_SLUGS, SITE } from '@/lib/site';
+import { FEATURED_POST_SLUGS, PILLAR_SLUGS, SITE, publisherJsonLd } from '@/lib/site';
 import { getTopicGroups } from '@/lib/nav';
 import { toCard } from '@/lib/post-card';
 import EmailSignup from '@/components/magzin/EmailSignup';
@@ -93,6 +93,7 @@ export default async function HomePage() {
     name: SITE.name,
     url: SITE.url,
     description: SITE.description,
+    publisher: publisherJsonLd(),
     potentialAction: { '@type': 'SearchAction', target: `${SITE.url}/search?q={search_term_string}`, 'query-input': 'required name=search_term_string' },
   };
 

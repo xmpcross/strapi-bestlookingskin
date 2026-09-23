@@ -170,6 +170,10 @@ export default async function SiteFooter() {
               <p className="fs-8 my-0">
                 © {new Date().getFullYear()} — {SITE.name}. All rights reserved.
               </p>
+              <p className="fs-8 text-500 mb-0 mt-1">
+                {SITE.business.tradingName} is a trading name of {SITE.business.legalName} · ABN {SITE.business.abnDisplay} ·{' '}
+                {SITE.business.postalAddressInline}
+              </p>
             </div>
             <div className="col-md-6 col-12">
               <nav aria-label="Legal" className="d-flex flex-wrap gap-3 justify-content-md-end">

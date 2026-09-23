@@ -147,6 +147,29 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+      <section className="pb-70">
+        <div className="container">
+          <div className="bls-panel-muted p-4 p-md-5">
+            <div className="row g-4">
+              <div className="col-lg-4 col-12">
+                <p className="bls-eyebrow mb-2">Who runs this site</p>
+                <h2 className="h5 mb-0">Business details</h2>
+              </div>
+              <div className="col-lg-8 col-12 bls-prose">
+                <p>
+                  {SITE.business.tradingName} is a trading name of {SITE.business.legalName}, an Australian business
+                  based in Western Australia. ABN {SITE.business.abnDisplay}.
+                </p>
+                <p className="mb-0">
+                  Mailing address: {SITE.business.postalAddress.join(', ')}. For anything else, see our{' '}
+                  <Link href="/contact" className="bls-link">contact page</Link>.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

@@ -53,6 +53,17 @@ export default function ContactPage() {
                   hello@bestlooking.skin
                 </a>
               </p>
+              <div className="fs-7 text-600 mt-4">
+                <p className="bls-eyebrow mb-2">Postal address</p>
+                <address className="mb-2" style={{ fontStyle: 'normal' }}>
+                  {SITE.business.postalAddress.map((line) => (
+                    <span key={line} className="d-block">{line}</span>
+                  ))}
+                </address>
+                <p className="mb-0">
+                  {SITE.business.tradingName} is a trading name of {SITE.business.legalName}, ABN {SITE.business.abnDisplay}.
+                </p>
+              </div>
             </div>
             <div className="col-lg-7 col-12">
               <div className="bls-panel p-4 p-md-5">

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getAuthor, listAuthors, listPosts } from '@/lib/strapi';
-import { SITE } from '@/lib/site';
+import { SITE, publisherJsonLd } from '@/lib/site';
 import AuthorAvatar from '@/components/AuthorAvatar';
 import { toCard } from '@/lib/post-card';
 import { WideCard } from '@/components/magzin/cards';
@@ -47,7 +47,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
     name: author.name,
     description: author.bio || undefined,
     url: `${SITE.url}/authors/${author.slug}`,
-    worksFor: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+    worksFor: publisherJsonLd(),
   };
 
   return (

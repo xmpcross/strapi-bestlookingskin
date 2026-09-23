@@ -11,6 +11,25 @@ export const SITE = {
      1200x630 — the size every platform crops from. */
   ogImage: '/og-default.jpg',
   amazonAffiliateTag: process.env.NEXT_PUBLIC_AMAZON_AFFILIATE_TAG || '',
+  /* The business behind the site: shown in the footer, on /about and /contact, in the legal pages, and as the
+     publisher in structured data. BestLooking.Skin is the trading name; FXN Holdings is the business. */
+  business: {
+    legalName: 'FXN Holdings',
+    tradingName: 'BestLooking.Skin',
+    abn: '53274423748',
+    /* ABNs are written 2-3-3-3. */
+    abnDisplay: '53 274 423 748',
+    postalAddress: ['FXN Holdings', 'PO Box 500', 'WEST PERTH WA 6872'],
+    postalAddressInline: 'PO Box 500, WEST PERTH WA 6872',
+    postalAddressSchema: {
+      '@type': 'PostalAddress',
+      postOfficeBoxNumber: '500',
+      addressLocality: 'West Perth',
+      addressRegion: 'WA',
+      postalCode: '6872',
+      addressCountry: 'AU',
+    },
+  },
   social: {
     facebook: 'https://www.facebook.com/1bestlookingskin/',
     /* X and WhatsApp removed for now. The WhatsApp entry was wa.me/15551234567 --
@@ -18,6 +37,16 @@ export const SITE = {
        stranger or nowhere. Re-add either with a real destination. */
   },
 };
+
+/** Schema.org publisher: the trading name as the brand, with the business's legal name, ABN and postal address. */
+export const publisherJsonLd = () => ({
+  '@type': 'Organization',
+  name: SITE.name,
+  legalName: SITE.business.legalName,
+  url: SITE.url,
+  taxID: SITE.business.abn,
+  address: SITE.business.postalAddressSchema,
+});
 
 // Section slugs match the source WP categories on bestlooking.skin so URLs stay
 // 1:1 with the migrated content (preserves SEO).
