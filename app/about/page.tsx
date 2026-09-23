@@ -272,11 +272,25 @@ export default async function AboutPage() {
           <div className="row g-4 align-items-center about-business">
             <div className="col-lg-8 col-12">
               <p className="bls-eyebrow mb-2">Who runs this site</p>
-              <p className="mb-1">
-                {SITE.business.tradingName} is a trading name of {SITE.business.legalName}, an Australian business
-                based in Western Australia. ABN {SITE.business.abnDisplay}.
+              <p className="mb-3">
+                {SITE.business.legalName}
+                <br />
+                Trading Name: {SITE.business.tradingName}
+                <br />
+                Australian business based in WA.
+                <br />
+                ABN {SITE.business.abnDisplay}.
               </p>
-              <p className="mb-0 text-600">Mailing address: {SITE.business.postalAddress.join(', ')}</p>
+              <p className="mb-0 text-600">
+                Mailing address:
+                {SITE.business.postalAddress.map((line, i, all) => (
+                  <span key={line}>
+                    <br />
+                    {line}
+                    {i < all.length - 1 ? ',' : ''}
+                  </span>
+                ))}
+              </p>
             </div>
             <div className="col-lg-4 col-12 text-lg-end">
               <Link href="/contact" className="btn btn-dark bls-btn">
