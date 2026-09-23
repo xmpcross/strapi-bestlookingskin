@@ -35,7 +35,7 @@
  *   FAL_IMAGE_MODEL    default: fal-ai/flux-pro/v1.1-ultra
  */
 
-import { readFileSync, existsSync, writeFileSync, mkdirSync, renameSync } from 'node:fs';
+import { readFileSync, existsSync, writeFileSync, mkdirSync, renameSync, openSync, closeSync, unlinkSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -168,6 +168,38 @@ function writeManifest(manifest) {
   const tmp = `${MANIFEST}.tmp-${process.pid}`;
   writeFileSync(tmp, `${JSON.stringify(sorted, null, 2)}\n`);
   renameSync(tmp, MANIFEST);
+}
+
+const LOCK = `${MANIFEST}.lock`;
+const sleepMs = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+
+/**
+ * Add one cover to the manifest. Two runs can overlap (an --all batch and a --slug run did, and the batch's
+ * writes erased three of the other run's covers), so never write back a copy read at startup: take a lock,
+ * re-read the file from disk, set this one entry, write, release.
+ */
+function registerCover(slug, entry) {
+  mkdirSync(dirname(MANIFEST), { recursive: true });
+  const deadline = Date.now() + 15000;
+  for (;;) {
+    try {
+      closeSync(openSync(LOCK, 'wx'));
+      break;
+    } catch (err) {
+      if (err.code !== 'EEXIST') throw err;
+      /* A lock older than a minute is left over from a crashed run; no write takes that long. */
+      try { if (Date.now() - statSync(LOCK).mtimeMs > 60000) unlinkSync(LOCK); } catch {}
+      if (Date.now() > deadline) throw new Error(`could not lock ${LOCK}; is another run stuck?`);
+      sleepMs(100);
+    }
+  }
+  try {
+    const current = readManifest();
+    current[slug] = entry;
+    writeManifest(current);
+  } finally {
+    unlinkSync(LOCK);
+  }
 }
 
 /* ------------------------------------------------------------------ Strapi */
@@ -339,7 +371,7 @@ async function main() {
       console.log(`\nReuse : ${label}\n        ${filename} is on disk but not shown; registering it (no fal.ai call).`);
       if (!DRY) {
         manifest[post.slug] = manifestEntry(post, filename, readFileSync(outPath), 'existing file');
-        writeManifest(manifest);
+        registerCover(post.slug, manifest[post.slug]);
       }
       registered++;
       continue;
@@ -364,7 +396,7 @@ async function main() {
     console.log(`        generated in ${((Date.now() - start) / 1000).toFixed(1)}s`);
     const buf = await downloadImage(result.url, outPath);
     manifest[post.slug] = manifestEntry(post, filename, buf, MODEL);
-    writeManifest(manifest);
+    registerCover(post.slug, manifest[post.slug]);
     console.log(`        saved /cms-uploads/${filename} (${(buf.length / 1024).toFixed(0)} KB, ` +
       `${manifest[post.slug].width}×${manifest[post.slug].height}) and registered it`);
     if (codeSlugs.has(post.slug)) {
