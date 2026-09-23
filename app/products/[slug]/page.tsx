@@ -114,16 +114,20 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
     const none: BlsPostSummary[] = [];
     const core = coreProductName(product.name, product.brand);
     const ingredient = String((product.specs as Record<string, unknown> | undefined)?.Ingredient ?? '').split(',')[0].trim();
-    const [byProduct, byIngredient] = await Promise.all([
+    const byTitle = (authored: boolean) =>
+      ingredient.length > 3
+        ? listPostSummaries({ titleMentions: [ingredient], authored: authored || undefined, withCover: true, pageSize: 8 }).then((r) => r.data).catch(() => none)
+        : Promise.resolve(none);
+    /* Product mentions first, then ingredient guides with a named author (Tier A), then any other guide on it. */
+    const [byProduct, byIngredientAuthored, byIngredient] = await Promise.all([
       product.brand && core
         ? listPostSummaries({ mentions: [product.brand, core], withCover: true, pageSize: 4 }).then((r) => r.data).catch(() => none)
         : none,
-      ingredient.length > 3
-        ? listPostSummaries({ titleMentions: [ingredient], authored: true, withCover: true, pageSize: 8 }).then((r) => r.data).catch(() => none)
-        : none,
+      byTitle(true),
+      byTitle(false),
     ]);
     const seen = new Set<string>();
-    return [...byProduct, ...byIngredient].filter((p) => !seen.has(p.slug) && seen.add(p.slug)).slice(0, 4).map(toCard);
+    return [...byProduct, ...byIngredientAuthored, ...byIngredient].filter((p) => !seen.has(p.slug) && seen.add(p.slug)).slice(0, 4).map(toCard);
   })();
 
   /* FAQ structured data, only when the product carries written FAQs. */
