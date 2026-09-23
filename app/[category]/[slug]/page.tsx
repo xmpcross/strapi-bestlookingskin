@@ -373,6 +373,10 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
       from = leadCut;
     }
     bodyParts.push(<ArticleContents key="contents" toc={toc} />);
+    /* Imported WordPress posts wrap the whole body in layout divs, so there are no top-level section breaks to put
+       an ad between (and splitting nested markup would unbalance it). They get one in-article unit here instead,
+       after the contents box and before the body. */
+    if (!boundaries.length) bodyParts.push(<AdSlot key="ad-lead" kind="inArticle" />);
     /* In-article ads (ADSENSE.slots.inArticle): after the first section, and about 60% down on posts with four or
        more sections. Never above the contents box or the direct answer, never two in a row. */
     const adAt = new Set<number>(boundaries.length ? [0] : []);
