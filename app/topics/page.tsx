@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import { getTopicGroups } from '@/lib/nav';
 import { listPostSummaries, listProductCategoryCounts, listProducts, type BlsPostSummary } from '@/lib/strapi';
 import AdSlot from '@/components/AdSlot';
-import FeaturedPostsSlider from '@/components/FeaturedPostsSlider';
 import { postPath } from '@/lib/format';
 import { toCard } from '@/lib/post-card';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
@@ -61,12 +60,8 @@ export default async function TopicsPage({ searchParams }: { searchParams: Promi
       .then((r) => r.meta.pagination.total)
       .catch(() => null),
   ]);
-  /* Sidebar widgets below the filters: newest guides, then the featured slider from the next few. */
-  const newestCards = newest.data.map(toCard).filter((c) => c.image);
-  const latestGuides = newestCards.slice(0, 4);
-  const featured = newestCards
-    .slice(4, 7)
-    .map((c) => ({ href: c.href, title: c.title, image: c.image as string, imageAlt: c.imageAlt, author: c.author?.name ?? null, date: c.date }));
+  /* Sidebar widget below the filters: the newest guides. */
+  const latestGuides = newest.data.map(toCard).filter((c) => c.image).slice(0, 4);
 
   const info = new Map(
     hubs.map((h, i) => {
@@ -212,12 +207,6 @@ export default async function TopicsPage({ searchParams }: { searchParams: Promi
                 </div>
               )}
 
-              {featured.length > 0 && (
-                <div className="shop-widget" data-testid="topics-featured-posts">
-                  <SidebarTitle>Featured Posts</SidebarTitle>
-                  <FeaturedPostsSlider posts={featured} />
-                </div>
-              )}
             </aside>
 
             {/* Topics */}
