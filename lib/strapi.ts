@@ -928,6 +928,7 @@ export type BlsProductBrand = {
   websiteUrl?: string;
   logo?: StrapiImage;
   order?: number;
+  productCount?: number;
 };
 
 export type BlsProduct = {
@@ -1438,8 +1439,8 @@ export async function listProductBrands(): Promise<BlsProductBrand[]> {
    * brands (they carry the logo and slug the derived rows lack).
    */
   const own = await listLegacyProductBrands();
-  const stocked = new Set(own.map((b) => b.name.trim().toLowerCase()));
-  if (stocked.size === 0) return [];
+  const stockedMap = new Map(own.map((b) => [b.name.trim().toLowerCase(), b.productCount || 0]));
+  if (stockedMap.size === 0) return [];
 
   try {
     // commerce-scope-exempt: commerce-brands carries no tag and no relation,
@@ -1451,7 +1452,12 @@ export async function listProductBrands(): Promise<BlsProductBrand[]> {
       populate: ['logo'],
       pagination: { pageSize: 200 },
     });
-    const matched = res.data.filter((b) => stocked.has(b.name.trim().toLowerCase()));
+    const matched = res.data
+      .filter((b) => stockedMap.has(b.name.trim().toLowerCase()))
+      .map((b) => ({
+        ...b,
+        productCount: stockedMap.get(b.name.trim().toLowerCase()),
+      }));
     const covered = new Set(matched.map((b) => b.name.trim().toLowerCase()));
     // A brand this site stocks but the catalogue has no row for still belongs
     // in the filter, so fall back to the product-derived entry for those.
@@ -1463,7 +1469,7 @@ export async function listProductBrands(): Promise<BlsProductBrand[]> {
 }
 
 async function listLegacyProductBrands(): Promise<BlsProductBrand[]> {
-  const brands = new Set<string>();
+  const brandCounts = new Map<string, number>();
   let page = 1;
 
   while (true) {
@@ -1475,7 +1481,9 @@ async function listLegacyProductBrands(): Promise<BlsProductBrand[]> {
 
     for (const product of res.data) {
       const brand = product.brand?.trim();
-      if (brand) brands.add(brand);
+      if (brand) {
+        brandCounts.set(brand, (brandCounts.get(brand) || 0) + 1);
+      }
     }
 
     const pageCount = res.meta?.pagination?.pageCount ?? 1;
@@ -1483,12 +1491,13 @@ async function listLegacyProductBrands(): Promise<BlsProductBrand[]> {
     page++;
   }
 
-  return Array.from(brands)
-    .sort((a, b) => a.localeCompare(b))
-    .map((name, index) => ({
+  return Array.from(brandCounts.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([name, count], index) => ({
       id: index + 1,
       name,
       slug: name,
+      productCount: count,
     }));
 }
 
