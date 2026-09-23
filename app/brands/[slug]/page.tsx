@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
-import { seoTitle } from '@/lib/seo';
+import { seoTitle, shareImages } from '@/lib/seo';
 import { SITE, isInfoOnlyProduct } from '@/lib/site';
 import { listProductBrands, listProductCategoryCounts, listProducts, mediaUrl } from '@/lib/strapi';
 import SidebarTitle from '@/components/magzin/SidebarTitle';
@@ -65,11 +65,17 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     meta.description ||
     meta.tagline ||
     `Shop ${brand.name} skincare products and compare prices at ${SITE.name}.`;
+  /* Share image: the brand's first product photo, else the site default. */
+  const first = await listProducts({ brand: brand.aliases?.[0] ?? brand.name, pageSize: 1 })
+    .then((r) => r.data[0] ?? null)
+    .catch(() => null);
+  const img = shareImages(mediaUrl(first?.primaryImage ?? null), brand.name);
   return {
     title: seoTitle(`${brand.name} — Skincare Products & Prices`),
     description,
     alternates: { canonical: brandPath(brand.slug) },
-    openGraph: { title: brand.name, description, url: `${SITE.url}${brandPath(brand.slug)}` },
+    openGraph: { title: brand.name, description, url: `${SITE.url}${brandPath(brand.slug)}`, images: img.openGraphImages },
+    twitter: img.twitter,
     ...(isIndexableBrand(brand) ? {} : { robots: { index: false, follow: true } }),
   };
 }
