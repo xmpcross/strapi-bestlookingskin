@@ -6,6 +6,7 @@ import { getProduct, listProducts, getPriceHistory, listProductReviews, listPost
 import { toCard } from '@/lib/post-card';
 import { RowCard } from '@/components/magzin/cards';
 import { SITE, AFFILIATE_LINKS_ENABLED, PRICE_ALERTS_ENABLED, isInfoOnlyProduct, ownShortDescription } from '@/lib/site';
+import { brandHref } from '@/lib/brands';
 import { descriptionFromBody } from '@/lib/format';
 import ProductCard from '@/components/ProductCard';
 import ProductCarousel from '@/components/ProductCarousel';
@@ -656,7 +657,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
 
             {/* Highlights: brand plus up to seven headline attributes, above the description. */}
             <ProductHighlights
-              brand={product.brand ? { name: product.brand, href: `/brands/${encodeURIComponent(product.brandRef?.slug ?? product.brand)}` } : null}
+              brand={product.brand ? { name: product.brand, href: brandHref(product.brand) } : null}
               items={productHighlights(attributes)}
             />
 

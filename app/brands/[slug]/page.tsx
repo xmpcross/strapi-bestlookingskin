@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { SITE, isInfoOnlyProduct } from '@/lib/site';
 import { listProductBrands, listProductCategoryCounts, listProducts, mediaUrl } from '@/lib/strapi';
@@ -9,6 +9,7 @@ import ProductCard from '@/components/ProductCard';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
 import { getBrandMeta } from '@/lib/brand-data';
 import { resolveOutbound } from '@/lib/links';
+import { BRAND_INTROS as INTROS, brandSlug, isIndexableBrand } from '@/lib/brands';
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -38,18 +39,27 @@ export async function generateStaticParams() {
   return brands.map((b) => ({ slug: b.slug }));
 }
 
-/* A brand's slug is its display name ("La Roche-Posay"), so links encode it (/brands/La%20Roche-Posay) and the
-   route receives it still percent-encoded. Comparing that to the name 404'd every brand with a space or an
-   apostrophe; single-word brands only worked because they had nothing to encode. */
+/* Brand URLs are lowercase-hyphen slugs (lib/brands.ts). The old URLs used the raw brand name
+   (/brands/Paula's%20Choice, /brands/Elf); those arrive here percent-encoded and are sent on to the new slug. */
 const brandSlugFrom = async (params: Promise<Params>) => decodeURIComponent((await params).slug);
-const brandPath = (slug: string) => `/brands/${encodeURIComponent(slug)}`;
+const brandPath = (slug: string) => `/brands/${slug}`;
+
+/** The brand for a new slug, or null; for an old raw-name URL, redirects to the new slug. */
+async function resolveBrand(requested: string) {
+  const brand = await getBrand(requested);
+  if (brand) return brand;
+  const bySlug = brandSlug(requested);
+  if (bySlug && bySlug !== requested && (await getBrand(bySlug))) permanentRedirect(brandPath(bySlug));
+  return null;
+}
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const slug = await brandSlugFrom(params);
-  const brand = await getBrand(slug);
+  const brand = await resolveBrand(slug);
   if (!brand) return { title: 'Brand not found' };
   const meta = getBrandMeta(brand.name);
   const description =
+    INTROS[brand.slug]?.intro ||
     brand.description ||
     meta.description ||
     meta.tagline ||
@@ -59,25 +69,27 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     description,
     alternates: { canonical: brandPath(brand.slug) },
     openGraph: { title: brand.name, description, url: `${SITE.url}${brandPath(brand.slug)}` },
+    ...(isIndexableBrand(brand) ? {} : { robots: { index: false, follow: true } }),
   };
 }
 
 export default async function BrandPage({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<Search> }) {
   const slug = await brandSlugFrom(params);
-  const brand = await getBrand(slug);
+  const brand = await resolveBrand(slug);
   if (!brand) notFound();
 
   const sp = await searchParams;
-  const [all, categoryCounts, productTotal, allBrands] = await Promise.all([
-    listProducts({ brand: slug, pageSize: 100 })
-      .then((r) => r.data)
-      .catch(() => []),
+  /* A merged brand (e.g. e.l.f. and Elf) has several raw names: fetch each and de-duplicate. */
+  const aliases = brand.aliases?.length ? brand.aliases : [brand.name];
+  const [lists, categoryCounts, productTotal, allBrands] = await Promise.all([
+    Promise.all(aliases.map((a) => listProducts({ brand: a, pageSize: 100 }).then((r) => r.data).catch(() => []))),
     listProductCategoryCounts().catch(() => []),
     listProducts({ pageSize: 1 })
       .then((r) => r.meta.pagination.total)
       .catch(() => null),
     listProductBrands().catch(() => []),
   ]);
+  const all = [...new Map(lists.flat().map((p) => [p.id, p])).values()];
 
   /* Filters (left sidebar): category within this brand, rating and price, as plain links. Each facet counts
      against the other active filters, so picking one never zeroes the rest. */
@@ -129,7 +141,7 @@ export default async function BrandPage({ params, searchParams }: { params: Prom
   /* The brand's own store goes out through the affiliate resolver like any retailer link (lib/links.ts). */
   const websiteLink = websitePlain ? resolveOutbound(websitePlain) : null;
   const website = websiteLink?.url;
-  const description = brand.description || meta.description || meta.tagline;
+  const description = INTROS[brand.slug]?.intro || brand.description || meta.description || meta.tagline;
 
   return (
     <div data-testid={`brand-${brand.slug}`} className="brand-detail-page">

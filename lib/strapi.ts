@@ -1,4 +1,5 @@
 import { readFileSync, statSync } from 'node:fs';
+import { brandSlug, canonicalBrandName } from '@/lib/brands';
 import { join } from 'node:path';
 import qs from 'qs';
 import { AFFILIATE_LINKS_ENABLED, INFO_ONLY_CATEGORY_SLUGS, PILLAR_SLUGS } from '@/lib/site';
@@ -931,6 +932,8 @@ export type BlsProductBrand = {
   logo?: StrapiImage;
   order?: number;
   productCount?: number;
+  /** Raw product `brand` values merged into this brand (lib/brands.ts), for fetching its products. */
+  aliases?: string[];
 };
 
 export type BlsProduct = {
@@ -1432,7 +1435,30 @@ export async function listProductsForPost(
   }
 }
 
+/**
+ * This site's brands, one per real brand: raw product brand names that are aliases of one another (lib/brands.ts)
+ * are merged, `name` is the real brand name, `slug` the lowercase-hyphen URL slug and `aliases` the raw names.
+ */
 export async function listProductBrands(): Promise<BlsProductBrand[]> {
+  const rows = await listProductBrandRows();
+  const merged = new Map<string, BlsProductBrand>();
+  for (const b of rows) {
+    const slug = brandSlug(b.name);
+    const cur = merged.get(slug);
+    if (!cur) {
+      merged.set(slug, { ...b, name: canonicalBrandName(b.name), slug, aliases: [b.name] });
+    } else {
+      cur.productCount = (cur.productCount ?? 0) + (b.productCount ?? 0);
+      cur.aliases = [...(cur.aliases ?? []), b.name];
+      cur.logo ??= b.logo;
+      cur.description ??= b.description;
+      cur.websiteUrl ??= b.websiteUrl;
+    }
+  }
+  return [...merged.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+async function listProductBrandRows(): Promise<BlsProductBrand[]> {
   /*
    * commerce-brands is shared across every storefront on this CMS and, like
    * commerce-categories, a brand row carries no site ownership at all -- no
