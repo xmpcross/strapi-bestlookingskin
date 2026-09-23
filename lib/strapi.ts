@@ -334,6 +334,13 @@ function cleanDashes(s: string): string {
 
 /** Custom featured cover image overrides for posts. */
 export const POST_COVER_OVERRIDES: Record<string, StrapiImage> = {
+  'rose-petal-facial-oil-skin-rejuvenation-elixir': {
+    url: '/cms-uploads/rose_petal_facial_oil_skin_rejuvenation_elixir_cover.jpg',
+    alternativeText: 'Rose Petal Facial Oil Review',
+    width: 2368,
+    height: 1792,
+    size: 737,
+  },
   'top-7-mineral-sunscreen-picks-for-2024': {
     url: '/cms-uploads/top_7_mineral_sunscreen_picks_for_2024_cover.jpg',
     alternativeText: 'Top 7 Mineral Sunscreen Picks for 2024',
