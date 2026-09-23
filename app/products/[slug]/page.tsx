@@ -457,8 +457,24 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                       ['Servings', factLine(/^servings? per container/i)],
                     ].filter((r): r is [string, string] => Boolean(r[1]));
                     const stores = offerRows.filter((r) => r.available);
+                    /* The iHerb price (these products come from iHerb), shown as a reference price with its date --
+                       one retailer's price, not a comparison. */
+                    const iherb = (product.offers ?? []).find((o) => o.merchant?.slug === 'iherb' && typeof o.price === 'number');
                     return (
                       <div className="offer-panel product-info-panel" data-testid="product-info-panel">
+                        {iherb && (
+                          <div className="product-info-price" data-testid="product-info-price">
+                            <p className="offer-panel-eyebrow">Price at iHerb</p>
+                            <p className="offer-panel-price mb-1">{formatPrice(iherb.price as number, iherb.currency || product.currency || 'USD')}</p>
+                            <p className="fs-8 text-600 mb-3">
+                              Price subject to change
+                              {iherb.lastCheckedAt
+                                ? ` · last checked ${new Date(iherb.lastCheckedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}`
+                                : ''}
+                              . Check the retailer for the current price.
+                            </p>
+                          </div>
+                        )}
                         <p className="offer-panel-eyebrow">Product information</p>
                         {rows.length > 0 && (
                           <dl className="product-info-list">

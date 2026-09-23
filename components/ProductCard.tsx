@@ -25,8 +25,11 @@ export default function ProductCard({
   const href = `/products/${product.slug}`;
   const cat = product.categories?.[0];
   const brandName = product.brandRef?.name || product.brand;
-  /* Info-only categories (lib/site.ts) are presented as product information: no price on the card. */
-  const showPrice = !isInfoOnlyProduct(product);
+  /* Info-only categories (lib/site.ts) show the iHerb reference price, noted as subject to change, instead of the
+     catalogue's lowest price. */
+  const infoOnly = isInfoOnlyProduct(product);
+  const iherb = infoOnly ? (product.offers ?? []).find((o) => o.merchant?.slug === 'iherb' && typeof o.price === 'number') : undefined;
+  const showPrice = !infoOnly;
   const hasDiscount =
     product.originalPrice && product.currentPrice && product.originalPrice > product.currentPrice;
   const thumbClass = `shop-thumb ${thumbBg === 'bg-transparent' ? 'is-plain' : ''}`;
@@ -49,6 +52,12 @@ export default function ProductCard({
             {showPrice && product.currentPrice !== undefined && (
               <span className="product-price d-block fs-7 mt-2">
                 {formatPrice(product.currentPrice, product.currency)}
+              </span>
+            )}
+            {iherb && (
+              <span className="product-price d-block fs-7 mt-2">
+                {formatPrice(iherb.price as number, iherb.currency || product.currency || 'USD')}{' '}
+                <span className="fs-8 text-600 fw-normal">at iHerb · subject to change</span>
               </span>
             )}
           </span>
@@ -78,6 +87,12 @@ export default function ProductCard({
         </Link>
         {ownShortDescription(product) && (
           <p className="fs-7 text-600 mt-2 mb-0 text-truncate-2">{plainShortDescription(ownShortDescription(product)!)}</p>
+        )}
+        {iherb && (
+          <div className="mt-3" data-testid="product-card-iherb-price">
+            <span className="product-price fs-5">{formatPrice(iherb.price as number, iherb.currency || product.currency || 'USD')}</span>
+            <span className="d-block fs-8 text-600 mt-1">at iHerb · price subject to change</span>
+          </div>
         )}
         <div className="d-flex flex-wrap align-items-baseline gap-2 mt-3">
           {showPrice && product.currentPrice !== undefined && (
