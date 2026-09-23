@@ -38,3 +38,7 @@ data/iherb-flash-deals.json
 # keep working exactly as before. It only stops NEW generated files appearing as
 # untracked. To commit a new one deliberately: git add -f <path>.
 public/cms-uploads/
+
+# Cover manifest written by scripts/generate-post-cover.mjs, read at runtime by lib/strapi.ts.
+# Rewritten whenever a cover is generated, so tracking it would leave the tree dirty (see above).
+data/generated-covers.json

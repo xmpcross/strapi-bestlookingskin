@@ -1,19 +1,36 @@
 #!/usr/bin/env node
 /**
- * Generate a featured cover image for a BestLooking.Skin post using fal.ai.
+ * Generate a featured cover image for a BestLooking.Skin post using fal.ai, and set it to display.
  *
  * Usage:
  *   node scripts/generate-post-cover.mjs --slug=<post-slug>
  *   node scripts/generate-post-cover.mjs --slug=<post-slug> --dry-run
- *   node scripts/generate-post-cover.mjs --slug=<post-slug> --fast # uses flux/schnell (~2s)
+ *   node scripts/generate-post-cover.mjs --slug=<post-slug> --fast            # flux/schnell (~2s, cheaper)
  *   node scripts/generate-post-cover.mjs --slug=<post-slug> --prompt="Custom prompt..."
+ *   node scripts/generate-post-cover.mjs --slug=<post-slug> --force           # replace a cover it already has
+ *   node scripts/generate-post-cover.mjs --all --dry-run                      # list every post without a cover
+ *   node scripts/generate-post-cover.mjs --all [--limit=N] [--yes]            # cover them
+ *
+ * What happens to a post:
+ *   - It already has a cover (set in Strapi, in POST_COVER_OVERRIDES in lib/strapi.ts, or generated before and
+ *     recorded in data/generated-covers.json): skipped. --force regenerates it anyway, --slug only.
+ *   - Its image is already on disk (public/cms-uploads/<slug>_cover.jpg) but nothing shows it: that file is
+ *     registered as its cover, with no fal.ai call.
+ *   - Otherwise: generated with fal.ai, saved to public/cms-uploads/, and registered.
+ *
+ * "Registered" means an entry in data/generated-covers.json, which lib/strapi.ts reads at runtime. The cover
+ * shows on the post page on the next request and in listings within about a minute. No code edit, no rebuild,
+ * no deploy. Both the image and the manifest are gitignored, so the tree stays clean for ./deploy.sh.
+ *
+ * fal.ai is billed per image. --all generates at most 5 images unless you pass --yes (or a --limit); run it with
+ * --dry-run first to see what it would do.
  *
  * Env:
  *   FAL_KEY            fal.ai API key (from .env.local)
  *   FAL_IMAGE_MODEL    default: fal-ai/flux-pro/v1.1-ultra
  */
 
-import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, existsSync, writeFileSync, mkdirSync, renameSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -38,28 +55,52 @@ const flag = (n, d = null) => {
 const DRY = args.includes('--dry-run');
 const FAST = args.includes('--fast');
 const FORCE = args.includes('--force');
+const ALL = args.includes('--all');
+const YES = args.includes('--yes');
 const SLUG = flag('slug');
 const CUSTOM_PROMPT = flag('prompt');
+const LIMIT = flag('limit') ? Number(flag('limit')) : null;
 
 const STRAPI = (process.env.NEXT_PUBLIC_STRAPI_URL || 'https://cms.fxnstudio.com').replace(/\/$/, '');
 const FAL_KEY = process.env.FAL_KEY;
 const MODEL = FAST ? 'fal-ai/flux/schnell' : (process.env.FAL_IMAGE_MODEL || 'fal-ai/flux-pro/v1.1-ultra');
 
-if (!SLUG) {
-  console.error('Error: --slug=<post-slug> is required.');
+const UPLOADS_DIR = join(ROOT, 'public', 'cms-uploads');
+const MANIFEST = join(ROOT, 'data', 'generated-covers.json');
+const STRAPI_TS = join(ROOT, 'lib', 'strapi.ts');
+/* Without --yes or --limit, --all stops after this many paid generations. */
+const ALL_SAFETY_CAP = 5;
+
+if (!SLUG && !ALL) {
+  console.error('Error: pass --slug=<post-slug>, or --all for every post without a cover.');
   process.exit(1);
 }
-
-if (!DRY && !FAL_KEY) {
-  console.error('Error: FAL_KEY missing in environment or .env.local');
+if (SLUG && ALL) {
+  console.error('Error: pass --slug or --all, not both.');
+  process.exit(1);
+}
+if (ALL && FORCE) {
+  console.error('Error: --force only works with --slug; it would regenerate every cover on the site.');
+  process.exit(1);
+}
+if (ALL && CUSTOM_PROMPT) {
+  console.error('Error: --prompt only works with --slug.');
+  process.exit(1);
+}
+if (LIMIT !== null && !(LIMIT > 0)) {
+  console.error('Error: --limit must be a positive number.');
   process.exit(1);
 }
 
 const BASE_STYLE =
   'Editorial luxury skincare beauty product photography. Clean, modern, serene composition on a smooth light travertine or marble vanity surface. Soft diffuse morning sunlight casting gentle natural shadows, subtle botanical accents, immaculate textures. Photorealistic, crisp commercial quality, 8k resolution, no artificial watermarks, no distorted text.';
+/* Covers must not show a real brand's packaging: on a review site a generated bottle with a real logo reads as a
+   product photo or an endorsement. Earlier covers came back with CeraVe and Sothys labels. */
+const UNBRANDED =
+  'All packaging is unbranded and generic: plain minimalist labels with no logos, no brand names and no readable product names.';
 
 function buildPrompt(post) {
-  if (CUSTOM_PROMPT) return `${CUSTOM_PROMPT}. ${BASE_STYLE}`;
+  if (CUSTOM_PROMPT) return `${CUSTOM_PROMPT}. ${UNBRANDED} ${BASE_STYLE}`;
 
   const title = post.title || '';
   const excerpt = post.excerpt || '';
@@ -89,16 +130,66 @@ function buildPrompt(post) {
     subject = `A premium skincare product arrangement for ${title.replace(/[^\w\s-]/g, '')}, featuring minimalist bottles and jars on a luxury vanity tray.`;
   }
 
-  return `${subject} ${BASE_STYLE}`;
+  return `${subject} ${UNBRANDED} ${BASE_STYLE}`;
+}
+
+/* ------------------------------------------------------------------ what already has a cover */
+
+/** Slugs with a hand-written entry in POST_COVER_OVERRIDES. Read from the source, since the script cannot import TS. */
+function codeOverrideSlugs() {
+  const src = readFileSync(STRAPI_TS, 'utf8');
+  const start = src.indexOf('export const POST_COVER_OVERRIDES');
+  if (start < 0) throw new Error('POST_COVER_OVERRIDES not found in lib/strapi.ts');
+  const end = src.indexOf('\n};', start);
+  const block = src.slice(start, end);
+  return new Set([...block.matchAll(/^\s{2}'([^']+)':\s*\{/gm)].map((m) => m[1]));
+}
+
+function readManifest() {
+  if (!existsSync(MANIFEST)) return {};
+  try {
+    return JSON.parse(readFileSync(MANIFEST, 'utf8')) || {};
+  } catch (err) {
+    /* Refuse rather than overwrite: a corrupt manifest would otherwise be replaced by one holding a single entry,
+       unregistering every other generated cover. */
+    throw new Error(`data/generated-covers.json is not valid JSON (${err.message}); fix or remove it first.`);
+  }
+}
+
+/** Write via a temp file and rename, so the site never reads a half-written manifest. */
+function writeManifest(manifest) {
+  mkdirSync(dirname(MANIFEST), { recursive: true });
+  const sorted = Object.fromEntries(Object.keys(manifest).sort().map((k) => [k, manifest[k]]));
+  const tmp = `${MANIFEST}.tmp-${process.pid}`;
+  writeFileSync(tmp, `${JSON.stringify(sorted, null, 2)}\n`);
+  renameSync(tmp, MANIFEST);
+}
+
+/* ------------------------------------------------------------------ Strapi */
+
+const POST_QUERY = 'fields[0]=title&fields[1]=excerpt&fields[2]=slug&populate[coverImage][fields][0]=url&populate[categories][fields][0]=slug';
+
+async function strapiGet(query) {
+  const res = await fetch(`${STRAPI}/api/bls-posts?${query}`);
+  if (!res.ok) throw new Error(`Strapi fetch error: ${res.status} ${await res.text()}`);
+  return res.json();
 }
 
 async function fetchPost(slug) {
-  const url = `${STRAPI}/api/bls-posts?filters[slug][$eq]=${encodeURIComponent(slug)}&fields[0]=title&fields[1]=excerpt&fields[2]=postType&populate[categories][fields][0]=name&pagination[pageSize]=1`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Strapi fetch error: ${res.status} ${await res.text()}`);
-  const json = await res.json();
+  const json = await strapiGet(`filters[slug][$eq]=${encodeURIComponent(slug)}&${POST_QUERY}&pagination[pageSize]=1`);
   return json.data?.[0] || null;
 }
+
+async function fetchAllPosts() {
+  const posts = [];
+  for (let page = 1; ; page++) {
+    const json = await strapiGet(`sort[0]=publishedAt:desc&${POST_QUERY}&pagination[page]=${page}&pagination[pageSize]=100`);
+    posts.push(...(json.data || []));
+    if (page >= (json.meta?.pagination?.pageCount ?? 1)) return posts;
+  }
+}
+
+/* ------------------------------------------------------------------ images */
 
 async function generateFalImage(prompt) {
   const isUltra = MODEL.includes('ultra');
@@ -106,7 +197,7 @@ async function generateFalImage(prompt) {
     prompt,
     num_images: 1,
     enable_safety_checker: true,
-    ...(isUltra ? { aspect_ratio: '4:3', output_format: 'jpeg' } : { image_size: 'landscape_4_3' }),
+    ...(isUltra ? { aspect_ratio: '4:3', output_format: 'jpeg' } : { image_size: 'landscape_4_3', output_format: 'jpeg' }),
   };
 
   const res = await fetch(`https://fal.run/${MODEL}`, {
@@ -126,11 +217,7 @@ async function generateFalImage(prompt) {
   const json = await res.json();
   const imageUrl = json.images?.[0]?.url;
   if (!imageUrl) throw new Error('fal.ai returned no image URL');
-  return {
-    url: imageUrl,
-    width: json.images[0].width,
-    height: json.images[0].height,
-  };
+  return { url: imageUrl };
 }
 
 async function downloadImage(url, destPath) {
@@ -139,51 +226,157 @@ async function downloadImage(url, destPath) {
   const buffer = Buffer.from(await res.arrayBuffer());
   mkdirSync(dirname(destPath), { recursive: true });
   writeFileSync(destPath, buffer);
-  return buffer.length;
+  return buffer;
+}
+
+/** Width and height from a JPEG's SOF header, so the manifest records the real size of the file on disk. */
+function jpegSize(buf) {
+  if (buf[0] !== 0xff || buf[1] !== 0xd8) throw new Error('not a JPEG');
+  let i = 2;
+  while (i + 9 < buf.length) {
+    if (buf[i] !== 0xff) { i++; continue; }
+    const marker = buf[i + 1];
+    const len = buf.readUInt16BE(i + 2);
+    if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) {
+      return { height: buf.readUInt16BE(i + 5), width: buf.readUInt16BE(i + 7) };
+    }
+    i += 2 + len;
+  }
+  throw new Error('JPEG has no SOF header');
+}
+
+/** Post titles carry WordPress entities (&#038;, &#8211;); alt text should be plain. */
+function plainText(s) {
+  return String(s || '')
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;|&apos;/g, "'").replace(/&ndash;/g, '–').replace(/&mdash;/g, '—')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function manifestEntry(post, filename, buf, how) {
+  const { width, height } = jpegSize(buf);
+  return {
+    url: `/cms-uploads/${filename}`,
+    alternativeText: plainText(post.title),
+    width,
+    height,
+    /* KB, like Strapi's own `size`. Cards hide any cover under 5 KB as a placeholder, so never round below 5. */
+    size: Math.max(5, Math.round(buf.length / 1024)),
+    generatedAt: new Date().toISOString(),
+    source: how,
+  };
+}
+
+/* ------------------------------------------------------------------ main */
+
+/** Why a post needs no new cover, or null if it needs one. */
+function existingCover(post, codeSlugs, manifest) {
+  if (post.coverImage?.url) return `set in Strapi (${post.coverImage.url})`;
+  if (codeSlugs.has(post.slug)) return 'set in POST_COVER_OVERRIDES (lib/strapi.ts)';
+  if (manifest[post.slug]) return `already generated (${manifest[post.slug].url})`;
+  return null;
 }
 
 async function main() {
   console.log(`\n─── BestLooking.Skin Cover Generator (fal.ai) ───`);
-  console.log(`Slug  : ${SLUG}`);
-  console.log(`Model : ${MODEL}`);
+  console.log(`Model : ${MODEL}${DRY ? '   [dry run]' : ''}`);
 
-  const post = await fetchPost(SLUG);
-  if (!post) {
-    console.error(`Error: Post with slug "${SLUG}" not found in Strapi.`);
-    process.exit(1);
+  const codeSlugs = codeOverrideSlugs();
+  const manifest = readManifest();
+
+  let posts;
+  if (SLUG) {
+    const post = await fetchPost(SLUG);
+    if (!post) {
+      console.error(`Error: Post with slug "${SLUG}" not found in Strapi.`);
+      process.exit(1);
+    }
+    posts = [post];
+  } else {
+    posts = await fetchAllPosts();
   }
 
-  console.log(`Title : ${post.title}`);
-  const filename = `${SLUG.replace(/-/g, '_')}_cover.jpg`;
-  const outPath = join(ROOT, 'public', 'cms-uploads', filename);
-
-  if (existsSync(outPath) && !FORCE) {
-    console.log(`\nNotice: Image already exists at ${outPath}. Use --force to overwrite.`);
-    console.log(`URL path: /cms-uploads/${filename}`);
-    return;
+  const plan = [];
+  let skipped = 0;
+  for (const post of posts) {
+    const reason = existingCover(post, codeSlugs, manifest);
+    if (reason && !FORCE) {
+      skipped++;
+      if (SLUG) console.log(`\nSkip  : ${post.slug} already has a cover, ${reason}. Use --force to replace it.`);
+      continue;
+    }
+    if (reason && FORCE) console.log(`\nForce : ${post.slug} has a cover (${reason}); regenerating.`);
+    const filename = `${post.slug.replace(/-/g, '_')}_cover.jpg`;
+    const onDisk = existsSync(join(UPLOADS_DIR, filename));
+    plan.push({ post, filename, action: onDisk && !FORCE ? 'register' : 'generate' });
   }
 
-  const prompt = buildPrompt(post);
-  console.log(`\nPrompt:\n"${prompt}"\n`);
+  /* Free re-registrations first, so the paid-generation cap below never stops them. */
+  plan.sort((a, b) => (a.action === b.action ? 0 : a.action === 'register' ? -1 : 1));
+  const toGenerate = plan.filter((p) => p.action === 'generate').length;
+  const toRegister = plan.length - toGenerate;
+  if (ALL) {
+    console.log(`Posts : ${posts.length} published, ${skipped} already have a cover`);
+    console.log(`Plan  : register ${toRegister} image(s) already on disk, generate ${toGenerate} new`);
+  }
+
+  const cap = LIMIT ?? (ALL && !YES ? ALL_SAFETY_CAP : Infinity);
+  let generated = 0;
+  let registered = 0;
+
+  for (const { post, filename, action } of plan) {
+    const outPath = join(UPLOADS_DIR, filename);
+    const label = `${post.categories?.[0]?.slug ?? '?'}/${post.slug}`;
+
+    if (action === 'register') {
+      console.log(`\nReuse : ${label}\n        ${filename} is on disk but not shown; registering it (no fal.ai call).`);
+      if (!DRY) {
+        manifest[post.slug] = manifestEntry(post, filename, readFileSync(outPath), 'existing file');
+        writeManifest(manifest);
+      }
+      registered++;
+      continue;
+    }
+
+    if (generated >= cap) {
+      console.log(`\nStop  : reached ${cap} generated image(s). ${toGenerate - generated} post(s) still without a cover; ` +
+        `rerun with --limit=N or --yes to continue.`);
+      break; // only generations remain: registrations were sorted first
+    }
+
+    const prompt = buildPrompt(post);
+    console.log(`\nMake  : ${label}\nTitle : ${plainText(post.title)}\nPrompt: "${prompt}"`);
+    if (DRY) {
+      generated++;
+      continue;
+    }
+    if (!FAL_KEY) throw new Error('FAL_KEY missing in environment or .env.local');
+
+    const start = Date.now();
+    const result = await generateFalImage(prompt);
+    console.log(`        generated in ${((Date.now() - start) / 1000).toFixed(1)}s`);
+    const buf = await downloadImage(result.url, outPath);
+    manifest[post.slug] = manifestEntry(post, filename, buf, MODEL);
+    writeManifest(manifest);
+    console.log(`        saved /cms-uploads/${filename} (${(buf.length / 1024).toFixed(0)} KB, ` +
+      `${manifest[post.slug].width}×${manifest[post.slug].height}) and registered it`);
+    if (codeSlugs.has(post.slug)) {
+      console.log(`        note: POST_COVER_OVERRIDES in lib/strapi.ts also has "${post.slug}" and takes priority; ` +
+        `it shows this new image only if it points at /cms-uploads/${filename}.`);
+    }
+    generated++;
+  }
 
   if (DRY) {
-    console.log('Dry run enabled — exiting without generating.');
-    return;
+    console.log(`\nDry run: would register ${registered} and generate ${generated}. Nothing written, nothing billed.`);
+  } else if (generated + registered > 0) {
+    console.log(`\n✔ ${generated} generated, ${registered} registered. They show on the post page now and in listings within ` +
+      `about a minute: no code change, rebuild or deploy needed.`);
+  } else if (!SLUG) {
+    console.log('\nNothing to do: every post already has a cover.');
   }
-
-  console.log('Calling fal.ai API...');
-  const start = Date.now();
-  const result = await generateFalImage(prompt);
-  const elapsed = ((Date.now() - start) / 1000).toFixed(1);
-  console.log(`Generated in ${elapsed}s: ${result.url}`);
-
-  console.log(`Downloading to public/cms-uploads/${filename}...`);
-  const bytes = await downloadImage(result.url, outPath);
-  console.log(`Saved ${(bytes / 1024).toFixed(1)} KB image to:`);
-  console.log(`  File : ${outPath}`);
-  console.log(`  Path : /cms-uploads/${filename}`);
-
-  console.log(`\n✔ Cover generation complete!`);
 }
 
 main().catch((err) => {

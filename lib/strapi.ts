@@ -1,3 +1,5 @@
+import { readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import qs from 'qs';
 import { PILLAR_SLUGS } from '@/lib/site';
 
@@ -651,9 +653,39 @@ export const POST_COVER_OVERRIDES: Record<string, StrapiImage> = {
   },
 };
 
+/**
+ * Covers made by scripts/generate-post-cover.mjs, read at runtime so a new cover shows without an edit here or a
+ * rebuild: the post page renders per request, and ISR listings pick it up on their next 60s revalidate.
+ *
+ * The script writes data/generated-covers.json beside the images it saves to public/cms-uploads/. Both are
+ * gitignored, like data/iherb-flash-deals.json: a file another process rewrites would leave the tree dirty and
+ * deploy.sh refuses a dirty tree. A missing or unreadable file means no generated covers, never a failed render.
+ * An entry in POST_COVER_OVERRIDES above wins over a generated one.
+ */
+const GENERATED_COVERS_FILE = join(process.cwd(), 'data', 'generated-covers.json');
+let generatedCoversCache: { mtimeMs: number; covers: Record<string, StrapiImage> } | null = null;
+
+function generatedCovers(): Record<string, StrapiImage> {
+  try {
+    const { mtimeMs } = statSync(GENERATED_COVERS_FILE);
+    if (generatedCoversCache?.mtimeMs !== mtimeMs) {
+      const parsed = JSON.parse(readFileSync(GENERATED_COVERS_FILE, 'utf8')) as Record<string, StrapiImage>;
+      generatedCoversCache = { mtimeMs, covers: parsed && typeof parsed === 'object' ? parsed : {} };
+    }
+    return generatedCoversCache.covers;
+  } catch {
+    return {};
+  }
+}
+
+/** The local cover for a post, if it has one: a hand-written override first, then a generated cover. */
+function coverOverride(slug: string): StrapiImage | undefined {
+  return POST_COVER_OVERRIDES[slug] ?? generatedCovers()[slug] ?? undefined;
+}
+
 /** Apply content + media rewrites to a single post. Idempotent. */
 function localizePost<T extends BlsPost>(post: T): T {
-  const overrideCover = POST_COVER_OVERRIDES[post.slug];
+  const overrideCover = coverOverride(post.slug);
   return {
     ...withReleaseDate(post),
     title: cleanDashes(post.title),
@@ -746,7 +778,7 @@ export async function listPostSummaries(
   /* A post counts as having a cover when the CMS has one or it has a local override, so the CMS still does the
      filtering and a page of `pageSize` results stays full. */
   if (opts.withCover) {
-    const overrideSlugs = Object.keys(POST_COVER_OVERRIDES);
+    const overrideSlugs = [...new Set([...Object.keys(POST_COVER_OVERRIDES), ...Object.keys(generatedCovers())])];
     filters.$or = [{ coverImage: { id: { $notNull: true } } }, ...(overrideSlugs.length ? [{ slug: { $in: overrideSlugs } }] : [])];
   }
   const res = await strapiFetch<ListResponse<BlsPostSummary>>('bls-posts', {
@@ -764,7 +796,7 @@ export async function listPostSummaries(
     ...withReleaseDate(p),
     title: cleanDashes(p.title),
     excerpt: p.excerpt ? cleanDashes(p.excerpt) : p.excerpt,
-    coverImage: POST_COVER_OVERRIDES[p.slug] ?? p.coverImage,
+    coverImage: coverOverride(p.slug) ?? p.coverImage,
   }));
   return { ...res, data };
 }
