@@ -1307,3 +1307,9 @@ html .archive-sidebar .archive-side-title {
   text-transform: uppercase;
   color: var(--tc-neutral-500);
 }
+
+/* Top nav labels stay on one line. With six items (FAQs added) "About Us" wrapped at 1200px and its two lines
+   overlapped the hover animation's copy of the label. */
+.navbar .navbar-nav .nav-item .nav-link {
+  white-space: nowrap;
+}
