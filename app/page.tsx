@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { listPostSummaries, type BlsPostSummary } from '@/lib/strapi';
-import { SITE } from '@/lib/site';
+import { FEATURED_POST_SLUGS, PILLAR_SLUGS, SITE } from '@/lib/site';
 import { getTopicGroups } from '@/lib/nav';
 import { toCard } from '@/lib/post-card';
 import EmailSignup from '@/components/magzin/EmailSignup';
@@ -12,7 +12,8 @@ export const revalidate = 60;
 
 /*
  * Home, built to the official Magzin "Home 2" layout (magzin.alithemes.net/home-2), block for block:
- *   1. Feature post + four tiles                    (card-11, card-5)
+ *   1. Pillar guides + featured posts: the first pillar as the feature, then the other pillars and featured
+ *      posts (FEATURED_POST_SLUGS, or picked automatically) as four tiles (card-11, card-5)
  *   2. Topics: image chips with post counts          (category-card style-2)
  *   3. Newsletter                                    (block-subscribe)
  *   4. Guides: dark title bar, three cards, six rows (card-7, card-6)
@@ -31,16 +32,43 @@ export default async function HomePage() {
   const topicHubs = groups.flatMap((g) => g.items);
   const slugOf = (href: string) => href.replace(/^\//, '');
 
-  const [guides, hubData] = await Promise.all([
+  const [guides, pillarRes, hubData] = await Promise.all([
     listPostSummaries({ authored: true, withCover: true, pageSize: 48 }).catch(() => none),
+    listPostSummaries({ pillar: true, withCover: true, pageSize: 10 }).catch(() => none),
     Promise.all(topicHubs.map((h) => listPostSummaries({ category: slugOf(h.href), pageSize: 1, withCover: true }).catch(() => none))),
   ]);
 
-  const cards = guides.data.map(toCard).filter((c) => c.image);
-  /* Each block takes the next run of guides, so no post appears twice on the page. */
-  const blocks = [1, 4, 3, 6, 6, 1, 2, 2, 1, 4, 5, 3];
+  const withImage = (posts: BlsPostSummary[]) => posts.filter((p) => toCard(p).image);
+  const primaryCategory = (p: BlsPostSummary) => p.categories?.[0]?.slug ?? '';
+
+  /* 1. Top section. Pillar guides first (the PILLAR_SLUGS one leads), then featured posts to fill four tiles. */
+  const pillars = withImage(pillarRes.data).sort((a, b) => Number(PILLAR_SLUGS.has(b.slug)) - Number(PILLAR_SLUGS.has(a.slug)));
+  const pillarSlugs = new Set(pillars.map((p) => p.slug));
+  const guidePosts = withImage(guides.data).filter((p) => !pillarSlugs.has(p.slug));
+  const featuredCount = Math.max(0, 5 - pillars.length);
+  let featured: BlsPostSummary[];
+  if (FEATURED_POST_SLUGS.length) {
+    const bySlug = new Map(guidePosts.map((p) => [p.slug, p]));
+    featured = FEATURED_POST_SLUGS.map((s) => bySlug.get(s)).filter((p): p is BlsPostSummary => Boolean(p)).slice(0, featuredCount);
+  } else {
+    /* Newest first (the listing's order), one per topic so a burst of posts in one hub does not fill the row. */
+    const seenTopics = new Set(pillars.map(primaryCategory));
+    featured = [];
+    for (const p of guidePosts) {
+      if (featured.length >= featuredCount) break;
+      if (seenTopics.has(primaryCategory(p))) continue;
+      seenTopics.add(primaryCategory(p));
+      featured.push(p);
+    }
+  }
+  const [feature, ...heroTiles] = [...pillars, ...featured].slice(0, 5).map(toCard);
+  const shown = new Set([...pillars, ...featured].map((p) => p.slug));
+
+  const cards = guidePosts.filter((p) => !shown.has(p.slug)).map(toCard);
+  /* Each block below takes the next run of guides, so no post appears twice on the page. */
+  const blocks = [3, 6, 6, 1, 2, 2, 1, 4, 5, 3];
   const starts = blocks.map((_, i) => blocks.slice(0, i).reduce((n, b) => n + b, 0));
-  const [[feature], heroTiles, pickCards, pickRows, latest, [forYouFeature], forYouTiles, forYouRows, [suggestFeature], suggestTiles, sideRows, sideSlides] = blocks.map((n, i) =>
+  const [pickCards, pickRows, latest, [forYouFeature], forYouTiles, forYouRows, [suggestFeature], suggestTiles, sideRows, sideSlides] = blocks.map((n, i) =>
     cards.slice(starts[i], starts[i] + n),
   );
 
@@ -75,7 +103,7 @@ export default async function HomePage() {
 
       {/* 1. Feature + four tiles */}
       {feature && (
-        <section className="sec-1-home-2 sec-padding" style={{ backgroundImage: 'url(/assets/imgs/page/bg-home1-sec1.png)' }} aria-label="Latest guides">
+        <section className="sec-1-home-2 sec-padding" style={{ backgroundImage: 'url(/assets/imgs/page/bg-home1-sec1.png)' }} aria-label="Complete guides and featured posts">
           <div className="container">
             <div className="row mt-2 g-4">
               <div className="col-lg-6">

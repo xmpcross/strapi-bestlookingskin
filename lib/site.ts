@@ -53,6 +53,13 @@ export type Section = {
  */
 export const PILLAR_SLUGS = new Set<string>(['best-skin-care-routine-guide']);
 
+/**
+ * Home page top section: the pillar guides lead, then featured posts fill the remaining tiles. List post slugs
+ * here to choose the featured posts by hand, in order. While it is empty they are picked automatically: the newest
+ * guides with a named author and a cover, at most one per topic, so the row is not four posts from one hub.
+ */
+export const FEATURED_POST_SLUGS: string[] = [];
+
 /** Sections still shown on the site (menus, topic lists, sitemaps): not retired, not the All Articles listing. */
 export const isListedSection = (s: Section) => !s.redirectTo && !s.allPosts;
 
