@@ -7,6 +7,7 @@ import { listProductCategories, listProductCategoryCounts, listProducts, mediaUr
 import ProductCard from '@/components/ProductCard';
 import ShopFilters, { type Facet, type ShopFilterState } from '@/components/ShopFilters';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
+import CategoryIntro from '@/components/CategoryIntro';
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -148,13 +149,7 @@ export default async function CategoryPage({
                 )}
                 <h1 className="h4 mb-0 ds-4">{category.name}</h1>
               </div>
-              {category.description && (
-                <div className="bls-category-intro mt-3">
-                  {category.description.split(/\n\s*\n/).map((para) => para.trim()).filter(Boolean).map((para) => (
-                    <p key={para.slice(0, 40)}>{para}</p>
-                  ))}
-                </div>
-              )}
+              {category.description && <CategoryIntro text={category.description} />}
               {category.children && category.children.length > 0 && (
                 <ul className="list-unstyled ps-0 d-flex flex-wrap gap-2 mt-3 mb-0">
                   {category.children.map((c) => (

@@ -620,3 +620,26 @@
 .bls-category-intro p:last-child {
   margin-bottom: 0;
 }
+
+/* "Read more" after the first paragraph: a native <details>, styled as a text link. */
+.bls-category-intro-more > summary {
+  display: inline-block;
+  margin: 0 0 0.75rem;
+  cursor: pointer;
+  list-style: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--tc-neutral-900);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.bls-category-intro-more > summary::-webkit-details-marker { display: none; }
+.bls-category-intro-more > summary::marker { content: ''; }
+.bls-category-intro-more > summary:hover { color: var(--tc-neutral-600); }
+.bls-category-intro-more > summary:focus-visible { outline: 2px solid var(--tc-neutral-900); outline-offset: 2px; }
+.bls-category-intro-more .less,
+.bls-category-intro-more[open] .more { display: none; }
+.bls-category-intro-more[open] .less { display: inline; }
+/* Open: the link moves below the revealed paragraphs. */
+.bls-category-intro-more[open] { display: flex; flex-direction: column; }
+.bls-category-intro-more[open] > summary { order: 1; margin: 0.25rem 0 0; align-self: flex-start; }

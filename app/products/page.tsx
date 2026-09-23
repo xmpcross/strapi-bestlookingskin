@@ -5,6 +5,7 @@ import CategoryListWidget from '@/components/magzin/CategoryListWidget';
 import ProductCard from '@/components/ProductCard';
 import { SITE } from '@/lib/site';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
+import CategoryIntro from '@/components/CategoryIntro';
 
 export const revalidate = 60;
 
@@ -112,11 +113,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
               <div className="title">
                 <p className="shop-eyebrow mb-2">Product Category</p>
                 <h1 className="h4 mb-0 ds-4">{pageTitle}</h1>
-                <div className="bls-category-intro mt-3">
-                  {pageDescription.split(/\n\s*\n/).map((para) => para.trim()).filter(Boolean).map((para) => (
-                    <p key={para.slice(0, 40)}>{para}</p>
-                  ))}
-                </div>
+                <CategoryIntro text={pageDescription} />
               </div>
             </div>
           </div>
