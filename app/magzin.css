@@ -1246,3 +1246,14 @@ html .archive-sidebar .archive-side-title {
 .article.card-7 .card-img {
   min-height: 0;
 }
+
+/* Home top section feature card (card-11). The template caps the thumbnail at 340px but leaves the image at its
+   natural height, so a 4:3 cover was simply clipped at the bottom and showed only its top. Size the image to the
+   frame (about 660x340 at desktop, same shape when narrower) and crop around the center instead. */
+.article.card-11 .thumbnail .cover-image {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 660 / 340;
+  object-fit: cover;
+  object-position: center;
+}
