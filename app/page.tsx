@@ -1,3 +1,4 @@
+import { preload } from 'react-dom';
 import Link from 'next/link';
 import { listPostSummaries, type BlsPostSummary } from '@/lib/strapi';
 import { FEATURED_POST_SLUGS, PILLAR_SLUGS, SITE, publisherJsonLd } from '@/lib/site';
@@ -29,6 +30,10 @@ export const revalidate = 60;
 const none = { data: [] as BlsPostSummary[], meta: { pagination: { page: 1, pageSize: 0, pageCount: 0, total: 0 } } };
 
 export default async function HomePage() {
+  /* The top section's background image is the page's largest paint on mobile, but as a CSS background the browser
+     only finds it once the stylesheet has loaded. Preloading it at high priority lets the download start with the
+     HTML (PageSpeed, 24 Sep 2026: ~1.8 s of load delay). */
+  preload('/assets/imgs/page/bg-home1-sec1.png', { as: 'image', fetchPriority: 'high' });
   const groups = await getTopicGroups();
   const topicHubs = groups.flatMap((g) => g.items);
   const slugOf = (href: string) => href.replace(/^\//, '');

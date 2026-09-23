@@ -556,7 +556,10 @@ async function main() {
   let registered = 0;
 
   /** Save a finished cover: to the preview folder with --out, otherwise to cms-uploads and the manifest. */
-  const save = (post, filename, buf, how) => {
+  const save = async (post, filename, raw, how) => {
+    /* Web size: at most 1600px wide, JPEG q80. Full-size 2368px covers were ~1 MB each and slowed every page
+       that shows them (PageSpeed, 24 Sep 2026). */
+    const buf = await sharp(raw).resize({ width: 1600, withoutEnlargement: true }).jpeg({ quality: 80, mozjpeg: true, progressive: true }).toBuffer();
     if (OUT_DIR) {
       mkdirSync(OUT_DIR, { recursive: true });
       writeFileSync(join(OUT_DIR, filename), buf);
@@ -583,7 +586,7 @@ async function main() {
       composed++;
       if (DRY) continue;
       const buf = await composeProductCover(products, bg);
-      save(post, filename, buf, `catalogue: ${products.map((p) => p.slug).join(', ')} · ${bg.name}`);
+      await save(post, filename, buf, `catalogue: ${products.map((p) => p.slug).join(', ')} · ${bg.name}`);
       continue;
     }
 
@@ -616,7 +619,7 @@ async function main() {
     console.log(`        generated in ${((Date.now() - start) / 1000).toFixed(1)}s`);
     const res = await fetch(result.url);
     if (!res.ok) throw new Error(`Failed to download image from ${result.url}: ${res.status}`);
-    save(post, filename, Buffer.from(await res.arrayBuffer()), `${MODEL} · ${bg.name}`);
+    await save(post, filename, Buffer.from(await res.arrayBuffer()), `${MODEL} · ${bg.name}`);
     generated++;
   }
 
