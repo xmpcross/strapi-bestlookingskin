@@ -5,6 +5,12 @@ const strapiHost = new URL(
 
 const nextConfig = {
   reactStrictMode: true,
+  /* Files the server code reads from disk at runtime (lib/links.ts affiliate maps, lib/strapi.ts generated-cover
+     manifest). On this server they are simply on disk; on serverless hosts (Netlify) they must be traced into the
+     function bundle or the reads find nothing. */
+  outputFileTracingIncludes: {
+    '/**': ['./data/*.json'],
+  },
   allowedDevOrigins: ['bestlookingskin.fxnstudio.com', 'bestlooking.skin', 'www.bestlooking.skin'],
   images: {
     remotePatterns: [

@@ -37,8 +37,8 @@ data/iherb-flash-deals.json
 # roughly 30 of them are referenced by POST_COVER_OVERRIDES in lib/strapi.ts and
 # keep working exactly as before. It only stops NEW generated files appearing as
 # untracked. To commit a new one deliberately: git add -f <path>.
-public/cms-uploads/
+# public/cms-uploads/ and data/generated-covers.json are committed (24 Sep 2026) so builds that come from git
+# (Netlify) have the locally generated covers. After generating covers, commit them before deploying.
 
 # Cover manifest written by scripts/generate-post-cover.mjs, read at runtime by lib/strapi.ts.
 # Rewritten whenever a cover is generated, so tracking it would leave the tree dirty (see above).
-data/generated-covers.json
