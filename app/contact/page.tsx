@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/contact' },
 };
 
-const CONTACT_EMAIL = 'hello@bestlooking.skin';
+const CONTACT_EMAIL = 'contact@bestlooking.skin';
 
 /*
  * Magzin "Contact" layout, minus the template's map, street address, phone numbers and opening hours:
@@ -49,8 +49,8 @@ export default function ContactPage() {
               </p>
               <p className="fs-7 text-600 mt-4 mb-0">
                 Prefer email?{' '}
-                <a href="mailto:hello@bestlooking.skin" className="bls-link fw-medium">
-                  hello@bestlooking.skin
+                <a href="mailto:contact@bestlooking.skin" className="bls-link fw-medium">
+                  contact@bestlooking.skin
                 </a>
               </p>
               <div className="fs-7 text-600 mt-4">

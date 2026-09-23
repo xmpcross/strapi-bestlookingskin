@@ -97,7 +97,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Contact form email failed:', error);
     return NextResponse.json(
-      { message: 'The form is not ready yet. Please email hello@bestlooking.skin directly.' },
+      { message: 'The form is not ready yet. Please email contact@bestlooking.skin directly.' },
       { status: 500 },
     );
   }

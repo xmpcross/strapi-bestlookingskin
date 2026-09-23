@@ -67,7 +67,7 @@ export default function Page() {
       <h3>5. Questions</h3>
       <p>
         If something on this site looks like it was written for a commission rather than for you,
-        tell us: <a href="mailto:hello@bestlooking.skin">hello@bestlooking.skin</a>. Corrections are
+        tell us: <a href="mailto:contact@bestlooking.skin">contact@bestlooking.skin</a>. Corrections are
         welcome and we act on them.
       </p>
     </LegalArticle>
