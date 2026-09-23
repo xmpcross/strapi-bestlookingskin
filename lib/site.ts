@@ -38,14 +38,15 @@ export const SITE = {
 };
 
 /**
- * Affiliate programs are switched off (Sep 2026): the site earns from Google AdSense instead. While false:
- * - catalogue offers drop their affiliateUrl, so every retailer link is the plain product page (lib/strapi.ts);
- * - post and pillar content has Amazon and affiliate-network links unwrapped to plain text, "Buy now" buttons,
- *   Amazon-hosted images and the old Content Egg price boxes removed, at render time (lib/affiliate.ts) -- the
- *   stored content in Strapi is untouched, so turning this back on restores it;
- * - the "we may earn a commission" notes are hidden.
+ * Affiliate links (on again 24 Sep 2026, alongside AdSense). While true:
+ * - retailer links -- catalogue offers, links inside posts, brand websites -- go out through lib/links.ts:
+ *   Geniuslink for its partner merchants, Takeads for the rest, the plain URL otherwise;
+ * - the "we may earn a commission" notes show and outbound retailer links carry rel="sponsored".
+ * Independent of this flag, post content always has the legacy WordPress affiliate markup removed at render time
+ * (Amazon Associates links on tags that are not ours, Amazon-hosted images, Content Egg price boxes -- see
+ * lib/affiliate.ts): the site has no active Amazon Associates account, so those must never come back.
  */
-export const AFFILIATE_LINKS_ENABLED = false;
+export const AFFILIATE_LINKS_ENABLED = true;
 
 /**
  * Price-drop email alerts on product pages. Off: the form is not rendered and /api/price-alert refuses new

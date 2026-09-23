@@ -8,6 +8,7 @@ import CategoryListWidget from '@/components/magzin/CategoryListWidget';
 import ProductCard from '@/components/ProductCard';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
 import { getBrandMeta } from '@/lib/brand-data';
+import { resolveOutbound } from '@/lib/links';
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -124,7 +125,10 @@ export default async function BrandPage({ params, searchParams }: { params: Prom
     .slice(0, 8);
   const meta = getBrandMeta(brand.name);
   const logo = mediaUrl(brand.logo ?? null) || meta.logo;
-  const website = brand.websiteUrl || meta.website;
+  const websitePlain = brand.websiteUrl || meta.website;
+  /* The brand's own store goes out through the affiliate resolver like any retailer link (lib/links.ts). */
+  const websiteLink = websitePlain ? resolveOutbound(websitePlain) : null;
+  const website = websiteLink?.url;
   const description = brand.description || meta.description || meta.tagline;
 
   return (
@@ -157,7 +161,7 @@ export default async function BrandPage({ params, searchParams }: { params: Prom
                     <a
                       href={website}
                       target="_blank"
-                      rel="noopener noreferrer"
+                      rel={websiteLink?.network === 'direct' ? 'noopener noreferrer' : 'sponsored nofollow noopener'}
                       className="brand-website-link d-inline-flex align-items-center gap-1 fs-7 fw-medium"
                     >
                       Visit official website

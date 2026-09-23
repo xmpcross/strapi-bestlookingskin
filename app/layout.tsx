@@ -9,6 +9,7 @@ import SiteFooter from '@/components/magzin/SiteFooter';
 import BackToTop from '@/components/magzin/BackToTop';
 import CookieConsent from '@/components/CookieConsent';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
+import TakeadsConvertLink from '@/components/TakeadsConvertLink';
 import { SITE } from '@/lib/site';
 
 // Magzin template (header style 2, Home 2 / Archive 3 / Single 3). The site font, Inter (as on
@@ -67,6 +68,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <BackToTop />
         <CookieConsent />
         <GoogleAnalytics />
+        <TakeadsConvertLink />
       </body>
     </html>
   );
