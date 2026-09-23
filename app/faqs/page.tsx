@@ -22,6 +22,10 @@ export const metadata: Metadata = {
   title: 'FAQs',
   description: `Common skincare questions answered across ${SITE.name}, each linked to the guide the answer comes from.`,
   alternates: { canonical: `${SITE.url}/faqs` },
+  /* Noindex (GSC audit 24 Sep 2026): the page compiles the FAQ sections already published on each guide, so as an
+     indexed page it is ~48,000 words of duplicate text. It stays as a browsing aid, linked from the footer, and is
+     left out of the sitemap. */
+  robots: { index: false, follow: true },
 };
 
 /**
