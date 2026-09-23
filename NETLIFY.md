@@ -8,7 +8,7 @@ ready to build on Netlify. Nothing here changes the server deployment: the serve
 | File | Purpose |
 |---|---|
 | `netlify.toml` | Build command, Node 22, `/cms-uploads/*` cache header, apex → www redirect |
-| `scripts/netlify-build.sh` | `yarn build`, then fails the build if Strapi was unreachable (same guard as `deploy.sh`). On Netlify a failed build leaves the previous deploy live |
+| `scripts/netlify-build.sh` | `npm run build` (Netlify installs with `npm ci` from `package-lock.json`; the stale `yarn.lock` was removed), then fails the build if Strapi was unreachable (same guard as `deploy.sh`). On Netlify a failed build leaves the previous deploy live |
 | `next.config.mjs` → `outputFileTracingIncludes` | Bundles `data/*.json` (affiliate link maps, generated-cover manifest) into the server functions, which read them at runtime |
 | `public/cms-uploads/`, `data/generated-covers.json` | Now committed (no longer gitignored), so the generated covers exist in a git-based build |
 
