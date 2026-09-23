@@ -786,12 +786,13 @@ export async function listPostSummaries(
   /* Tier A posts are the ones with a named author (see CLAUDE.md): the listing lead should be one of them. */
   if (opts.authored) filters.author = { id: { $notNull: true } };
   if (opts.exclude?.length) filters.slug = { $notIn: opts.exclude };
-  /* A post counts as having a cover when the CMS has one or it has a local override, so the CMS still does the
-     filtering and a page of `pageSize` results stays full. */
-  if (opts.withCover) {
-    const overrideSlugs = [...new Set([...Object.keys(POST_COVER_OVERRIDES), ...Object.keys(generatedCovers())])];
-    filters.$or = [{ coverImage: { id: { $notNull: true } } }, ...(overrideSlugs.length ? [{ slug: { $in: overrideSlugs } }] : [])];
-  }
+  /* withCover: a post counts as having a cover when the CMS has one or it has a local one (POST_COVER_OVERRIDES or
+     a generated cover). That used to be a CMS filter listing every locally covered slug in the query string; with
+     ~100 generated covers the URL passed the server's limit and Strapi answered 414, which callers catch as "no
+     posts" -- product pages silently lost their related guides. Now the cover check runs after the fetch, over a
+     larger page so `pageSize` results still come back. No caller pages past page 1 with withCover. */
+  const pageSize = opts.pageSize ?? 12;
+  const fetchSize = opts.withCover ? Math.min(100, Math.max(pageSize * 2, pageSize + 10)) : pageSize;
   const res = await strapiFetch<ListResponse<BlsPostSummary>>('bls-posts', {
     sort: ['publishedAt:desc'],
     fields: ['title', 'slug', 'excerpt', 'publishedAt', 'showFrom', 'updatedAt', 'readingTimeMinutes', 'postType', 'seoDescription'],
@@ -800,15 +801,16 @@ export async function listPostSummaries(
       categories: { fields: ['name', 'slug'] },
       author: { fields: ['name', 'slug', 'avatarUrl'] },
     },
-    pagination: { page: opts.page ?? 1, pageSize: opts.pageSize ?? 12 },
+    pagination: { page: opts.page ?? 1, pageSize: fetchSize },
     filters: withPublishedGate(filters),
   });
-  const data = res.data.map((p) => ({
+  const mapped = res.data.map((p) => ({
     ...withReleaseDate(p),
     title: cleanDashes(p.title),
     excerpt: p.excerpt ? cleanDashes(p.excerpt) : p.excerpt,
     coverImage: coverOverride(p.slug) ?? p.coverImage,
   }));
+  const data = opts.withCover ? mapped.filter((p) => p.coverImage?.url).slice(0, pageSize) : mapped;
   return { ...res, data };
 }
 

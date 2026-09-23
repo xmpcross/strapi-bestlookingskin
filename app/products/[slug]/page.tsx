@@ -118,16 +118,20 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
       ingredient.length > 3
         ? listPostSummaries({ titleMentions: [ingredient], authored: authored || undefined, withCover: true, pageSize: 8 }).then((r) => r.data).catch(() => none)
         : Promise.resolve(none);
-    /* Product mentions first, then ingredient guides with a named author (Tier A), then any other guide on it. */
-    const [byProduct, byIngredientAuthored, byIngredient] = await Promise.all([
-      product.brand && core
-        ? listPostSummaries({ mentions: [product.brand, core], withCover: true, pageSize: 4 }).then((r) => r.data).catch(() => none)
-        : none,
+    /* Posts titled with the product first (its review), then posts that mention it, then ingredient guides with a
+       named author (Tier A), then any other guide on the ingredient. */
+    const productTerms = product.brand && core ? [product.brand, core] : null;
+    const [byProductTitle, byProduct, byIngredientAuthored, byIngredient] = await Promise.all([
+      productTerms ? listPostSummaries({ titleMentions: productTerms, withCover: true, pageSize: 4 }).then((r) => r.data).catch(() => none) : none,
+      productTerms ? listPostSummaries({ mentions: productTerms, withCover: true, pageSize: 4 }).then((r) => r.data).catch(() => none) : none,
       byTitle(true),
       byTitle(false),
     ]);
     const seen = new Set<string>();
-    return [...byProduct, ...byIngredientAuthored, ...byIngredient].filter((p) => !seen.has(p.slug) && seen.add(p.slug)).slice(0, 4).map(toCard);
+    return [...byProductTitle, ...byProduct, ...byIngredientAuthored, ...byIngredient]
+      .filter((p) => !seen.has(p.slug) && seen.add(p.slug))
+      .slice(0, 4)
+      .map(toCard);
   })();
 
   /* FAQ structured data, only when the product carries written FAQs. */
