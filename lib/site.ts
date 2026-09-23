@@ -59,7 +59,7 @@ export const AFFILIATE_LINKS_ENABLED = false;
 export const ADSENSE = {
   client: 'ca-pub-2867376862905050',
   slots: {
-    inArticle: '',
+    inArticle: '1488791118',
     display: '',
     multiplex: '',
   },
