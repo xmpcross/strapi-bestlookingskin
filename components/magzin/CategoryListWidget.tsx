@@ -10,6 +10,10 @@ const CATEGORY_ICONS: Record<string, string> = {
   'hyaluronic-acid': '💦',
   moisturisers: '🧴',
   'toners-and-astringents': '🌿',
+  /* Topic groups on /topics. */
+  'product-type-hubs': '🧴',
+  'skin-concern-hubs': '🔍',
+  'cross-cutting-hubs': '🗓️',
   /* Post topic hubs and article formats. */
   acne: '🩹',
   cleansers: '🫧',
