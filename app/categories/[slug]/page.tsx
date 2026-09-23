@@ -12,6 +12,7 @@ import ProductCard from '@/components/ProductCard';
 import ShopFilters, { type Facet, type ShopFilterState } from '@/components/ShopFilters';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
 import CategoryIntro from '@/components/CategoryIntro';
+import Pagination from '@/components/magzin/Pagination';
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -28,7 +29,10 @@ const GUIDE_HUB: Record<string, string> = {
   'exfoliators-and-scrubs': 'exfoliants',
   'anti-aging': 'anti-aging',
 };
-type Search = { brand?: string; rating?: string; price?: string };
+type Search = { brand?: string; rating?: string; price?: string; page?: string };
+
+/* Products per page: four rows of three at desktop width. */
+const PAGE_SIZE = 12;
 
 /* Price bands, fixed rather than derived from the data: a band that moves when
    the catalogue changes makes a bookmarked filter mean something different next
@@ -55,17 +59,18 @@ export async function generateStaticParams() {
   return categories.map((c) => ({ slug: c.slug }));
 }
 
-export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<Search> }): Promise<Metadata> {
   const { slug } = await params;
+  const page = Math.max(1, Number((await searchParams).page) || 1);
   const category = await getCategory(slug);
   if (!category) return { title: 'Category not found' };
   const description =
     descriptionFromBody(category.description) ||
     `${category.name} products covered by ${SITE.name}, with the latest price we recorded and where to buy.`;
   return {
-    title: `${category.name} — Products & Prices`,
+    title: page > 1 ? `${category.name} — Products (page ${page})` : `${category.name} — Products & Prices`,
     description,
-    alternates: { canonical: `/categories/${category.slug}` },
+    alternates: { canonical: page > 1 ? `/categories/${category.slug}?page=${page}` : `/categories/${category.slug}` },
     openGraph: { title: category.name, description, url: `${SITE.url}/categories/${category.slug}` },
   };
 }
@@ -131,6 +136,13 @@ export default async function CategoryPage({
   };
 
   const products = all.filter((p) => matchesBrand(p) && matchesRating(p) && matchesPrice(p));
+  const pageCount = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
+  const page = Math.min(pageCount, Math.max(1, Number(sp.page) || 1));
+  const pageProducts = products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  /* Filters carried onto every page link. */
+  const pageQuery = new URLSearchParams(
+    Object.entries({ brand: sp.brand, rating: sp.rating, price: sp.price }).filter((e): e is [string, string] => Boolean(e[1])),
+  ).toString();
   /* "Top rated" widget: weighted towards products with more ratings, so four ratings at 5.0 do not outrank thousands. */
   const score = (p: (typeof all)[number]) => ((p.rating ?? 0) * (p.ratingCount ?? 0) + 4 * 20) / ((p.ratingCount ?? 0) + 20);
   const topRated = [...all].filter((p) => (p.ratingCount ?? 0) > 0).sort((a, b) => score(b) - score(a)).slice(0, 4);
@@ -282,13 +294,19 @@ export default async function CategoryPage({
 
               {products.length > 0 ? (
                 <div className="row g-3 g-md-4 mt-2">
-                  {products.map((p) => (
+                  {pageProducts.map((p) => (
                     <div className="col-xl-4 col-sm-6 col-12" key={p.id}>
                       <ProductCard product={p} variant="tile" showCategory={false} />
                     </div>
                   ))}
                 </div>
-              ) : (
+              ) : null}
+              {pageCount > 1 && (
+                <div className="mt-5">
+                  <Pagination basePath={basePath} page={page} pageCount={pageCount} query={pageQuery} />
+                </div>
+              )}
+              {products.length === 0 && (
                 <p className="text-600 mt-4">
                   {all.length > 0
                     ? 'No products match these filters.'
