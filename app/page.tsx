@@ -140,7 +140,7 @@ export default async function HomePage() {
       {pickCards.length > 0 && (
         <section className="pb-70">
           <div className="container">
-            <SectionTitle title="Editor's Guides" description="Written by our named authors" href="/informative-articles" dark />
+            <SectionTitle title="Editor's Guides" description="Written by our named authors" href="/articles" dark />
             <div className="row mt-2 g-4">
               {pickCards.map((card) => (
                 <div className="col-lg-4 col-md-6 col-12" key={card.key}>
@@ -164,7 +164,7 @@ export default async function HomePage() {
       {forYouFeature && (
         <section className="sec-6-home-2 pb-70">
           <div className="container">
-            <SectionTitle title="More to Read" description="Guides from across the site" href="/sitemap" dark />
+            <SectionTitle title="More to Read" description="Guides from across the site" href="/articles" dark />
             <div className="row mt-2 g-4">
               <div className="col-lg-6">
                 <OverlapCard card={forYouFeature} />
@@ -193,7 +193,7 @@ export default async function HomePage() {
       {suggestFeature && (
         <section className="pb-70" data-testid="home-suggestions">
           <div className="container">
-            <SectionTitle title="Suggestions" description="More guides to explore" href="/informative-articles" />
+            <SectionTitle title="Suggestions" description="More guides to explore" href="/articles" />
             <div className="row mt-2 g-4">
               <div className="col-lg-6">
                 <OverlapCard card={suggestFeature} />
@@ -220,7 +220,7 @@ export default async function HomePage() {
           <div className="container">
             <div className="row g-lg-4 g-5">
               <div className="col-lg-8">
-                <SectionTitle title="Latest Guides" description="Recently published" href="/informative-articles" />
+                <SectionTitle title="Latest Guides" description="Recently published" href="/articles" />
                 <div className="row mt-2 g-4">
                   {latest.map((card) => (
                     <div className="col-12" key={card.key}>

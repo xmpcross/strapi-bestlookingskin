@@ -58,7 +58,7 @@ export default function AboutPage() {
                 <Link href="/products" className="btn btn-dark bls-btn">
                   Browse products
                 </Link>
-                <Link href="/informative-articles" className="btn bls-btn bls-btn-outline">
+                <Link href="/articles" className="btn bls-btn bls-btn-outline">
                   Read articles
                 </Link>
               </div>

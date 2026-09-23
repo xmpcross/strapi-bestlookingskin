@@ -297,7 +297,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
                 <div className="mb-5">
                   <CategoryListWidget
                     title="Browse Topics"
-                    allHref="/informative-articles"
+                    allHref="/articles"
                     allLabel="All articles"
                     total={allTotal}
                     rows={topicRows}

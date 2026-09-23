@@ -26,7 +26,8 @@ export type SectionKey =
   | 'product-reviews'
   | 'top-rated-products'
   | 'how-to-guides'
-  | 'informative-articles';
+  | 'informative-articles'
+  | 'articles';
 
 export type Section = {
   slug: SectionKey;
@@ -60,7 +61,7 @@ export const SECTIONS: Section[] = [
     slug: 'product-comparisons',
     postType: 'product-comparison',
     /* Retired 15 Sep 2026: its posts moved into the topic hubs. */
-    redirectTo: '/informative-articles',
+    redirectTo: '/articles',
     title: 'Product Comparisons',
     short: 'Comparisons',
     subtitle: 'Two formulas, head to head — pick the one that wins for your skin.',
@@ -71,7 +72,7 @@ export const SECTIONS: Section[] = [
     slug: 'product-reviews',
     postType: 'product-review',
     /* Retired 15 Sep 2026: its posts moved into the topic hubs. */
-    redirectTo: '/informative-articles',
+    redirectTo: '/articles',
     title: 'Product Reviews',
     short: 'Reviews',
     subtitle: 'Tested in real routines. Honest verdicts. No sponsored gushing.',
@@ -82,7 +83,7 @@ export const SECTIONS: Section[] = [
     slug: 'top-rated-products',
     postType: 'top-rated',
     /* Retired 15 Sep 2026: its posts moved into the topic hubs. */
-    redirectTo: '/informative-articles',
+    redirectTo: '/articles',
     title: 'Top-Rated Products',
     short: 'Top Rated',
     subtitle: 'Ranked roundups of the best skincare products for every skin type and concern.',
@@ -96,7 +97,7 @@ export const SECTIONS: Section[] = [
     slug: 'how-to-guides',
     postType: 'how-to-guide',
     /* Retired 15 Sep 2026: its posts moved into the topic hubs. */
-    redirectTo: '/informative-articles',
+    redirectTo: '/articles',
     title: 'How-to Guides',
     short: 'How-to',
     subtitle: 'Step-by-step routines that build better skin from the basics up.',
@@ -105,8 +106,17 @@ export const SECTIONS: Section[] = [
   },
   {
     slug: 'informative-articles',
-    /* The old "Informative Articles" category: its posts moved into the topic hubs (Sep 2026), and the URL, which
-       the home page, footer and menu link to, now lists every article. */
+    /* The old "Informative Articles" category. Its posts moved into the topic hubs (Sep 2026) and the URL became
+       the All Articles listing; that listing moved to /articles on 23 Sep 2026 so no link on the site carries the
+       old category's name. */
+    redirectTo: '/articles',
+    title: 'Informative Articles',
+    short: 'Informative',
+    subtitle: 'Moved to All Articles.',
+    blurb: 'Moved to All Articles.',
+  },
+  {
+    slug: 'articles',
     title: 'All Articles',
     short: 'All',
     subtitle: 'Every guide, review and explainer, newest first.',
