@@ -22,6 +22,11 @@
  * shows on the post page on the next request and in listings within about a minute. No code edit, no rebuild,
  * no deploy. Both the image and the manifest are gitignored, so the tree stays clean for ./deploy.sh.
  *
+ * That depends on nginx serving /cms-uploads/ straight from public/cms-uploads/ (location block in
+ * /etc/nginx/sites-available/bestlooking.skin, added 23 Sep 2026). `next start` only serves files that were in
+ * public/ when it started, so without that block a new cover 404s until the next deploy. Cloudflare and browsers
+ * cache the images for up to 4 hours, so a --force replacement can take that long to show everywhere.
+ *
  * fal.ai is billed per image. --all generates at most 5 images unless you pass --yes (or a --limit); run it with
  * --dry-run first to see what it would do.
  *
