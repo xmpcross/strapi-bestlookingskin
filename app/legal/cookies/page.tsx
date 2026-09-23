@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import LegalBusinessDetails from '@/components/LegalBusinessDetails';
 import LegalArticle from '@/components/LegalArticle';
 import { SITE } from '@/lib/site';
 
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/legal/cookies' },
 };
 
-const MODIFIED = '2026-05-02';
+const MODIFIED = '2026-09-24';
 
 export default function Page() {
   return (
@@ -201,8 +202,9 @@ export default function Page() {
       <p>
         Questions about cookies or your privacy choices? Reach us via{' '}
         <Link href="/contact">our contact page</Link> or email{' '}
-        <a href="mailto:privacy@bestlooking.skin">privacy@bestlooking.skin</a>.
+        <a href="mailto:contact@bestlooking.skin">contact@bestlooking.skin</a>.
       </p>
+      <LegalBusinessDetails />
 
       <p className="mt-5 fs-7 text-600">
         This Cookie Policy is provided as a general template covering ePrivacy/GDPR (EU/UK) and CCPA

@@ -19,10 +19,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const FIXED: Record<string, string> = {
     '/about': '2026-09-24',
     '/contact': '2026-09-24',
-    '/legal/terms': '2026-05-02',
-    '/legal/privacy': '2026-05-02',
-    '/legal/cookies': '2026-05-02',
-    '/legal/disclosure': '2026-09-11',
+    '/legal/terms': '2026-09-24',
+    '/legal/privacy': '2026-09-24',
+    '/legal/cookies': '2026-09-24',
+    '/legal/disclosure': '2026-09-24',
   };
 
   const [posts, products, cmsCategories, productCategories, authors, brands] = await Promise.all([

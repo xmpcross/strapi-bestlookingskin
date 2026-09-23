@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import LegalBusinessDetails from '@/components/LegalBusinessDetails';
 import LegalArticle from '@/components/LegalArticle';
 import { SITE } from '@/lib/site';
 
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/legal/privacy' },
 };
 
-const MODIFIED = '2026-05-02';
+const MODIFIED = '2026-09-24';
 
 export default function Page() {
   return (
@@ -25,6 +26,13 @@ export default function Page() {
         the United Kingdom, Switzerland, or the United States (including California and other states
         with comprehensive privacy laws), additional rights apply — see sections 8-11 below.
       </p>
+
+      <h3>Who we are</h3>
+      <p>
+        The Website is operated by FXN Holdings, trading as BestLooking.Skin, which is responsible for the personal
+        information collected through it:
+      </p>
+      <LegalBusinessDetails />
 
       {/* 1. What information do we collect? */}
       <h3>1. What information do we collect?</h3>
@@ -181,7 +189,7 @@ export default function Page() {
       <p>
         If you have a complaint concerning the manner in which we maintain the privacy of your
         Personal Information, please contact us at{' '}
-        <a href="mailto:privacy@bestlooking.skin">privacy@bestlooking.skin</a>. All complaints will be
+        <a href="mailto:contact@bestlooking.skin">contact@bestlooking.skin</a>. All complaints will be
         considered by Kritin Curtis and we may seek further information from you to clarify your
         concerns. If we agree that your complaint is well founded, we will, in consultation with you,
         take appropriate steps to rectify the problem.
@@ -234,7 +242,7 @@ export default function Page() {
       </ol>
       <p>
         To exercise any of these rights, email{' '}
-        <a href="mailto:privacy@bestlooking.skin">privacy@bestlooking.skin</a>. We may need to verify your
+        <a href="mailto:contact@bestlooking.skin">contact@bestlooking.skin</a>. We may need to verify your
         identity before responding. Exercising these rights is free of charge. We will respond within
         one month, extendable by two further months for complex requests.
       </p>
@@ -282,7 +290,7 @@ export default function Page() {
       </ol>
       <p>
         To exercise any of these rights, email{' '}
-        <a href="mailto:privacy@bestlooking.skin">privacy@bestlooking.skin</a> or use our{' '}
+        <a href="mailto:contact@bestlooking.skin">contact@bestlooking.skin</a> or use our{' '}
         <Link href="/contact">contact form</Link>. Authorised agents may submit requests on your
         behalf with verifiable written permission. We respond within 45 days (extendable by 45 days
         with notice). We may need information sufficient to verify you are the consumer about whom
@@ -290,7 +298,7 @@ export default function Page() {
       </p>
       <p>
         <strong>
-          <a href="mailto:privacy@bestlooking.skin?subject=Do%20Not%20Sell%20or%20Share%20My%20Personal%20Information">
+          <a href="mailto:contact@bestlooking.skin?subject=Do%20Not%20Sell%20or%20Share%20My%20Personal%20Information">
             Do Not Sell or Share My Personal Information
           </a>
         </strong>{' '}
@@ -307,10 +315,10 @@ export default function Page() {
         broadly equivalent to those described in section 9: access, correction, deletion, portability
         and opt-out of targeted advertising / sale / profiling that produces legal or similarly
         significant effects. To exercise these rights, email{' '}
-        <a href="mailto:privacy@bestlooking.skin">privacy@bestlooking.skin</a>. We honor recognised opt-out
+        <a href="mailto:contact@bestlooking.skin">contact@bestlooking.skin</a>. We honor recognised opt-out
         signals (including the Global Privacy Control) where required by your state&apos;s law. You
         have the right to appeal any denial of a rights request — contact{' '}
-        <a href="mailto:privacy@bestlooking.skin">privacy@bestlooking.skin</a> with the subject line
+        <a href="mailto:contact@bestlooking.skin">contact@bestlooking.skin</a> with the subject line
         &quot;Appeal&quot;.
       </p>
 
@@ -320,7 +328,7 @@ export default function Page() {
         The Website is intended for a general audience and is not directed to children under the age
         of 13 (or under 16 in the EEA / UK where applicable). We do not knowingly collect Personal
         Information from children. If you believe a child has provided us with Personal Information,
-        please contact us at <a href="mailto:privacy@bestlooking.skin">privacy@bestlooking.skin</a> and we
+        please contact us at <a href="mailto:contact@bestlooking.skin">contact@bestlooking.skin</a> and we
         will delete it promptly. We comply with the US Children&apos;s Online Privacy Protection Act
         (COPPA) and equivalent provisions of the GDPR.
       </p>
@@ -359,7 +367,7 @@ export default function Page() {
         Data Controller: FXN Holdings (ABN {SITE.business.abnDisplay}), trading as {SITE.business.tradingName}, Western Australia.<br />
         Postal address: {SITE.business.postalAddressInline}.<br />
         Privacy queries, access requests, complaints and CCPA / GDPR rights requests:{' '}
-        <a href="mailto:privacy@bestlooking.skin">privacy@bestlooking.skin</a>.
+        <a href="mailto:contact@bestlooking.skin">contact@bestlooking.skin</a>.
       </p>
 
       <p className="mt-5 fs-7 text-600">

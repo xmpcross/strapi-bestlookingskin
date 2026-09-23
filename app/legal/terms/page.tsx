@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import LegalBusinessDetails from '@/components/LegalBusinessDetails';
 import LegalArticle from '@/components/LegalArticle';
 import { SITE } from '@/lib/site';
 
@@ -8,7 +9,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/legal/terms' },
 };
 
-const MODIFIED = '2026-05-02';
+const MODIFIED = '2026-09-24';
 
 export default function Page() {
   return (
@@ -270,6 +271,10 @@ export default function Page() {
         If any part of these Terms is found to be void or unenforceable by a Court of competent
         jurisdiction, that part shall be severed and the rest of the Terms shall remain in force.
       </p>
+
+      {/* 13. Contact details */}
+      <h3>13. Contact details</h3>
+      <LegalBusinessDetails />
     </LegalArticle>
   );
 }

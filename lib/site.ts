@@ -20,6 +20,8 @@ export const SITE = {
     abnDisplay: '53 274 423 748',
     postalAddress: ['FXN Holdings', 'PO Box 500', 'WEST PERTH WA 6872'],
     postalAddressInline: 'PO Box 500, WEST PERTH WA 6872',
+    residency: 'Australian business based in WA.',
+    email: 'contact@bestlooking.skin',
     postalAddressSchema: {
       '@type': 'PostalAddress',
       postOfficeBoxNumber: '500',

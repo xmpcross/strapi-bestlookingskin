@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import LegalBusinessDetails from '@/components/LegalBusinessDetails';
 import LegalArticle from '@/components/LegalArticle';
 import { SITE } from '@/lib/site';
 
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/legal/disclosure' },
 };
 
-const MODIFIED = '2026-09-11';
+const MODIFIED = '2026-09-24';
 
 /**
  * Affiliate disclosure.
@@ -70,6 +71,9 @@ export default function Page() {
         tell us: <a href="mailto:contact@bestlooking.skin">contact@bestlooking.skin</a>. Corrections are
         welcome and we act on them.
       </p>
+
+      <h3>6. Who we are</h3>
+      <LegalBusinessDetails />
     </LegalArticle>
   );
 }
