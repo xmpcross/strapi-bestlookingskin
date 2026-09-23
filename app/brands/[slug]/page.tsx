@@ -20,8 +20,14 @@ export async function generateStaticParams() {
   return brands.map((b) => ({ slug: b.slug }));
 }
 
+/* A brand's slug is its display name ("La Roche-Posay"), so links encode it (/brands/La%20Roche-Posay) and the
+   route receives it still percent-encoded. Comparing that to the name 404'd every brand with a space or an
+   apostrophe; single-word brands only worked because they had nothing to encode. */
+const brandSlugFrom = async (params: Promise<Params>) => decodeURIComponent((await params).slug);
+const brandPath = (slug: string) => `/brands/${encodeURIComponent(slug)}`;
+
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
-  const { slug } = await params;
+  const slug = await brandSlugFrom(params);
   const brand = await getBrand(slug);
   if (!brand) return { title: 'Brand not found' };
   const description =
@@ -29,13 +35,13 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   return {
     title: `${brand.name} — Products & Prices`,
     description,
-    alternates: { canonical: `/brands/${brand.slug}` },
-    openGraph: { title: brand.name, description, url: `${SITE.url}/brands/${brand.slug}` },
+    alternates: { canonical: brandPath(brand.slug) },
+    openGraph: { title: brand.name, description, url: `${SITE.url}${brandPath(brand.slug)}` },
   };
 }
 
 export default async function BrandPage({ params }: { params: Promise<Params> }) {
-  const { slug } = await params;
+  const slug = await brandSlugFrom(params);
   const brand = await getBrand(slug);
   if (!brand) notFound();
 
