@@ -74,7 +74,11 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   const { page: pageRaw, topics, type, sort } = await searchParams;
   const page = Math.max(1, Number(pageRaw) || 1);
   const c = await resolveCategory(category);
-  const description = c.metaDescription ?? (c.description ? clip(c.description) : `${c.name}: guides and reviews from ${SITE.name}.`);
+  /* The hub's introduction runs: paragraph 1 explains the topic, paragraph 2 describes the guides in this hub.
+     The meta description uses paragraph 2, so a hub describes its articles and never repeats the matching product
+     category's description (/anti-aging vs /categories/anti-aging; GSC audit 24 Sep 2026). */
+  const paras = (c.description ?? '').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+  const description = c.metaDescription ?? (paras.length ? clip(paras[1] ?? paras[0]) : `${c.name}: guides and reviews from ${SITE.name}.`);
   const title = c.seoTitle ?? c.name;
   /* Share image: the hub's newest cover, else the site default (GSC audit: 26 index pages had no og:image). */
   const img = shareImages(await hubCover(category), c.name);

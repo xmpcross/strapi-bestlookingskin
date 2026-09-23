@@ -65,8 +65,11 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   const page = Math.max(1, Number((await searchParams).page) || 1);
   const category = await getCategory(slug);
   if (!category) return { title: 'Category not found' };
+  /* Paragraph 2 of the category introduction describes the products and brands listed; the hub pages use theirs
+     for the guides, so the two never share a description. */
+  const catParas = (category.description ?? '').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
   const description =
-    descriptionFromBody(category.description) ||
+    descriptionFromBody(catParas[1] ?? catParas[0]) ||
     `${category.name} products covered by ${SITE.name}, with the latest price we recorded and where to buy.`;
   /* Share image: the category's own image, else its first product's, else the site default. */
   const firstProduct = category.image
