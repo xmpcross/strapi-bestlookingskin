@@ -6,7 +6,7 @@
  * rendered; the content stored in Strapi is not changed.
  *
  * - "Buy now" style buttons that point at a retailer or network are removed outright (their text means nothing
- *   without the link);
+ *   without the link), as are links whose text is just their own tagged URL;
  * - every other link to Amazon or an affiliate network is unwrapped: its text stays, the link goes;
  * - images hosted by Amazon are removed (they may only be shown by an active Associate);
  * - Content Egg prices, stock lines and "Amazon price updated" disclaimers are removed;
@@ -52,7 +52,9 @@ export function stripAffiliateLinks(html: string): string {
     .replace(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi, (whole, attrs: string, inner: string) => {
       const href = attrs.match(/\bhref=["']([^"']*)["']/i)?.[1]?.replace(/&amp;/g, '&') ?? '';
       if (!href || !isAffiliate(href)) return whole;
-      return BUY_BUTTON.test(textOf(inner)) ? '' : inner;
+      /* A button, or a link whose text is just its own (tagged) URL: drop it; otherwise keep the text. */
+      const text = textOf(inner);
+      return BUY_BUTTON.test(text) || /^(?:https?:)?\/\//i.test(text) ? '' : inner;
     })
     .replace(AMAZON_IMAGE, '')
     .replace(/<div class="[^"]*\bcegg-price-disclaimer\b[^"]*">\s*<small>[\s\S]*?<\/small>\s*<\/div>/gi, '')
