@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { CommerceProduct } from '@/lib/strapi';
 import { AFFILIATE_LINKS_ENABLED } from '@/lib/site';
 import { plainRetailerUrl } from '@/lib/affiliate';
-import { SPONSORED_REL } from '@/lib/links';
+import { SPONSORED_REL, resolveOutbound } from '@/lib/links';
 
 /**
  * End-of-article "Affiliate links" block (text links to retailers) and the post's tags.
@@ -12,13 +12,14 @@ import { SPONSORED_REL } from '@/lib/links';
  * listed: an unwrapped retailer link earns nothing and would make that sentence untrue. `retailer` mode lists
  * the plain retailer links under a heading that says so.
  *
- * Amazon offers are never listed (no qualifying sales, so no PA-API; see CLAUDE.md), nor resale marketplaces,
- * whose listings are second-hand goods rather than the product the article discusses.
+ * Every offer goes through the site's affiliate resolver (lib/links.ts: Geniuslink, then Takeads), so a listed link is
+ * the monetised one. Amazon offers are never listed (no active Associates account; see CLAUDE.md), nor the resale
+ * marketplaces Poshmark and Mercari, whose listings are second-hand goods rather than the product discussed.
  *
  * Tags are the post's SEO keywords (Tier A posts carry them; Tier B posts have none, so no row renders), each
  * linking to a site search.
  */
-const EXCLUDED_MERCHANTS = /^(amazon|poshmark|mercari|ebay)/i;
+const EXCLUDED_MERCHANTS = /^(amazon|poshmark|mercari)/i;
 
 export type AffiliateLinkMode = 'affiliate' | 'retailer';
 
@@ -30,10 +31,12 @@ export function affiliateLinksFor(products: CommerceProduct[], mode: AffiliateLi
   for (const product of products) {
     const offers = (product.offers ?? [])
       .filter((o) => o.availability !== 'out_of_stock' && !EXCLUDED_MERCHANTS.test(o.merchant?.slug ?? ''))
-      .map((o) => ({
-        offer: o,
-        href: mode === 'affiliate' ? o.affiliateUrl : AFFILIATE_LINKS_ENABLED ? o.affiliateUrl || o.productUrl : plainRetailerUrl(o.productUrl),
-      }))
+      .map((o) => {
+        const plain = plainRetailerUrl(o.productUrl);
+        const resolved = AFFILIATE_LINKS_ENABLED && plain ? resolveOutbound(plain, o.affiliateUrl && o.affiliateUrl !== o.productUrl ? o.affiliateUrl : null) : null;
+        const monetised = resolved && resolved.network !== 'direct' ? resolved.url : undefined;
+        return { offer: o, href: mode === 'affiliate' ? monetised : monetised || plain };
+      })
       .filter((x): x is { offer: typeof x.offer; href: string } => Boolean(x.href && x.offer.merchant?.name))
       .sort((a, b) => (a.offer.price ?? Infinity) - (b.offer.price ?? Infinity));
     for (const { offer, href } of offers.slice(0, 2)) {

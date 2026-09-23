@@ -313,8 +313,8 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
      at render time. */
   const inlineProducts = await listProductsForPost(post.title, category, 3).catch(() => []);
   const readAlsoRows = recentRows.filter((r) => r.href !== postPath(post)).slice(0, 2);
-  /* "Affiliate links" only when an offer really carries an affiliate URL; until then the same retailers are listed
-     under "Where to buy" (no catalogue offer has one as of Sep 2026). */
+  /* "Affiliate links" when the products' offers resolve to Geniuslink / Takeads links (lib/links.ts); otherwise the
+     same retailers are listed under "Where to buy" as plain links. */
   const buyLinks = (() => {
     const affiliate = affiliateLinksFor(inlineProducts, 'affiliate');
     return affiliate.length ? { mode: 'affiliate' as const, links: affiliate } : { mode: 'retailer' as const, links: affiliateLinksFor(inlineProducts, 'retailer') };
