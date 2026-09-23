@@ -87,7 +87,7 @@ export default function ShopFilters({
   const anyActive = Boolean(state.brand || state.rating || state.price);
 
   return (
-    <aside className="shop-sticky" aria-label="Product filters" data-testid="shop-filters">
+    <aside aria-label="Product filters" data-testid="shop-filters">
       {anyActive && (
         <p className="mb-4">
           <Link href={basePath} className="shop-link fs-7 fw-semi-bold">
