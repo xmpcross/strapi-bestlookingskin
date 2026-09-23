@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import { seoTitle, shareImages } from '@/lib/seo';
 import { SITE, INFO_ONLY_CATEGORY_SLUGS } from '@/lib/site';
 import { descriptionFromBody } from '@/lib/format';
 import { listPostSummaries, listProductCategories, listProductCategoryCounts, listProducts, mediaUrl } from '@/lib/strapi';
@@ -67,11 +68,19 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   const description =
     descriptionFromBody(category.description) ||
     `${category.name} products covered by ${SITE.name}, with the latest price we recorded and where to buy.`;
+  /* Share image: the category's own image, else its first product's, else the site default. */
+  const firstProduct = category.image
+    ? null
+    : await listProducts({ category: slug, pageSize: 1 })
+        .then((r) => r.data[0] ?? null)
+        .catch(() => null);
+  const img = shareImages(mediaUrl(category.image ?? null) || mediaUrl(firstProduct?.primaryImage ?? null), category.name);
   return {
-    title: page > 1 ? `${category.name} — Products (page ${page})` : `${category.name} — Products & Prices`,
+    title: seoTitle(page > 1 ? `${category.name} — Products (page ${page})` : `${category.name} — Products & Prices`),
     description,
     alternates: { canonical: page > 1 ? `/categories/${category.slug}?page=${page}` : `/categories/${category.slug}` },
-    openGraph: { title: category.name, description, url: `${SITE.url}/categories/${category.slug}` },
+    openGraph: { title: category.name, description, url: `${SITE.url}/categories/${category.slug}`, images: img.openGraphImages },
+    twitter: img.twitter,
   };
 }
 

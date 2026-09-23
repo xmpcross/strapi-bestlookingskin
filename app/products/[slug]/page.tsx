@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Fragment } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import { seoTitle } from '@/lib/seo';
 import { getProduct, listProducts, getPriceHistory, listProductReviews, listPostSummaries, mediaUrl, type BlsProduct, type BlsPostSummary, listProductCategoryCounts } from '@/lib/strapi';
 import { toCard } from '@/lib/post-card';
 import { RowCard } from '@/components/magzin/cards';
@@ -58,7 +59,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     productFullName(p.brand, p.name);
 
   return {
-    title,
+    title: seoTitle(title),
     description,
     keywords: p.seoKeywords,
     alternates: { canonical: `/products/${p.slug}` },

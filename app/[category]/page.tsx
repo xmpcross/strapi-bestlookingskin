@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
+import { seoTitle, shareImages } from '@/lib/seo';
 import { getCategory, listPostSummaries, type BlsPostType } from '@/lib/strapi';
 import { SECTIONS, SITE, isListedSection } from '@/lib/site';
 import { getTopicGroups } from '@/lib/nav';
@@ -44,6 +45,12 @@ async function resolveCategory(slug: string) {
   };
 }
 
+/** The newest cover image among a hub's posts (null when none has one). */
+const hubCover = (slug: string) =>
+  listPostSummaries({ category: slug, pageSize: 1, withCover: true })
+    .then((r) => (r.data[0] ? toCard(r.data[0]).image : null))
+    .catch(() => null);
+
 const clip = (s: string, n = 158) => (s.length <= n ? s : `${s.slice(0, s.lastIndexOf(' ', n - 1))}…`);
 
 export async function generateMetadata({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<SearchParams> }): Promise<Metadata> {
@@ -53,17 +60,30 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   if (retiredTo) permanentRedirect(retiredTo);
   /* Hub-group pages list their hubs (components/HubGroupPage). */
   const group = HUB_GROUP_INTROS[category];
-  if (group) return { title: group.title, description: group.description, alternates: { canonical: `/${category}` }, openGraph: { title: group.title, description: group.description, url: `${SITE.url}/${category}` } };
+  if (group) {
+    const firstHub = (await getTopicGroups()).find((g) => g.slug === category)?.items[0]?.href.replace(/^\//, '');
+    const img = shareImages(firstHub ? await hubCover(firstHub) : null, group.title);
+    return {
+      title: seoTitle(group.title),
+      description: group.description,
+      alternates: { canonical: `/${category}` },
+      openGraph: { title: group.title, description: group.description, url: `${SITE.url}/${category}`, images: img.openGraphImages },
+      twitter: img.twitter,
+    };
+  }
   const { page: pageRaw, topics, type, sort } = await searchParams;
   const page = Math.max(1, Number(pageRaw) || 1);
   const c = await resolveCategory(category);
   const description = c.metaDescription ?? (c.description ? clip(c.description) : `${c.name}: guides and reviews from ${SITE.name}.`);
   const title = c.seoTitle ?? c.name;
+  /* Share image: the hub's newest cover, else the site default (GSC audit: 26 index pages had no og:image). */
+  const img = shareImages(await hubCover(category), c.name);
   return {
-    title: page > 1 ? `${title} (page ${page})` : title,
+    title: seoTitle(page > 1 ? `${title} (page ${page})` : title),
     description,
     alternates: { canonical: page > 1 ? `/${category}?page=${page}` : `/${category}` },
-    openGraph: { title, description, url: `${SITE.url}/${category}` },
+    openGraph: { title, description, url: `${SITE.url}/${category}`, images: img.openGraphImages },
+    twitter: img.twitter,
     /* A combined-topics, type or sort view is a filter of an existing archive: keep it out of the index. */
     ...(topics || type || sort ? { robots: { index: false, follow: true } } : {}),
   };

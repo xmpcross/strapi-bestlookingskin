@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { seoTitle } from '@/lib/seo';
 import { notFound } from 'next/navigation';
 import { getAuthor, listAuthors, listPosts } from '@/lib/strapi';
 import { SITE, publisherJsonLd } from '@/lib/site';
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!author) return { title: 'Author not found' };
   return {
     // The root layout's template already appends the site name.
-    title: author.name,
+    title: seoTitle(author.name),
     description: author.bio?.slice(0, 160) || `Articles written by ${author.name} for ${SITE.name}.`,
     alternates: { canonical: `${SITE.url}/authors/${author.slug}` },
   };

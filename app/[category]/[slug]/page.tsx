@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import { absoluteUrl, seoTitle } from '@/lib/seo';
 import '../../article.css';
 import '../../top-rated.css';
 import { getPost, listPostSummaries, listProductsForPost, getAdjacentPosts, mediaUrl, type BlsPostSummary } from '@/lib/strapi';
@@ -61,7 +62,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const title = post.seoTitle || post.title;
 
   return {
-    title,
+    title: seoTitle(title),
     description,
     keywords: post.seoKeywords,
     alternates: { canonical: `/${category}/${post.slug}` },
@@ -70,9 +71,10 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
       title,
       description,
       url: `${SITE.url}/${category}/${post.slug}`,
-      images: [{ url: cover }],
+      images: [{ url: absoluteUrl(cover)! }],
       publishedTime: post.publishedAt,
-      modifiedTime: post.updatedAt,
+      /* The release date, as in the sitemap and Article dateModified (not Strapi's updatedAt). */
+      modifiedTime: post.publishedAt,
     },
     twitter: {
       /* Always the large card: there is now always an image behind it. Legacy

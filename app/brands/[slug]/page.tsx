@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
+import { seoTitle } from '@/lib/seo';
 import { SITE, isInfoOnlyProduct } from '@/lib/site';
 import { listProductBrands, listProductCategoryCounts, listProducts, mediaUrl } from '@/lib/strapi';
 import SidebarTitle from '@/components/magzin/SidebarTitle';
@@ -65,7 +66,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     meta.tagline ||
     `Shop ${brand.name} skincare products and compare prices at ${SITE.name}.`;
   return {
-    title: `${brand.name} — Skincare Products & Prices`,
+    title: seoTitle(`${brand.name} — Skincare Products & Prices`),
     description,
     alternates: { canonical: brandPath(brand.slug) },
     openGraph: { title: brand.name, description, url: `${SITE.url}${brandPath(brand.slug)}` },
