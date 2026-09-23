@@ -210,9 +210,25 @@
 /* ---- FAQs page ---- */
 .bls-faq-section {
   scroll-margin-top: 110px;
+  padding: 2.5rem 0;
+  border-top: 1px solid var(--tc-neutral-200);
+}
+.bls-faq-section:first-of-type {
+  border-top: 0;
+  padding-top: 0;
 }
 .bls-faq-section .faq-accordion {
   margin: 0;
+}
+.bls-faq-section .faq-question {
+  font-size: 18px !important;
+}
+/* The category name stays in view while its questions scroll by. */
+@media (min-width: 992px) {
+  .bls-faq-aside {
+    position: sticky;
+    top: 110px;
+  }
 }
 .faq-source {
   display: inline-block;

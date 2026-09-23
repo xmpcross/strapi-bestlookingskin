@@ -151,46 +151,59 @@ export default async function FaqsPage() {
 
       <section className="pt-5 pb-70">
         <div className="container">
-          <div className="row">
-            <div className="col-lg-9 col-xl-8 col-12">
-              {sections.length > 1 && (
-                <nav aria-label="FAQ topics" className="block-tag d-flex flex-wrap gap-2 mb-5">
-                  {sections.map((s) => (
-                    <a key={s.slug} href={`#faq-${s.slug}`} className="tag-item bls-tag">
-                      <span>{s.name}</span>
-                      <span className="number">{s.entries.length}</span>
-                    </a>
-                  ))}
-                </nav>
-              )}
+          {sections.length > 1 && (
+            <nav aria-label="FAQ topics" className="block-tag d-flex flex-wrap gap-2 mb-5">
+              {sections.map((s) => (
+                <a key={s.slug} href={`#faq-${s.slug}`} className="tag-item bls-tag">
+                  <span>{s.name}</span>
+                  <span className="number">{s.entries.length}</span>
+                </a>
+              ))}
+            </nav>
+          )}
 
-              {total === 0 ? (
-                <p className="mb-0">No questions have been published yet.</p>
-              ) : (
-                sections.map((s) => (
-                  <section key={s.slug} id={`faq-${s.slug}`} className="bls-faq-section mb-5">
-                    <h2 className="h5 mb-3">{s.name}</h2>
-                    <div className="faq-accordion">
-                      {s.entries.map((e) => (
-                        <details key={e.question} className="faq-item">
-                          <summary className="faq-question">
-                            {e.question}
-                            <span className="faq-icon" aria-hidden />
-                          </summary>
-                          <div className="faq-answer">
-                            <p>{e.answer}</p>
-                            <Link href={e.href} className="bls-link fs-7 fw-semi-bold faq-source">
-                              From: {e.postTitle}
-                            </Link>
-                          </div>
-                        </details>
-                      ))}
-                    </div>
-                  </section>
-                ))
-              )}
-            </div>
-          </div>
+          {total === 0 ? (
+            <p className="mb-0">No questions have been published yet.</p>
+          ) : (
+            /* One row per category: its name on the left, held in view while its questions scroll past on the
+               right. Stacks to a single column below lg. */
+            sections.map((s) => (
+              <section key={s.slug} id={`faq-${s.slug}`} className="bls-faq-section row g-4 g-lg-5">
+                <div className="col-lg-4 col-12">
+                  <div className="bls-faq-aside">
+                    <p className="bls-eyebrow mb-2">Category</p>
+                    <h2 className="h4 mb-2">{s.name}</h2>
+                    <p className="fs-7 text-600 mb-3">
+                      {s.entries.length} {s.entries.length === 1 ? 'question' : 'questions'}
+                    </p>
+                    {s.slug !== 'general' && (
+                      <Link href={`/${s.slug}`} className="bls-link fs-7 fw-semi-bold">
+                        Read the {s.name.toLowerCase()} guides →
+                      </Link>
+                    )}
+                  </div>
+                </div>
+                <div className="col-lg-8 col-12">
+                  <div className="faq-accordion">
+                    {s.entries.map((e) => (
+                      <details key={e.question} className="faq-item">
+                        <summary className="faq-question">
+                          {e.question}
+                          <span className="faq-icon" aria-hidden />
+                        </summary>
+                        <div className="faq-answer">
+                          <p>{e.answer}</p>
+                          <Link href={e.href} className="bls-link fs-7 fw-semi-bold faq-source">
+                            From: {e.postTitle}
+                          </Link>
+                        </div>
+                      </details>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            ))
+          )}
         </div>
       </section>
     </div>
