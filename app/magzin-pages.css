@@ -637,5 +637,5 @@
 }
 .bls-category-intro-toggle:hover { color: var(--tc-neutral-600); }
 .bls-category-intro-toggle:focus-visible { outline: 2px solid var(--tc-neutral-900); outline-offset: 2px; }
-.bls-category-intro p[hidden] { display: none; }
+.bls-category-intro [hidden] { display: none !important; }
 .bls-category-intro p:has(+ p[hidden]) { margin-bottom: 0; }
