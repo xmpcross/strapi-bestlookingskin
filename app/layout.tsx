@@ -11,9 +11,10 @@ import CookieConsent from '@/components/CookieConsent';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import { SITE } from '@/lib/site';
 
-// Magzin template (header style 2, Home 2 / Archive 3 / Single 3). The site font, Outfit, is self-hosted
-// from public/fonts via @font-face in app/magzin.css — no next/font/google fetch, so the build stays
-// offline-friendly and pageload makes zero requests to fonts.gstatic.com.
+// Magzin template (header style 2, Home 2 / Archive 3 / Single 3). The site font, Inter (as on
+// originfacts.com), is self-hosted from public/fonts via @font-face in app/magzin.css — no
+// next/font/google fetch, so the build stays offline-friendly and pageload makes zero requests to
+// fonts.gstatic.com.
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -53,7 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preload" href="/fonts/Outfit-Variable-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/Inter-Variable-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         {/* Apply the saved light/dark theme before paint (Magzin's data-bs-theme switch). */}
         <script
           dangerouslySetInnerHTML={{

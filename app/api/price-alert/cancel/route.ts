@@ -6,7 +6,7 @@ const WRITE_TOKEN = process.env.STRAPI_WRITE_TOKEN || process.env.STRAPI_API_TOK
 function page(message: string, status = 200) {
   const html = `<!doctype html><html><head><meta charset="utf-8"><title>Price alert</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <style>@font-face{font-family:Outfit;font-weight:100 900;font-display:swap;src:url(/fonts/Outfit-Variable-latin.woff2) format('woff2')}body{font-family:Outfit,system-ui,sans-serif;color:#222;display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0;background:#faf9f7}
+    <style>@font-face{font-family:Inter;font-weight:100 900;font-display:swap;src:url(/fonts/Inter-Variable-latin.woff2) format('woff2')}body{font-family:Inter,system-ui,sans-serif;color:#222;display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0;background:#faf9f7}
     .card{max-width:420px;padding:32px;text-align:center}a{color:#e33333}</style></head>
     <body><div class="card"><h2>${message}</h2><p><a href="https://bestlooking.skin">Back to BestLooking.Skin</a></p></div></body></html>`;
   return new NextResponse(html, { status, headers: { 'Content-Type': 'text/html' } });
