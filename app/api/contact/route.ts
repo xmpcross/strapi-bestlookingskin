@@ -80,7 +80,9 @@ export async function POST(request: Request) {
     });
 
     await transporter.sendMail({
-      from: process.env.CONTACT_FROM_EMAIL || process.env.SMTP_USER,
+      /* Sent through the Stalwart server (mail.fxnstudio.com) as its own authenticated account, so the From
+         address is that account's, never the visitor's; replies go to the visitor through Reply-To. */
+      from: { name: 'BestLooking.Skin contact form', address: process.env.CONTACT_FROM_EMAIL || getRequiredEnv('SMTP_USER') },
       to: CONTACT_EMAIL,
       replyTo: email,
       subject: `[BestLooking.Skin] ${subject}`,
