@@ -265,6 +265,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
     description: plainDescription,
     brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
     sku: product.skuOrModel || undefined,
+    gtin: product.gtin && /^\d{8,14}$/.test(product.gtin) ? product.gtin : undefined,
     offers: offersLd,
     aggregateRating:
       ratingValue > 0 && ratingCount > 0
@@ -640,6 +641,44 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
               <section className="mt-5">
                 <h2 className="h4 mb-3">Ingredients</h2>
                 <p className="fs-7 mb-0" style={{ lineHeight: 1.8 }}>{product.ingredients}</p>
+              </section>
+            )}
+
+            {/* Supplement label data (facts table, label directions, warnings); each renders only when present. */}
+            {product.supplementFacts && (
+              <section className="mt-5 product-supplement-facts" data-testid="product-supplement-facts">
+                <h2 className="h4 mb-3">Supplement facts</h2>
+                <table className="shop-spec-table">
+                  <tbody>
+                    {product.supplementFacts.split('\n').map((row) => row.trim()).filter(Boolean).map((row, i) => {
+                      const at = row.indexOf(': ');
+                      return at > 0 ? (
+                        <tr key={i}>
+                          <th scope="row">{row.slice(0, at)}</th>
+                          <td>{row.slice(at + 2)}</td>
+                        </tr>
+                      ) : (
+                        <tr key={i}>
+                          <td colSpan={2} className="fs-8 text-600">{row}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </section>
+            )}
+
+            {product.suggestedUse && (
+              <section className="mt-5" data-testid="product-label-directions">
+                <h2 className="h4 mb-3">Directions on the label</h2>
+                <p className="fs-7 mb-0" style={{ lineHeight: 1.8 }}>{product.suggestedUse}</p>
+              </section>
+            )}
+
+            {product.warnings && (
+              <section className="mt-5" data-testid="product-warnings">
+                <h2 className="h4 mb-3">Warnings</h2>
+                <p className="fs-7 mb-0" style={{ lineHeight: 1.8 }}>{product.warnings}</p>
               </section>
             )}
 

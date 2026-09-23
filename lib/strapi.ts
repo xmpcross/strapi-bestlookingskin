@@ -934,6 +934,13 @@ export type BlsProduct = {
   howToUse?: string[];
   goodToKnow?: string[];
   faqs?: ProductFaq[];
+  /* Label data for supplements, from the retailer's product page (specs.supplementFacts / suggestedUse /
+     warnings). supplementFacts is one "Label: amount" row per line. */
+  supplementFacts?: string;
+  suggestedUse?: string;
+  warnings?: string;
+  /* Barcode (UPC/EAN), emitted as the Product structured data's gtin. */
+  gtin?: string;
   primaryImage?: StrapiImage;
   gallery?: NonNullable<StrapiImage>[];
   asin?: string;
@@ -973,6 +980,9 @@ export type BlsProduct = {
     howToUse?: string[];
     goodToKnow?: string[];
     faqs?: ProductFaq[];
+    supplementFacts?: string;
+    suggestedUse?: string;
+    warnings?: string;
     technicalSpecs?: Record<string, string | number>;
   };
 };
@@ -1037,6 +1047,9 @@ export type CommerceProduct = Omit<
     howToUse?: string[];
     goodToKnow?: string[];
     faqs?: ProductFaq[];
+    supplementFacts?: string;
+    suggestedUse?: string;
+    warnings?: string;
     technicalSpecs?: Record<string, string | number>;
     seoTitle?: string;
     seoDescription?: string;
@@ -1086,6 +1099,9 @@ function normalizeCommerceProduct(product: CommerceProduct): BlsProduct {
     howToUse: product.specs?.howToUse ?? [],
     goodToKnow: product.specs?.goodToKnow ?? [],
     faqs: (product.specs?.faqs ?? []).filter((f) => f?.question && f?.answer),
+    supplementFacts: product.specs?.supplementFacts,
+    suggestedUse: product.specs?.suggestedUse,
+    warnings: product.specs?.warnings,
     skuOrModel: product.mpn || product.sku,
     skinTypes: product.specs?.skinTypes ?? [],
     ingredients: product.specs?.ingredients,

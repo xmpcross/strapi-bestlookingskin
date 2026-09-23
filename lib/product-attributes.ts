@@ -29,6 +29,10 @@ const HIDDEN_KEYS = new Set(
     'contentSources',
     'skinTypes',
     'ingredients',
+    /* Supplement label data: shown in its own sections on the product page, not as spec rows. */
+    'supplementFacts',
+    'suggestedUse',
+    'warnings',
     'seoTitle',
     'seoDescription',
     'seoKeywords',
