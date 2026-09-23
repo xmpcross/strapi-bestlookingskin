@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 import { getProduct, listProducts, getPriceHistory, listProductReviews, listPostSummaries, mediaUrl, type BlsProduct, type BlsPostSummary, listProductCategoryCounts } from '@/lib/strapi';
 import { toCard } from '@/lib/post-card';
 import { RowCard } from '@/components/magzin/cards';
-import { SITE, AFFILIATE_LINKS_ENABLED, PRICE_ALERTS_ENABLED, isInfoOnlyProduct } from '@/lib/site';
+import { SITE, AFFILIATE_LINKS_ENABLED, PRICE_ALERTS_ENABLED, isInfoOnlyProduct, ownShortDescription } from '@/lib/site';
 import { descriptionFromBody } from '@/lib/format';
 import ProductCard from '@/components/ProductCard';
 import ProductCarousel from '@/components/ProductCarousel';
@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
      but a unique one, where the previous fallback printed the brand twice. */
   const description =
     p.seoDescription ||
-    plainShortDescription(p.shortDescription) ||
+    plainShortDescription(ownShortDescription(p)) ||
     descriptionFromBody(p.description) ||
     productFullName(p.brand, p.name);
 
@@ -147,7 +147,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
 
   // Attribute rows for the Specifications and Additional Info tabs, and the lead under the title.
   const attributes = productAttributes(product.specs as Record<string, unknown> | undefined);
-  const lead = productLead(product.shortDescription, product.description);
+  const lead = productLead(ownShortDescription(product), product.description);
 
   // Sidebar "Featured Products": the best-rated products in the catalogue, leaving out this product and the ones
   // already in the "More in {category}" row. The CMS has no featured flag. Ratings are weighted by how many there
@@ -225,7 +225,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
   // ---- Product JSON-LD (schema.org) for rich results ----
   const imageList = [cover, ...galleryImgs.map((g) => mediaUrl(g))].filter(Boolean) as string[];
   const plainDescription =
-    plainShortDescription(product.shortDescription) ||
+    plainShortDescription(ownShortDescription(product)) ||
     (product.description
       ? product.description.replace(/[#*_`>]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 5000)
       : undefined);
@@ -896,6 +896,7 @@ function formatPrice(amount: number, currency = 'USD'): string {
 }
 
 const MERCHANT_LABELS: Record<string, string> = {
+  iherb: 'iHerb',
   amazon: 'Amazon.com',
   'amazon-uk': 'Amazon.co.uk',
   'amazon-au': 'Amazon.com.au',

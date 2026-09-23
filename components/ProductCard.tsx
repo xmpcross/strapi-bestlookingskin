@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { mediaUrl, type BlsProduct } from '@/lib/strapi';
 import { plainShortDescription } from '@/lib/product-attributes';
-import { isInfoOnlyProduct } from '@/lib/site';
+import { isInfoOnlyProduct, ownShortDescription } from '@/lib/site';
 
 type Variant = 'tile' | 'compact';
 
@@ -76,8 +76,8 @@ export default function ProductCard({
         <Link href={href} className="mt-2">
           <h3 className="product-name m-0 text-truncate-2">{product.name}</h3>
         </Link>
-        {product.shortDescription && (
-          <p className="fs-7 text-600 mt-2 mb-0 text-truncate-2">{plainShortDescription(product.shortDescription)}</p>
+        {ownShortDescription(product) && (
+          <p className="fs-7 text-600 mt-2 mb-0 text-truncate-2">{plainShortDescription(ownShortDescription(product)!)}</p>
         )}
         <div className="d-flex flex-wrap align-items-baseline gap-2 mt-3">
           {showPrice && product.currentPrice !== undefined && (

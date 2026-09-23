@@ -59,6 +59,14 @@ export const PRICE_ALERTS_ENABLED = false;
  * in place of prices, price history and price structured data.
  */
 export const INFO_ONLY_CATEGORY_SLUGS = ['hyaluronic-acid'];
+
+/**
+ * A product whose editorial copy we rewrote (specs.contentSource is set) ignores the CMS shortDescription: on the
+ * imported products that field is still the retailer's / manufacturer's copy, so it would put duplicate text back
+ * above our own. The page lead and card excerpt then come from our rewritten description.
+ */
+export const ownShortDescription = (p: { shortDescription?: string; specs?: unknown }) =>
+  p.specs && typeof p.specs === 'object' && 'contentSource' in (p.specs as Record<string, unknown>) ? undefined : p.shortDescription;
 export const isInfoOnlyProduct = (p: { categories?: { slug: string }[] | null }) =>
   (p.categories ?? []).some((c) => INFO_ONLY_CATEGORY_SLUGS.includes(c.slug));
 

@@ -18,10 +18,10 @@ import CategoryIntro from '@/components/CategoryIntro';
 export const revalidate = 60;
 export const dynamicParams = true;
 
-/* Archive, sixteen posts a page: filters in a left sidebar (topic, article type, sort), results on the right --
+/* Archive, ten posts a page: filters in a left sidebar (topic, article type, sort), results on the right --
    three image tiles for the newest guides on an unfiltered first page, then list cards. Filters are plain links
    (?type=, ?sort=, ?topics=), so they work without JavaScript; filtered views are noindex. */
-const PAGE_SIZE = 16;
+const PAGE_SIZE = 10;
 
 // Reserved top-level routes that aren't categories — keep them out of this segment.
 const RESERVED = new Set(['about', 'brands', 'search', 'newhome', 'feed.xml', 'sitemap.xml', 'robots.txt']);
