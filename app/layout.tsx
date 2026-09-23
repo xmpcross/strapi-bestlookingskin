@@ -9,6 +9,7 @@ import SiteFooter from '@/components/magzin/SiteFooter';
 import BackToTop from '@/components/magzin/BackToTop';
 import CookieConsent from '@/components/CookieConsent';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
+import GeniuslinkSnippet from '@/components/GeniuslinkSnippet';
 import TakeadsConvertLink from '@/components/TakeadsConvertLink';
 import { SITE } from '@/lib/site';
 
@@ -68,6 +69,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <BackToTop />
         <CookieConsent />
         <GoogleAnalytics />
+        {/* Geniuslink first, so it claims its links before Takeads takes the rest. */}
+        <GeniuslinkSnippet />
         <TakeadsConvertLink />
       </body>
     </html>

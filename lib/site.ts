@@ -49,6 +49,12 @@ export const SITE = {
 export const AFFILIATE_LINKS_ENABLED = true;
 
 /**
+ * Geniuslink browser snippet (account tracking id and link domain; both appear in the page, so they are not secrets).
+ * It converts Amazon and Google Play links in the page to geni.us links. components/GeniuslinkSnippet.tsx.
+ */
+export const GENIUSLINK = { tsid: 441460, linkDomain: 'https://buy.geni.us' };
+
+/**
  * Price-drop email alerts on product pages. Off: the form is not rendered and /api/price-alert refuses new
  * sign-ups. The cancel link in alerts already sent keeps working, so existing subscribers can still opt out.
  */
