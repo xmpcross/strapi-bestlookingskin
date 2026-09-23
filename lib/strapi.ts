@@ -334,6 +334,20 @@ function cleanDashes(s: string): string {
 
 /** Custom featured cover image overrides for posts. */
 export const POST_COVER_OVERRIDES: Record<string, StrapiImage> = {
+  'best-skin-care-routine-guide': {
+    url: '/cms-uploads/best_skin_care_routine_guide_cover.jpg',
+    alternativeText: 'Five-step skincare routine laid out on a marble counter: cleanse, tone and prep, treat, moisturise, protect',
+    width: 1200,
+    height: 896,
+    size: 644,
+  },
+  'best-skin-care-routine-by-skin-type': {
+    url: '/cms-uploads/best_skin_care_routine_by_skin_type_cover.jpg',
+    alternativeText: 'Cleanser, serums, sunscreen, barrier cream and toner arranged on a stone tray in morning light',
+    width: 1200,
+    height: 896,
+    size: 694,
+  },
   'top-6-must-have-products-nourishing-dry-skin': {
     url: '/cms-uploads/top_6_must_have_products_nourishing_dry_skin_cover.jpg',
     alternativeText: 'Top 6 Must-Have Products for Nourishing Dry Skin',
