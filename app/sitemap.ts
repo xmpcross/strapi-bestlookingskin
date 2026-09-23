@@ -2,19 +2,27 @@ import type { MetadataRoute } from 'next';
 import {
   listAllPostSlugs,
   listAllProductSlugs,
+  listAuthors,
+  listProductBrands,
   listCategories,
   listProductCategories,
 } from '@/lib/strapi';
 import { SECTIONS, SITE } from '@/lib/site';
+import { isIndexableBrand } from '@/lib/brands';
+
+/* Rebuilt hourly, so new posts and products appear without a deploy. */
+export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
-  const [posts, products, cmsCategories, productCategories] = await Promise.all([
+  const [posts, products, cmsCategories, productCategories, authors, brands] = await Promise.all([
     listAllPostSlugs().catch(() => []),
     listAllProductSlugs().catch(() => []),
     listCategories().catch(() => []),
     listProductCategories().catch(() => []),
+    listAuthors().catch(() => []),
+    listProductBrands().catch(() => []),
   ]);
 
   const cmsCatSlugs = new Set(cmsCategories.map((c) => c.slug));
@@ -34,6 +42,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE.url}/legal/terms`,   lastModified: now, changeFrequency: 'yearly', priority: 0.2 },
     { url: `${SITE.url}/legal/privacy`, lastModified: now, changeFrequency: 'yearly', priority: 0.2 },
     { url: `${SITE.url}/legal/cookies`, lastModified: now, changeFrequency: 'yearly', priority: 0.2 },
+    { url: `${SITE.url}/legal/disclosure`, lastModified: now, changeFrequency: 'yearly', priority: 0.2 },
+    { url: `${SITE.url}/categories`, lastModified: now, changeFrequency: 'weekly', priority: 0.5 },
+    /* /faqs is noindexed (a compilation of FAQ sections already on the posts), so it is not listed. */
   ];
 
   const categoryEntries: MetadataRoute.Sitemap = categorySlugs.map((slug) => ({
@@ -64,8 +75,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
+  /* Author pages: named authors are a trust signal. */
+  const authorEntries: MetadataRoute.Sitemap = authors.map((a) => ({
+    url: `${SITE.url}/authors/${a.slug}`,
+    changeFrequency: 'monthly',
+    priority: 0.5,
+  }));
+
+  /* Brand pages, only the indexable ones (3+ products or an intro: lib/brands.ts). */
+  const brandEntries: MetadataRoute.Sitemap = brands.filter(isIndexableBrand).map((b) => ({
+    url: `${SITE.url}/brands/${b.slug}`,
+    changeFrequency: 'weekly',
+    priority: 0.5,
+  }));
+
   return [
     ...staticEntries,
+    ...authorEntries,
+    ...brandEntries,
     ...categoryEntries,
     ...postEntries,
     ...productCategoryEntries,
