@@ -467,10 +467,12 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                         Buy at {bestOffer.merchant}
                       </a>
                     )}
-                    <p className="offer-panel-note">
-                      We may earn a commission from links on this page, at no extra cost to you.{' '}
-                      <Link href="/legal/disclosure">Disclosure</Link>
-                    </p>
+                    {AFFILIATE_LINKS_ENABLED && (
+                      <p className="offer-panel-note">
+                        We may earn a commission from links on this page, at no extra cost to you.{' '}
+                        <Link href="/legal/disclosure">Disclosure</Link>
+                      </p>
+                    )}
                   </div>
                 ) : (
                   <p className="fs-7 text-600 mb-0">
