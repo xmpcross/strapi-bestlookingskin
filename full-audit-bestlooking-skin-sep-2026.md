@@ -209,6 +209,29 @@ Live in the Notion Tasks database. Update these rather than creating duplicates.
 
 ---
 
+### Search Console audit (24 Sep 2026) — outcome
+
+Fixed on `main` and deployed 24 Sep 2026; each verified on https://www.bestlooking.skin with `scripts/seo-check.mjs`
+(545 sitemap URLs: 0 failures — all 200, self-canonical, one H1, JSON-LD parses, no Review without itemReviewed,
+no retailer aggregateRating, no noindexed URL in the sitemap). Full audit: Notion `3e4007e8-eecb-810d-8320-e6234953df32`.
+
+| Task | Notion | Status | Outcome |
+|---|---|---|---|
+| P0 · GSC · Fix Review schema on 31 review posts | `3e4007e8-eecb-81dc-8125-d8ac8a54c326` | Done | All posts emit Article (no rating / linked product exists) |
+| Remove retailer ratings from product schema | `3d9007e8-eecb-8123-ad41-fd1a530ccc4f` | Done | aggregateRating only from on-site reviews; iHerb products carry their one Offer |
+| P1 · GSC · Fix or remove the 3 empty hub-group pages | `3e4007e8-eecb-8191-86aa-c3d26418a510` | Done | Pages list their hubs with an intro (components/HubGroupPage.tsx) |
+| P1 · GSC · Add missing indexable pages to sitemap.xml | `3e4007e8-eecb-81ed-9e1e-ed44eb1187a5` | Done | Authors, /categories, /legal/disclosure, 38 indexable brands; hourly revalidate |
+| P1 · GSC · Clean up brand pages | `3e4007e8-eecb-8116-8af2-d935585f42ce` | Done | Slugs + 308s, 4 aliases merged, 17 draft intros (awaiting review), thin brands noindexed |
+| P2 · GSC · Noindex or restructure /faqs | `3e4007e8-eecb-81a1-8461-e711d2fb0e4d` | Done | Noindexed, out of sitemap (restructure needs owner-written site FAQs) |
+| P2 · GSC · Use real lastmod dates | `3e4007e8-eecb-8167-b505-cbffd02050d3` | Done | Release dates / hand-set constants; no new Date() |
+| Point internal links straight at final URLs | `3d9007e8-eecb-8162-9111-e8f3b54437a7` | In progress | scripts/fix-legacy-links.mjs dry run: 402 links / 127 posts / 0 non-200 — awaiting OK to write |
+| P3 · GSC · Add missing H1s | `3e4007e8-eecb-81b3-b2dc-e33e3aa8c1d7` | Done | Already one H1 on all four pages; no change needed |
+| P3 · GSC · Mark affiliate links rel="sponsored" | `3e4007e8-eecb-81d6-9668-fc8e8404a3d9` | Done | SPONSORED_REL helper (lib/links.ts) on every retailer/affiliate link, incl. post bodies |
+| P3 · GSC · Shorten long titles + og:image | `3e4007e8-eecb-81b4-9b11-dd027d27c96a` | Done | Suffix dropped over 60 chars (261 → 54 over 65); og:image on every page |
+| Finish the structured data | `3d9007e8-eecb-8158-94e1-e3aa687f9cb2` | Done | Organization logo (public/logo.png) + sameAs (Facebook); absolute image URLs |
+| Remove dates from titles | `3d9007e8-eecb-810f-979b-e0ad7cafa32f` | In progress | scripts/fix-dated-titles.mjs dry run: 8 posts — awaiting OK to write |
+| Duplicate hub and category descriptions | `3d9007e8-eecb-8158-8335-e3a1cc01469b` | (unchanged) | Descriptions made distinct (0 duplicates site-wide); taxonomy view noted, not implemented |
+
 ## 8. Suggested sequence
 
 1. **Stop the bleeding.** CMS placeholder, product meta descriptions, March 2024 Amazon blocks, mis-mapped tiles, dead links. Low effort, and every one is an AdSense rejection trigger.
