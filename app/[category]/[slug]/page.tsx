@@ -94,7 +94,8 @@ function articleJsonLdBase(post: NonNullable<Awaited<ReturnType<typeof getPost>>
     '@context': 'https://schema.org',
     headline: post.title,
     description: post.seoDescription || post.excerpt,
-    image: cover ? [cover] : undefined,
+    /* Full URLs: covers served from /cms-uploads/… were emitted as relative paths. */
+    image: cover ? [absoluteUrl(cover)] : undefined,
     datePublished: post.publishedAt,
     /* The release date, as in the sitemap lastmod (lib/strapi.ts listAllPostSlugs): Strapi's updatedAt moves on
        bulk edits that do not change the article. */

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Fragment } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { seoTitle } from '@/lib/seo';
+import { absoluteUrl, seoTitle } from '@/lib/seo';
 import { getProduct, listProducts, getPriceHistory, listProductReviews, listPostSummaries, mediaUrl, type BlsProduct, type BlsPostSummary, listProductCategoryCounts } from '@/lib/strapi';
 import { toCard } from '@/lib/post-card';
 import { RowCard } from '@/components/magzin/cards';
@@ -278,7 +278,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
-    image: imageList.length ? imageList : undefined,
+    image: imageList.length ? imageList.map((u) => absoluteUrl(u)) : undefined,
     description: plainDescription,
     brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
     sku: product.skuOrModel || undefined,

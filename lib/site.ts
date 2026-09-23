@@ -96,11 +96,18 @@ export const ADSENSE = {
 };
 
 /** Schema.org publisher: the trading name as the brand, with the business's legal name, ABN and postal address. */
+/**
+ * The site's one Organization object for structured data (publisher of posts, the WebSite, author employer).
+ * logo: a square PNG (public/logo.png, 512px, rendered from app/icon.svg). sameAs: the social profiles linked in the
+ * footer (SITE.social) -- add a profile there and it appears here.
+ */
 export const publisherJsonLd = () => ({
   '@type': 'Organization',
   name: SITE.name,
   legalName: SITE.business.legalName,
   url: SITE.url,
+  logo: { '@type': 'ImageObject', url: `${SITE.url}/logo.png`, width: 512, height: 512 },
+  sameAs: Object.values(SITE.social).filter((u): u is string => typeof u === 'string' && /^https?:\/\//.test(u)),
   taxID: SITE.business.abn,
   address: SITE.business.postalAddressSchema,
 });
