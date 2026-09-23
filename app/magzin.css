@@ -24,19 +24,77 @@
     U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+/* Urbanist (Google Fonts), the heading and title font, self-hosted the same way; latin file preloaded too. */
+@font-face {
+  font-family: 'Urbanist';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/Urbanist-Variable-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF,
+    U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Urbanist';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/Urbanist-Variable-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Urbanist';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/Urbanist-Italic-Variable-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF,
+    U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Urbanist';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/Urbanist-Italic-Variable-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 :root {
   /* Site primary colour: the Magzin template's dark neutral (flips to the light neutral in the dark theme). */
   --bls-primary: var(--tc-neutral-900);
-  /* Outfit is the one site font, body and headings alike. */
+  /* Outfit for body text. */
   --bls-font-family: 'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --tc-body-font-family: var(--bls-font-family);
-  --tc-heading-font-family: var(--bls-font-family);
+  /* Urbanist for headings and titles. */
+  --bls-heading-font-family: 'Urbanist', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tc-heading-font-family: var(--bls-heading-font-family);
 }
 
 /* The template hardcodes Geist on buttons (main.css .btn); keep them on the site font. */
 body,
 .btn {
   font-family: var(--bls-font-family);
+}
+
+/* Headings and titles on every page: h1–h6, the .h1–.h6 utilities, and the titles rendered as <span> or <p>.
+   Named one by one rather than [class*='title'], because .title, .section-title and the post hero's .card-title
+   are wrappers whose standfirst, lead and byline should stay in the body font. */
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+.featured-post-title,
+.read-also-title,
+.archive-side-title,
+.product-side-guide-title,
+.bls-sitemap-title,
+.price-alert-title,
+.article-contents-title,
+.pillar-nav-title,
+.pillar-overview-title,
+.category-widget-title {
+  font-family: var(--bls-heading-font-family);
 }
 
 .visually-hidden {
