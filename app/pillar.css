@@ -353,6 +353,16 @@
   padding: 72px 0;
   background: var(--tc-neutral-100);
 }
+/* The card's arrow notch (template .card-corner) is painted in the page color, --tc-neutral-50, to fake a cut-out.
+   On this darker band that showed as a pale square behind the arrow; paint it in the band's color instead. */
+.pillar-cluster .card-corner,
+.pillar-cluster .card-corner::before {
+  background-color: var(--tc-neutral-100);
+}
+.pillar-cluster .card-corner .curve-one,
+.pillar-cluster .card-corner .curve-two {
+  box-shadow: 0.313rem 0.313rem 0 0.313rem var(--tc-neutral-100);
+}
 .pillar-more {
   padding: 64px 0 80px;
 }
