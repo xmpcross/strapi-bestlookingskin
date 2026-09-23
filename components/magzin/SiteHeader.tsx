@@ -11,11 +11,22 @@ const none = { data: [] as BlsPostSummary[], meta: { pagination: { page: 1, page
  * side-menu toggle right. Menus open on hover (CSS). The menu is rendered here on the server and handed to
  * HeaderClient, which owns the layout and the interactive panels.
  */
+/*
+ * Two copies of the label, because the hover effect slides one out as the other
+ * comes in.
+ *
+ * The second is aria-hidden. Without it the accessible name and the anchor text
+ * a crawler extracts are both doubled -- "ProductsProducts", "ContactContact" --
+ * and anchor text is a signal about the page being linked to, so every primary
+ * nav link was sending a garbled one.
+ */
 function LinkText({ label }: { label: string }) {
   return (
     <>
       <span className="text-1">{label}</span>
-      <span className="text-2">{label}</span>
+      <span className="text-2" aria-hidden="true">
+        {label}
+      </span>
     </>
   );
 }
@@ -46,9 +57,15 @@ export default async function SiteHeader() {
       {nav.map((item) =>
         item.groups ? (
           <li key={item.label} className="nav-item mega-menu-item">
-            <a className="nav-link dropdown-toggle dropdown-mega-menu link-effect-1" href="#" aria-haspopup="true">
+            {/* A real destination, not href="#": the menu opens on hover, and the
+                link is where the crawler and a keyboard user both end up. */}
+            <Link
+              className="nav-link dropdown-toggle dropdown-mega-menu link-effect-1"
+              href={item.href ?? '#'}
+              aria-haspopup="true"
+            >
               <LinkText label={item.label} />
-            </a>
+            </Link>
             <div className="sub-mega-menu">
               <div className="container">
                 <div className="row g-4">

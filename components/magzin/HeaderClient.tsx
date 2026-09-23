@@ -275,7 +275,16 @@ export default function HeaderClient({
                 >
                   {item.label}
                 </button>
-                <ul className="collapse-menu d-flex flex-column gap-1 list-unstyled" style={{ maxHeight: open ? `${children.length * 44}px` : undefined }}>
+                <ul className="collapse-menu d-flex flex-column gap-1 list-unstyled" style={{ maxHeight: open ? `${(children.length + (item.href ? 1 : 0)) * 44}px` : undefined }}>
+                  {/* On mobile the group header is a toggle button, so without this
+                      row there is no way to reach the section's own page at all. */}
+                  {item.href && (
+                    <li>
+                      <Link className="collapse-item fw-semi-bold" href={item.href}>
+                        All {item.label.toLowerCase()}
+                      </Link>
+                    </li>
+                  )}
                   {children.map((c) => (
                     <li key={c.href}>
                       <Link className="collapse-item" href={c.href}>

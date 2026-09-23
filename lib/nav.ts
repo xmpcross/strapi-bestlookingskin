@@ -33,12 +33,22 @@ export async function getTopicGroups(categories?: BlsCategory[]): Promise<NavGro
 
 export async function getNav(): Promise<{ nav: NavItem[]; topics: NavGroup[] }> {
   const [topics, productCategories] = await Promise.all([getTopicGroups(), listProductCategoryCounts().catch(() => [])]);
+  /*
+   * `Brands` was removed from the top nav at Kritin's request -- it is a
+   * catalogue axis, not something a reader arrives wanting. The page still
+   * exists and is linked from the footer, so it is neither orphaned nor
+   * dropped from the sitemap.
+   *
+   * `Topics` carries an href now. It used to render as `<a href="#">`: the
+   * site's entire editorial axis hung off a nav item with no destination,
+   * which passes no link signal, gives nothing to rank, and is a dead tap
+   * without hover. /topics is a real index of the hubs.
+   */
   const nav: NavItem[] = [
+    ...(topics.length ? [{ label: 'Topics', href: '/topics', groups: topics }] : []),
     productCategories.length
       ? { label: 'Products', href: '/products', children: [{ label: 'All Products', href: '/products' }, ...productCategories.map((c) => ({ label: c.name, href: `/categories/${c.slug}` }))] }
       : { label: 'Products', href: '/products' },
-    { label: 'Brands', href: '/brands' },
-    ...(topics.length ? [{ label: 'Topics', groups: topics }] : []),
     { label: 'Contact', href: '/contact' },
   ];
   return { nav, topics };

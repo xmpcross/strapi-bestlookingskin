@@ -20,17 +20,24 @@ const LEGAL_LINKS = [
 export default async function SiteFooter() {
   const [groups, productCategories] = await Promise.all([getTopicGroups(), listProductCategoryCounts().catch(() => [])]);
   const topics = groups.flatMap((g) => g.items).slice(0, 5);
+  /* `All Articles` pointed at /informative-articles, which is a RETIRED section
+     (see SECTIONS in lib/site.ts): every click 308'd away, and a permanent
+     redirect in a sitewide footer is a link that wastes a crawl on every page.
+     /topics is the live index. */
   const siteLinks = [
     { label: 'Our Story', href: '/about' },
-    { label: 'All Articles', href: '/informative-articles' },
+    { label: 'All Topics', href: '/topics' },
     { label: 'Help & Support', href: '/faqs' },
     { label: 'Site Map', href: '/sitemap' },
     { label: 'Get in Touch', href: '/contact' },
   ];
   /* All products, then the product categories that hold products (four, so the column matches the others). */
+  /* `Brands` lives here now that it is out of the top nav -- the page is worth
+     keeping crawlable, it is just not a primary destination for a reader. */
   const productLinks = [
     { label: 'All Products', href: '/products' },
-    ...productCategories.slice(0, 4).map((c) => ({ label: c.name, href: `/categories/${c.slug}` })),
+    { label: 'Brands', href: '/brands' },
+    ...productCategories.slice(0, 3).map((c) => ({ label: c.name, href: `/categories/${c.slug}` })),
   ];
 
   return (
