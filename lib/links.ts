@@ -6,8 +6,8 @@ import { join } from 'node:path';
  *
  *   1. A link that already carries network tracking (Geniuslink, Impact, Awin, eBay EPN…) is used as it is.
  *      Re-wrapping it would break attribution.
- *   2. Geniuslink, for the merchants whose programmes are connected in the Geniuslink account (Walmart, Target,
- *      Best Buy, Newegg): data/geniuslink-links.json, built by scripts/fetch-geniuslink-links.mjs.
+ *   2. Geniuslink, for the merchants whose programmes are connected in the Geniuslink account (Walmart, eBay,
+ *      Target, Best Buy, Newegg): data/geniuslink-links.json, built by scripts/fetch-geniuslink-links.mjs.
  *   3. Takeads, for every other retailer ("non-partner"): data/takeads-links.json, built by
  *      scripts/fetch-takeads-links.mjs. Only when TAKEADS_ENABLED=true.
  *   4. The plain retailer URL. Unmonetised beats broken.
@@ -18,6 +18,27 @@ import { join } from 'node:path';
  */
 
 export type LinkNetwork = 'network' | 'geniuslink' | 'takeads' | 'direct';
+
+/**
+ * rel for every retailer / affiliate link (Google: paid links carry rel="sponsored"). The one place this value is
+ * set: offers, buy buttons, "Available from" links, brand stores that go out on an affiliate link, and retailer links
+ * inside post bodies all use it. Social share and citation links do not.
+ */
+export const SPONSORED_REL = 'sponsored nofollow noopener';
+
+/* Retailers: links to these are commercial whether or not they are monetised yet, so they carry SPONSORED_REL. */
+const RETAILER_HOST = /(^|\.)(walmart|ebay|target|sephora|ulta|mercari|poshmark|iherb|amazon|kohls|cvs|walgreens|dermstore|nordstrom|macys|samsclub|bestbuy|newegg|costco|skinstore|yesstyle|stylevana|lookfantastic|cultbeauty|boots|superdrug|sokoglam|olive(young|youngglobal)|revolve|jcpenney|zulily|vitacost|luckyvitamin|swansonvitamins)\.[a-z.]+$/i;
+export const isRetailerUrl = (url: string) => {
+  try {
+    return RETAILER_HOST.test(new URL(url).hostname);
+  } catch {
+    return false;
+  }
+};
+
+/** rel for an outbound link: sponsored for retailers and anything that went out on an affiliate link. */
+export const outboundRel = (url: string, network: LinkNetwork = 'direct') =>
+  network !== 'direct' || isRetailerUrl(url) ? SPONSORED_REL : 'noopener noreferrer';
 
 type LinkMap = { links: Record<string, string>; checkedAt?: string | null };
 const cache: Record<string, { mtime: number; map: LinkMap }> = {};
@@ -95,8 +116,9 @@ export function monetizeContentLinks(html: string | undefined): string | undefin
     }
     if (NEVER_MONETISE.test(host)) return tag;
     const { url, network } = resolveOutbound(href);
-    if (network === 'direct') return tag;
+    /* Unmonetised non-retailer links (a brand's site, a blog) are left exactly as written. */
+    if (network === 'direct' && !isRetailerUrl(href)) return tag;
     const attrs = `${before}${after}`.replace(/\s(rel|target)=(["'])[^"']*\2/gi, '');
-    return `<a${attrs} href=${q}${url}${q} target="_blank" rel="sponsored nofollow noopener">`;
+    return `<a${attrs} href=${q}${url}${q} target="_blank" rel="${SPONSORED_REL}">`;
   });
 }

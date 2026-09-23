@@ -7,6 +7,7 @@ import { toCard } from '@/lib/post-card';
 import { RowCard } from '@/components/magzin/cards';
 import { SITE, AFFILIATE_LINKS_ENABLED, PRICE_ALERTS_ENABLED, isInfoOnlyProduct, ownShortDescription } from '@/lib/site';
 import { brandHref } from '@/lib/brands';
+import { SPONSORED_REL, outboundRel } from '@/lib/links';
 import { descriptionFromBody } from '@/lib/format';
 import ProductCard from '@/components/ProductCard';
 import ProductCarousel from '@/components/ProductCarousel';
@@ -508,7 +509,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                             {stores.map((r, i) => (
                               <span key={r.url}>
                                 {i > 0 && ', '}
-                                <a href={r.url} target="_blank" rel="noopener noreferrer nofollow" className="bls-link">
+                                <a href={r.url} target="_blank" rel={SPONSORED_REL} className="bls-link">
                                   {r.merchant}
                                 </a>
                               </span>
@@ -583,7 +584,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                       </p>
                     )}
                     {bestOffer?.url && (
-                      <a href={bestOffer.url} target="_blank" rel={AFFILIATE_LINKS_ENABLED ? 'noopener noreferrer sponsored' : 'noopener noreferrer nofollow'} className="offer-panel-buy" data-testid="offer-panel-buy">
+                      <a href={bestOffer.url} target="_blank" rel={SPONSORED_REL} className="offer-panel-buy" data-testid="offer-panel-buy">
                         Buy at {bestOffer.merchant}
                       </a>
                     )}
@@ -1015,7 +1016,7 @@ function OfferRow({
         {price !== undefined && <span className="d-block">{formatPrice(price, currency)}</span>}
         {outOfStock && <span className="d-block fs-8 shop-discount">Out of stock</span>}
       </span>
-      <a href={url} target="_blank" rel={AFFILIATE_LINKS_ENABLED ? 'noopener noreferrer sponsored' : 'noopener noreferrer nofollow'} className="offer-cta" aria-label={`View at ${merchant}`}>
+      <a href={url} target="_blank" rel={SPONSORED_REL} className="offer-cta" aria-label={`View at ${merchant}`}>
         View
       </a>
     </div>
@@ -1046,7 +1047,7 @@ function ProductDescription({ markdown }: { markdown: string }) {
         if (href.startsWith('/')) {
           parts.push(<Link key={key++} href={href}>{inline(label)}</Link>);
         } else if (/^https?:\/\//i.test(href)) {
-          parts.push(<a key={key++} href={href} target="_blank" rel="noopener noreferrer">{inline(label)}</a>);
+          parts.push(<a key={key++} href={href} target="_blank" rel={outboundRel(href)}>{inline(label)}</a>);
         } else {
           parts.push(label);
         }

@@ -8,7 +8,7 @@ import CategoryListWidget from '@/components/magzin/CategoryListWidget';
 import ProductCard from '@/components/ProductCard';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
 import { getBrandMeta } from '@/lib/brand-data';
-import { resolveOutbound } from '@/lib/links';
+import { outboundRel, resolveOutbound } from '@/lib/links';
 import { BRAND_INTROS as INTROS, brandSlug, isIndexableBrand } from '@/lib/brands';
 
 export const revalidate = 60;
@@ -173,7 +173,7 @@ export default async function BrandPage({ params, searchParams }: { params: Prom
                     <a
                       href={website}
                       target="_blank"
-                      rel={websiteLink?.network === 'direct' ? 'noopener noreferrer' : 'sponsored nofollow noopener'}
+                      rel={outboundRel(website ?? '', websiteLink?.network)}
                       className="brand-website-link d-inline-flex align-items-center gap-1 fs-7 fw-medium"
                     >
                       Visit official website

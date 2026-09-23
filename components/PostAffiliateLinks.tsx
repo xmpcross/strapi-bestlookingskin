@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { CommerceProduct } from '@/lib/strapi';
 import { AFFILIATE_LINKS_ENABLED } from '@/lib/site';
 import { plainRetailerUrl } from '@/lib/affiliate';
+import { SPONSORED_REL } from '@/lib/links';
 
 /**
  * End-of-article "Affiliate links" block (text links to retailers) and the post's tags.
@@ -84,7 +85,7 @@ export default function PostAffiliateLinks({
           <ul className="list-unstyled m-0 p-0">
             {links.map((l) => (
               <li key={l.href}>
-                <a href={l.href} target="_blank" rel={mode === 'affiliate' ? 'sponsored nofollow noopener' : 'nofollow noopener'}>
+                <a href={l.href} target="_blank" rel={SPONSORED_REL}>
                   {l.label}
                 </a>
               </li>
