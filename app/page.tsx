@@ -8,6 +8,7 @@ import EmailSignup from '@/components/magzin/EmailSignup';
 import { CategoryChip, FeatureCard, ListCard, OverlapCard, RowCard, SectionTitle, TextCard, TileCard } from '@/components/magzin/cards';
 import SidebarTitle from '@/components/magzin/SidebarTitle';
 import FeaturedPostsSlider from '@/components/FeaturedPostsSlider';
+import RecommendedSection from '@/components/magzin/RecommendedSection';
 import AdSlot from '@/components/AdSlot';
 
 export const revalidate = 60;
@@ -39,7 +40,7 @@ export default async function HomePage() {
   const slugOf = (href: string) => href.replace(/^\//, '');
 
   const [guides, pillarRes, hubData] = await Promise.all([
-    listPostSummaries({ authored: true, withCover: true, pageSize: 48 }).catch(() => none),
+    listPostSummaries({ authored: true, withCover: true, pageSize: 64 }).catch(() => none),
     listPostSummaries({ pillar: true, withCover: true, pageSize: 10 }).catch(() => none),
     Promise.all(topicHubs.map((h) => listPostSummaries({ category: slugOf(h.href), pageSize: 1, withCover: true }).catch(() => none))),
   ]);
@@ -72,11 +73,21 @@ export default async function HomePage() {
 
   const cards = guidePosts.filter((p) => !shown.has(p.slug)).map(toCard);
   /* Each block below takes the next run of guides, so no post appears twice on the page. */
-  const blocks = [3, 6, 6, 1, 2, 2, 1, 4, 5, 3];
+  const blocks = [3, 6, 6, 1, 2, 2, 1, 4, 5, 3, 8];
   const starts = blocks.map((_, i) => blocks.slice(0, i).reduce((n, b) => n + b, 0));
-  const [pickCards, pickRows, latest, [forYouFeature], forYouTiles, forYouRows, [suggestFeature], suggestTiles, sideRows, sideSlides] = blocks.map((n, i) =>
-    cards.slice(starts[i], starts[i] + n),
-  );
+  const [
+    pickCards,
+    pickRows,
+    latest,
+    [forYouFeature],
+    forYouTiles,
+    forYouRows,
+    [suggestFeature],
+    suggestTiles,
+    sideRows,
+    sideSlides,
+    recommendedCards,
+  ] = blocks.map((n, i) => cards.slice(starts[i], starts[i] + n));
 
   /* Six topics with the most posts, each over its newest cover. Counts are real post totals from the CMS. */
   const topics = topicHubs
@@ -344,6 +355,9 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+
+      {/* 8. Recommended: Magzin Home 2 Section 7 layout (8 cards, author avatars stack, view more) */}
+      {recommendedCards.length > 0 && <RecommendedSection posts={recommendedCards} />}
     </div>
   );
 }
