@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { permanentRedirect } from 'next/navigation';
 import { listProducts, listProductCategories, listProductCategoryCounts, listProductBrands, type BlsProduct } from '@/lib/strapi';
 import CategoryListWidget from '@/components/magzin/CategoryListWidget';
 import ProductCard from '@/components/ProductCard';
@@ -51,6 +52,8 @@ const VIEW_GRID: Record<View, string> = {
 
 export default async function ProductsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const { q, category, brand, skinType, sort: sortRaw, page: pageRaw, view: viewRaw } = await searchParams;
+  /* A category on its own has a real page: /products?category=x is the old sidebar link, so send it there. */
+  if (category && !q && !brand && !skinType && !sortRaw && !pageRaw && !viewRaw) permanentRedirect(`/categories/${encodeURIComponent(category)}`);
   const query = (q ?? '').trim();
   const page = Math.max(1, Number(pageRaw) || 1);
   const sort: Sort = (VALID_SORTS as readonly string[]).includes(sortRaw ?? '')
@@ -136,7 +139,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                     total={catalogueTotal}
                     rows={categoryCounts}
                     current={category}
-                    rowHref={(slug) => productsHref(withParam(baseQs, 'category', slug))}
+                    rowHref={(slug) => `/categories/${slug}`}
                   />
                 </div>
               )}
