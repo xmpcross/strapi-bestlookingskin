@@ -94,7 +94,9 @@ function articleJsonLdBase(post: NonNullable<Awaited<ReturnType<typeof getPost>>
     description: post.seoDescription || post.excerpt,
     image: cover ? [cover] : undefined,
     datePublished: post.publishedAt,
-    dateModified: post.updatedAt,
+    /* The release date, as in the sitemap lastmod (lib/strapi.ts listAllPostSlugs): Strapi's updatedAt moves on
+       bulk edits that do not change the article. */
+    dateModified: post.publishedAt,
     /* A named author is one of the things reviewers and search engines look for
        on affiliate content; without it an Article carries a publisher and no
        human behind it. */

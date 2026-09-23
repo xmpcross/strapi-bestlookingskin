@@ -20,8 +20,8 @@ export const metadata: Metadata = {
   alternates: { canonical: '/sitemap' },
 };
 
-type PostSlug = { slug: string; category: string; updatedAt: string };
-type ProductSlug = { slug: string; updatedAt: string };
+type PostSlug = { slug: string; category: string; lastModified: string };
+type ProductSlug = { slug: string; lastModified: string };
 
 export default async function HtmlSitemapPage() {
   const [posts, products, cmsCats, productCats]: [
@@ -134,7 +134,7 @@ export default async function HtmlSitemapPage() {
                       <li key={product.slug} className="col-md-6 col-12">
                         <Link href={`/products/${product.slug}`} className="bls-sitemap-link">
                           <span className="bls-sitemap-title">{humanizeSlug(product.slug)}</span>
-                          <span className="bls-sitemap-date">{fmtDate(product.updatedAt)}</span>
+                          <span className="bls-sitemap-date">{fmtDate(product.lastModified)}</span>
                         </Link>
                       </li>
                     ))}
@@ -168,7 +168,7 @@ export default async function HtmlSitemapPage() {
                         <li key={p.slug} className="col-md-6 col-12">
                           <Link href={`/${slug}/${p.slug}`} className="bls-sitemap-link">
                             <span className="bls-sitemap-title">{humanizeSlug(p.slug)}</span>
-                            <span className="bls-sitemap-date">{fmtDate(p.updatedAt)}</span>
+                            <span className="bls-sitemap-date">{fmtDate(p.lastModified)}</span>
                           </Link>
                         </li>
                       ))}

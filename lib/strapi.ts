@@ -1552,12 +1552,16 @@ export async function getProductCategory(slug: string): Promise<BlsProductCatego
 // =====================================================================
 
 // Slug→category lookup for sitemap, etc.
-export async function listAllPostSlugs(): Promise<{ slug: string; category: string; updatedAt: string }[]> {
-  const all: { slug: string; category: string; updatedAt: string }[] = [];
+/**
+ * Every published post for the sitemap. `lastModified` is the post's release date (showFrom, else publishedAt) --
+ * not Strapi's updatedAt, which bulk edits bump (GSC audit 24 Sep 2026). It matches the Article dateModified.
+ */
+export async function listAllPostSlugs(): Promise<{ slug: string; category: string; lastModified: string }[]> {
+  const all: { slug: string; category: string; lastModified: string }[] = [];
   let page = 1;
   while (true) {
     const res = await strapiFetch<ListResponse<BlsPost>>('bls-posts', {
-      fields: ['slug', 'updatedAt'],
+      fields: ['slug', 'publishedAt', 'showFrom'],
       populate: { categories: { fields: ['slug'] } },
       sort: ['publishedAt:desc'],
       pagination: { page, pageSize: 100 },
@@ -1567,7 +1571,7 @@ export async function listAllPostSlugs(): Promise<{ slug: string; category: stri
     });
     for (const p of res.data) {
       const cat = p.categories?.[0]?.slug ?? 'uncategorized';
-      all.push({ slug: p.slug, category: cat, updatedAt: p.updatedAt });
+      all.push({ slug: p.slug, category: cat, lastModified: p.showFrom || p.publishedAt });
     }
     const pageCount = res.meta?.pagination?.pageCount ?? 1;
     if (page >= pageCount) break;
@@ -1576,17 +1580,18 @@ export async function listAllPostSlugs(): Promise<{ slug: string; category: stri
   return all;
 }
 
-export async function listAllProductSlugs(): Promise<{ slug: string; updatedAt: string }[]> {
-  const all: { slug: string; updatedAt: string }[] = [];
+/** Every listable product for the sitemap; `lastModified` is publishedAt (see listAllPostSlugs). */
+export async function listAllProductSlugs(): Promise<{ slug: string; lastModified: string }[]> {
+  const all: { slug: string; lastModified: string }[] = [];
   let page = 1;
   while (true) {
     const res = await commerceFetch<ListResponse<BlsProduct>>('commerce-products', {
-      fields: ['slug', 'updatedAt'],
+      fields: ['slug', 'publishedAt'],
       sort: ['publishedAt:desc'],
       pagination: { page, pageSize: 100 },
     });
     for (const p of res.data) {
-      all.push({ slug: p.slug, updatedAt: p.updatedAt });
+      all.push({ slug: p.slug, lastModified: p.publishedAt });
     }
     const pageCount = res.meta?.pagination?.pageCount ?? 1;
     if (page >= pageCount) break;
