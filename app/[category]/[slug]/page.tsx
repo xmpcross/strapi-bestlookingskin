@@ -335,9 +335,12 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
 
   const { prev: prevPost, next: nextPost } = await getAdjacentPosts(category, slug);
 
+  /* Always Article, review posts included. A schema.org Review needs itemReviewed, author and reviewRating; the
+     posts carry no rating and no linked product, so marking them Review produced invalid Review snippets in Search
+     Console (GSC audit 24 Sep 2026). Only emit Review once a post has a real rating and a linked product. */
   const articleJsonLd = {
     ...articleJsonLdBase(post, cover, category),
-    '@type': post.postType === 'product-review' ? 'Review' : 'Article',
+    '@type': 'Article',
   };
 
   const catName = cat?.name ?? categoryName(category);
