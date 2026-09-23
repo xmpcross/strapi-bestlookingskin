@@ -78,7 +78,7 @@ shares one Strapi backend.
 | | |
 |---|---|
 | Repo | `xmpcross/strapi-bestlookingskin`, branch `main` |
-| Framework | Next.js 15, **server-rendered** (not static export) |
+| Framework | Next.js 16, **server-rendered** (not static export) |
 | Host | **Netlify** since 24 Sep 2026 (see NETLIFY.md); previously the FXN /opt server, before that Vercel |
 | CMS | Shared FXN Strapi, read at request time |
 | Media | `cms.fxnstudio.com/uploads/` |
