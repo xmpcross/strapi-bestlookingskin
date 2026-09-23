@@ -72,14 +72,15 @@ export async function getNav(): Promise<{ nav: NavItem[]; topics: NavGroup[] }> 
    */
   const nav: NavItem[] = [
     { label: 'Home', href: '/' },
+    /* About carries the named-author and company detail that affiliate content
+       about skin health is judged on -- see the YMYL notes in CLAUDE.md. Placed
+       straight after Home at Kritin's request; it is also in the footer bar. */
+    { label: 'About Us', href: '/about' },
     ...(topics.length ? [{ label: 'Topics', href: '/topics', groups: topics }] : []),
     productCategories.length
       ? { label: 'Products', href: '/products', children: [{ label: 'All Products', href: '/products' }, ...productCategories.map((c) => ({ label: c.name, href: `/categories/${c.slug}` }))] }
       : { label: 'Products', href: '/products' },
-    /* About carries the named-author and company detail that affiliate content
-       about skin health is judged on -- see the YMYL notes in CLAUDE.md. It is
-       also in the footer bar; a page like this is worth two routes to it. */
-    { label: 'About Us', href: '/about' },
+    { label: 'FAQs', href: '/faqs' },
     { label: 'Contact', href: '/contact' },
   ];
   return { nav, topics };
