@@ -2,12 +2,41 @@
  * bestlooking.skin layer over the Magzin template CSS (public/assets/css/main.css).
  * Keep template files untouched; put site-specific adjustments here.
  */
+/* Outfit (Google Fonts), self-hosted from public/fonts: no request to fonts.gstatic.com. Variable weight, split
+   into Google's latin and latin-ext subsets so a page only downloads the latin file. The latin file is preloaded
+   in app/layout.tsx. */
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/Outfit-Variable-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF,
+    U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/Outfit-Variable-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 :root {
   /* Site primary colour: the Magzin template's dark neutral (flips to the light neutral in the dark theme). */
   --bls-primary: var(--tc-neutral-900);
-  /* Geist is self-hosted through the `geist` package (next/font/local): no request to Google Fonts. */
-  --tc-body-font-family: var(--font-geist-sans), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --tc-heading-font-family: var(--font-geist-sans), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Outfit is the one site font, body and headings alike. */
+  --bls-font-family: 'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tc-body-font-family: var(--bls-font-family);
+  --tc-heading-font-family: var(--bls-font-family);
+}
+
+/* The template hardcodes Geist on buttons (main.css .btn); keep them on the site font. */
+body,
+.btn {
+  font-family: var(--bls-font-family);
 }
 
 .visually-hidden {
