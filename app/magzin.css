@@ -1257,3 +1257,27 @@ html .archive-sidebar .archive-side-title {
   object-fit: cover;
   object-position: center;
 }
+
+/* Card arrow buttons (.arrow-box, bottom right of every post card) in dark mode. The template turns the circle
+   dark and the arrow light, but the icon also carries .dark-mode-invert, which flipped the arrow back to dark:
+   a dark arrow on a dark circle. In dark mode the button is light instead (#f3f4f6, the theme's light tone) with a
+   dark arrow, the invert switched off, and hover goes to white. Applies to every card type on every page, including
+   the template's dark "Editor's Guides" variant. */
+[data-bs-theme="dark"] .arrow-box,
+[data-bs-theme="dark"] .sec-4-home-2 .article.card-7 .card-body .card-corner .arrow-box {
+  background-color: #f3f4f6;
+  border-color: #f3f4f6;
+}
+[data-bs-theme="dark"] .article:hover .arrow-box,
+[data-bs-theme="dark"] .arrow-box:hover {
+  background-color: #ffffff;
+  border-color: #ffffff;
+}
+[data-bs-theme="dark"] .arrow-box svg {
+  filter: none;
+}
+[data-bs-theme="dark"] .arrow-box svg path,
+[data-bs-theme="dark"] .article:hover .arrow-box svg path,
+[data-bs-theme="dark"] .sec-4-home-2 .article.card-7 .card-body .card-corner .arrow-box svg path {
+  stroke: #0e0e0f;
+}
