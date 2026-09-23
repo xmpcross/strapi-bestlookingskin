@@ -31,7 +31,7 @@ const limit = li !== -1 ? Number(args[li + 1]) : Infinity;
 const KEY = process.env.TAKEADS_PUBLIC_KEY;
 const SUB_ID = process.env.TAKEADS_SUB_ID || 'bestlooking-skin';
 /* Geniuslink partner hosts: those links go through Geniuslink, not Takeads. */
-const GENIUS_HOSTS = ['walmart.com', 'target.com', 'bestbuy.com', 'newegg.com'];
+const GENIUS_HOSTS = ['walmart.com', 'ebay.com', 'target.com', 'bestbuy.com', 'newegg.com'];
 
 async function resolve(urls) {
   const res = await fetch(ENDPOINT, {

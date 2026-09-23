@@ -7,7 +7,7 @@
 //   node scripts/fetch-geniuslink-links.mjs --dry-run    # list what would be created
 //
 // Partner merchants are the ones whose affiliate programmes are connected in the Geniuslink account:
-// GENIUSLINK_MERCHANT_SLUGS (default amazon,target,newegg,walmart,best-buy) plus their hosts. Amazon is never
+// BESTLOOKING_GENIUSLINK_MERCHANTS (default walmart,ebay,target,best-buy,newegg) plus their hosts. Amazon is never
 // linked from this site (no active Associates account). Creating links is free; Geniuslink bills by clicks.
 //
 // Env: GENIUSLINK_API_KEY, GENIUSLINK_API_SECRET, GENIUSLINK_GROUP_ID, GENIUSLINK_DOMAIN -- from .env.local, or
@@ -29,8 +29,11 @@ const limit = li !== -1 ? Number(args[li + 1]) : Infinity;
 const { GENIUSLINK_API_KEY: KEY, GENIUSLINK_API_SECRET: SECRET, GENIUSLINK_GROUP_ID: GROUP } = process.env;
 const DOMAIN = (process.env.GENIUSLINK_DOMAIN || 'geni.us').replace(/^https?:\/\//, '').replace(/\/$/, '');
 
-const SLUGS = (process.env.GENIUSLINK_MERCHANT_SLUGS || 'amazon,target,newegg,walmart,best-buy').split(',').map((s) => s.trim()).filter((s) => s && s !== 'amazon');
-const HOSTS = { walmart: 'walmart.com', target: 'target.com', newegg: 'newegg.com', 'best-buy': 'bestbuy.com' };
+/* This site's own list (not nxt-sourcing's GENIUSLINK_MERCHANT_SLUGS): merchants whose programmes are connected in
+   the Geniuslink account, checked by following a test link -- Walmart (Impact), eBay (eBay Partner Network), Target,
+   Best Buy, Newegg. Amazon is left out: see lib/links.ts. */
+const SLUGS = (process.env.BESTLOOKING_GENIUSLINK_MERCHANTS || 'walmart,ebay,target,best-buy,newegg').split(',').map((s) => s.trim()).filter((s) => s && s !== 'amazon');
+const HOSTS = { walmart: 'walmart.com', ebay: 'ebay.com', target: 'target.com', newegg: 'newegg.com', 'best-buy': 'bestbuy.com' };
 const partnerHosts = SLUGS.map((s) => HOSTS[s]).filter(Boolean);
 const isPartner = (r) => SLUGS.includes(r.merchant) || partnerHosts.some((h) => host(r.url) === h || host(r.url).endsWith(`.${h}`));
 
