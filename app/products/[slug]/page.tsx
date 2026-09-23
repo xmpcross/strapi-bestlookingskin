@@ -662,15 +662,24 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
               </section>
             )}
 
+            {/* Same accordion as the post FAQs (.faq-accordion in app/magzin-pages.css): native <details>, so it
+                opens without JavaScript and the answers stay in the HTML for search engines. */}
             {product.faqs && product.faqs.length > 0 && (
               <section className="mt-5 product-faq" data-testid="product-faq">
-                <h2 className="h4 mb-3">Questions and answers</h2>
-                {product.faqs.map((f, i) => (
-                  <div key={i} className="mb-3">
-                    <h3 className="h6 mb-1">{f.question}</h3>
-                    <p className="fs-7 mb-0 text-600" style={{ lineHeight: 1.8 }}>{f.answer}</p>
-                  </div>
-                ))}
+                <h2 className="h4 mb-3">FAQs</h2>
+                <div className="faq-accordion">
+                  {product.faqs.map((f, i) => (
+                    <details className="faq-item" key={i}>
+                      <summary className="faq-question">
+                        {f.question}
+                        <span className="faq-icon" aria-hidden="true" />
+                      </summary>
+                      <div className="faq-answer">
+                        <p>{f.answer}</p>
+                      </div>
+                    </details>
+                  ))}
+                </div>
               </section>
             )}
 

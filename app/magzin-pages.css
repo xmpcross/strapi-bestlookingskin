@@ -199,6 +199,14 @@
   .faq-icon::before, .faq-icon::after, .faq-question { transition: none; }
 }
 
+/* Product page FAQs: same accordion, question titles at 18px. */
+.product-faq .faq-accordion {
+  margin: 0;
+}
+.product-faq .faq-question {
+  font-size: 18px !important;
+}
+
 /* ---- FAQs page ---- */
 .bls-faq-section {
   scroll-margin-top: 110px;
