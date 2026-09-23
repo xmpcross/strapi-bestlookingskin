@@ -62,7 +62,7 @@ export default function PillarLayout({
       <header className="pillar-hero">
         <div className="container">
           <Breadcrumb items={[{ label: category.name, href: category.href }, { label: title }]} />
-          <div className={`pillar-hero-grid${cover ? '' : ' no-cover'}`}>
+          <div className="pillar-hero-grid">
             <div className="pillar-hero-text">
               <div className="d-flex flex-wrap align-items-center gap-2">
                 <span className="pillar-eyebrow">Complete guide</span>

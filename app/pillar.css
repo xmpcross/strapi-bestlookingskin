@@ -8,7 +8,9 @@
   background: var(--tc-system-white);
 }
 
-/* ---- Hero ---- */
+/* ---- Hero ----
+   Stacked at every width: the title block spans the container, and the featured image sits below it at full
+   width. (It used to be text and image side by side from lg up.) */
 .pillar-hero {
   padding-bottom: 48px;
   background: linear-gradient(180deg, var(--tc-neutral-100) 0%, var(--tc-system-white) 100%);
@@ -17,17 +19,12 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 32px;
-  align-items: center;
   padding-top: 24px;
 }
 @media (min-width: 992px) {
   .pillar-hero-grid {
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-    gap: 56px;
+    gap: 40px;
     padding-top: 40px;
-  }
-  .pillar-hero-grid.no-cover {
-    grid-template-columns: minmax(0, 820px);
   }
 }
 .pillar-eyebrow {
@@ -62,7 +59,6 @@
 }
 .pillar-standfirst {
   margin: 18px 0 0;
-  max-width: 44rem;
   font-size: 1.125rem;
   line-height: 1.65;
   color: var(--tc-neutral-600);
@@ -105,6 +101,8 @@
   font-size: 15px;
   color: var(--tc-neutral-900);
 }
+/* Full container width. 16:10 rather than a shorter banner: the covers are 4:3 and some carry labels near the
+   bottom edge (the routine guide's "(1) CLEANSE … (5) PROTECT"), which a wider crop would cut off. */
 .pillar-hero-media img {
   display: block;
   width: 100%;
