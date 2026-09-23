@@ -57,7 +57,7 @@ body,
   .category-widget-title
 ):not(#_) {
   font-weight: 700 !important;
-  letter-spacing: -0.7px !important;
+  letter-spacing: -0.6px !important;
 }
 
 .visually-hidden {
