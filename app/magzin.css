@@ -39,19 +39,23 @@ body,
   font-family: var(--bls-font-family);
 }
 
-/* Titles on every page: bold with tight tracking, as on originfacts.com. !important because many headings take
-   their weight from a more specific class rule (.pillar-title, .card-title h3, the template's .h1–.h6). The small
-   uppercase eyebrows (.pillar-overview-title, .pillar-nav-title) are left out on purpose: they are tracked wide. */
-h1, h2, h3, h4, h5, h6,
-.h1, .h2, .h3, .h4, .h5, .h6,
-.featured-post-title,
-.read-also-title,
-.archive-side-title,
-.product-side-guide-title,
-.bls-sitemap-title,
-.price-alert-title,
-.article-contents-title,
-.category-widget-title {
+/* Titles on every page: bold with tight tracking, as on originfacts.com. The template's weight utilities
+   (.fw-semi-bold, .fw-medium, …) are themselves !important and sit on many headings (<h3 class="h6 fw-semi-bold">),
+   so !important alone loses to them on specificity; :not(#_) matches every element but counts as an id, which wins.
+   The small uppercase eyebrows (.pillar-overview-title, .pillar-nav-title) are left out on purpose: they are
+   tracked wide. */
+:is(
+  h1, h2, h3, h4, h5, h6,
+  .h1, .h2, .h3, .h4, .h5, .h6,
+  .featured-post-title,
+  .read-also-title,
+  .archive-side-title,
+  .product-side-guide-title,
+  .bls-sitemap-title,
+  .price-alert-title,
+  .article-contents-title,
+  .category-widget-title
+):not(#_) {
   font-weight: 700 !important;
   letter-spacing: -0.7px !important;
 }
