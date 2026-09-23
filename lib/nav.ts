@@ -15,6 +15,25 @@ export type NavItem = { label: string; href?: string; children?: NavLink[]; grou
 
 export const GROUP_ORDER = ['product-type-hubs', 'skin-concern-hubs', 'cross-cutting-hubs'] as const;
 
+/**
+ * Reader-facing names for the group rows.
+ *
+ * The CMS calls them "Product-Type Hubs", "Skin-Concern Hubs" and
+ * "Cross-Cutting Hubs". "Hub" is our word for how the content is organised, not
+ * a word anyone browsing for a moisturiser would recognise -- and these strings
+ * are headings in the Topics menu, so they are read by every visitor.
+ *
+ * Overriding here rather than renaming in Strapi because the slugs are load
+ * bearing (GROUP_ORDER above, and the `parent` relation on every hub), so the
+ * row names are safer to leave alone. If you DO rename them in the CMS, delete
+ * the matching entry here or this map will keep winning.
+ */
+const GROUP_LABELS: Record<string, string> = {
+  'product-type-hubs': 'By Product',
+  'skin-concern-hubs': 'By Concern',
+  'cross-cutting-hubs': 'Routines & Ingredients',
+};
+
 export async function getTopicGroups(categories?: BlsCategory[]): Promise<NavGroup[]> {
   const all = categories ?? (await listCategories().catch(() => [] as BlsCategory[]));
   const sectionSlugs = new Set<string>(SECTIONS.map((s) => s.slug));
@@ -24,7 +43,14 @@ export async function getTopicGroups(categories?: BlsCategory[]): Promise<NavGro
   const groups: NavGroup[] = [];
   for (const slug of GROUP_ORDER) {
     const members = hubs.filter((h) => h.parent?.slug === slug);
-    if (members.length) groups.push({ label: groupLabel.get(slug) ?? slug, slug, items: members.map((m) => ({ label: m.name, href: `/${m.slug}` })) });
+    if (members.length) {
+      groups.push({
+        /* Our label first, the CMS name next, the raw slug only if both are missing. */
+        label: GROUP_LABELS[slug] ?? groupLabel.get(slug) ?? slug,
+        slug,
+        items: members.map((m) => ({ label: m.name, href: `/${m.slug}` })),
+      });
+    }
   }
   const ungrouped = hubs.filter((h) => !h.parent || !isGroupRow(h.parent.slug));
   if (ungrouped.length) groups.push({ label: 'More', slug: 'more', items: ungrouped.map((m) => ({ label: m.name, href: `/${m.slug}` })) });
@@ -45,10 +71,15 @@ export async function getNav(): Promise<{ nav: NavItem[]; topics: NavGroup[] }> 
    * without hover. /topics is a real index of the hubs.
    */
   const nav: NavItem[] = [
+    { label: 'Home', href: '/' },
     ...(topics.length ? [{ label: 'Topics', href: '/topics', groups: topics }] : []),
     productCategories.length
       ? { label: 'Products', href: '/products', children: [{ label: 'All Products', href: '/products' }, ...productCategories.map((c) => ({ label: c.name, href: `/categories/${c.slug}` }))] }
       : { label: 'Products', href: '/products' },
+    /* About carries the named-author and company detail that affiliate content
+       about skin health is judged on -- see the YMYL notes in CLAUDE.md. It is
+       also in the footer bar; a page like this is worth two routes to it. */
+    { label: 'About Us', href: '/about' },
     { label: 'Contact', href: '/contact' },
   ];
   return { nav, topics };

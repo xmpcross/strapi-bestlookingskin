@@ -272,6 +272,49 @@ body {
   border-top: 0;
 }
 /*
+ * Topics mega menu: sized to its content, not to the viewport.
+ *
+ * The template drops the panel with `left: 0; right: 0`, so it spans the full
+ * width of the header no matter how little is in it. With three groups at
+ * col-lg-3 that is three columns of links occupying 75% of a full-bleed panel
+ * and a quarter of it empty -- a curtain across the page for about 15 links.
+ *
+ * Instead: anchor the panel to the trigger (hence `position: relative` on the
+ * item, which the template leaves static), centre it under "Topics", and give
+ * it a width that fits three columns of the longest label the CMS produces
+ * ("Anti-Aging & Wrinkles"). The viewport clamp keeps it on screen at the
+ * narrow end of the breakpoint.
+ *
+ * The columns are switched to `flex: 1 1 0` so they divide the panel evenly
+ * whatever their col-* class says -- and so a fourth group (nav.ts adds a
+ * "More" group for any hub without a parent) still fits without a rewrite.
+ */
+@media (min-width: 992px) {
+  .navbar .navbar-nav .nav-item.mega-menu-item {
+    position: relative;
+  }
+  .navbar .navbar-nav .nav-item.mega-menu-item .sub-mega-menu {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: min(680px, calc(100vw - 2rem));
+    padding: 28px 0;
+    border-radius: 12px;
+  }
+  .navbar .navbar-nav .nav-item.mega-menu-item .sub-mega-menu > .container {
+    width: 100%;
+    max-width: none;
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+  .navbar .navbar-nav .nav-item.mega-menu-item .sub-mega-menu .row > [class*='col-'] {
+    flex: 1 1 0;
+    width: auto;
+    max-width: none;
+  }
+}
+
+/*
  * Footer ground: a soft vertical wash rather than a flat panel.
  *
  * Built from --tc-neutral-50 and --tc-neutral-100, which the template reassigns
