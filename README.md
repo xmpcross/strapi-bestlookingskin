@@ -1,123 +1,100 @@
 # bestlooking.skin
 
-Next.js 16 (App Router) frontend for the FXN Strapi CMS — skincare reviews,
-comparisons, roundups and buying guides.
-
-**This repository is the source of truth.** Build and deploy from here.
+Next.js 16 (App Router) frontend for the FXN Strapi CMS (`cms.fxnstudio.com`): skincare guides, product pages,
+brand pages and a product catalogue. Repository: [`xmpcross/strapi-bestlookingskin`](https://github.com/xmpcross/strapi-bestlookingskin),
+branch `main`.
 
 ```bash
-yarn install
-cp .env.example .env.local     # set NEXT_PUBLIC_STRAPI_URL at minimum
-yarn dev                       # http://localhost:3002
-yarn build && yarn start
+npm ci
+cp .env.example .env.local     # NEXT_PUBLIC_STRAPI_URL etc.; see "Environment variables"
+npm run dev                    # http://localhost:3002
+npm run build && npm run start
 ```
 
-Node 22 (`nvm use 22`).
+Node 22. **npm** is the package manager (`package-lock.json`); the stale `yarn.lock` was removed on 24 Sep 2026.
 
-> **Lockfiles:** both `package-lock.json` and `yarn.lock` are currently
-> committed, and the installed `node_modules` was produced by npm
-> (`node_modules/.package-lock.json` is present, `.yarn-integrity` is not).
-> Pick one package manager, delete the other lockfile, and add a
-> `packageManager` field to `package.json` — otherwise the build platform picks
-> for you and local and CI can resolve different trees.
+## Hosting and deployment
 
-## Read this before editing the live site
+**Production runs on Netlify** (since 24 Sep 2026) — see [`NETLIFY.md`](NETLIFY.md) for setup, environment variables
+and what differs from a server.
 
-For a period this site was served from a **static HTML mirror** — a page-by-page
-snapshot of the running site, committed to `xmpcross/bestlooking.skin` and
-published as a folder. It was not produced by this repository: a Next.js build
-always emits `_next/static/`, and the mirror had no `_next/` at all.
+| To change | Do |
+|---|---|
+| Posts, products, categories, prices in Strapi | Nothing — pages revalidate from Strapi within 1–60 minutes |
+| Code | Commit and `git push origin main`; Netlify builds and deploys (~2 min) |
+| Generated covers (`public/cms-uploads/`, `data/generated-covers.json`) or affiliate link maps (`data/*.json`) | Generate on the server, commit, push |
+| Environment variables | Netlify dashboard → then **Trigger deploy** (`NEXT_PUBLIC_*` are baked in at build time) |
+| Roll back | Netlify → Deploys → pick a deploy → Publish |
 
-That mirror is retired. It caused two problems worth remembering:
+`scripts/netlify-build.sh` fails the build if Strapi was unreachable (pages would otherwise be built from seed
+content); Netlify then keeps the previous deploy live.
 
-- Anything edited in it (a verification meta tag, an affiliate link) lived in
-  generated output with no source, so the next regeneration would silently drop
-  it. The Mitgo tag now lives in `app/layout.tsx` metadata for exactly this
-  reason.
-- It preserved product pages that Strapi can no longer produce, which hid the
-  fact that the catalogue had gone (see below).
+DNS is on Cloudflare: apex `A 75.2.60.5`, `www` CNAME `bestlooking-skin.netlify.app`. Keep both **DNS only** (grey
+cloud): Netlify provides the CDN and TLS. `www.bestlooking.skin` is the primary domain; the apex redirects to it.
+
+The previous host was the FXN `/opt` server (`next start` behind nginx, `./deploy.sh`); before that Vercel. The
+server copy in `/opt/projects/bestlooking.skin` stays as the working checkout for the scripts below.
 
 ## Content
 
-Figures below are from the live crawl of 12 September 2026
-(`full-audit-bestlooking-skin-sep-2026.md`), not from the CMS admin.
+| Source | Collection | Notes |
+|---|---|---|
+| Strapi | `bls-posts`, `bls-categories`, `bls-authors` | ~197 guides in 15 topic hubs (grouped as By Product / By Concern / Routines & Ingredients) |
+| Strapi | `commerce-products` (shared pool) | ~272 listed products; this site shows products related to site `bestlooking-skin` |
 
-| Source | Content type | Status |
-| --- | --- | --- |
-| Strapi | `bls-posts` | ~195 posts across 20 categories |
-| Strapi | `bls-categories` | 20 categories |
-| Strapi | `commerce-products` | 243 products live, prices refreshed 11 Sep 2026 |
+- Product pages carry rewritten editorial content (description, key features, how to use, good to know, FAQs) in
+  the product's `specs` JSON, marked with `specs.contentSource`. The imported `shortDescription` (manufacturer copy)
+  is ignored for those products (`ownShortDescription` in `lib/site.ts`).
+- **Hyaluronic Acid** is an info-only category (`INFO_ONLY_CATEGORY_SLUGS`): 45 iHerb supplements, always listed,
+  shown with product information, label data (supplement facts, directions, warnings) and the iHerb reference price
+  marked "price subject to change" — no price comparison.
+- Brand pages live at `/brands/<slug>` (`lib/brands.ts`: slugs, alias map for truncated brand names, intros in
+  `data/brand-intros.json` — drafts, `reviewed: false`). Old `/brands/<Raw Name>` URLs 308 to the slug.
+- Category and hub introductions come from the CMS `description` field (2 paragraphs; "Read more" after ~1.5 lines).
 
-Posts split into two tiers that need handling differently:
+**Rules** (see `CLAUDE.md`): no invented facts — brand claims are attributed; legal pages are not edited without a
+solicitor; never hotlink or re-add Amazon images/prices (no active Amazon Associates account).
 
-- **Tier A — 75 hub posts** (15 hubs × 5), published 11 Sep 2026. Named author,
-  unique meta description, own cover image, answer paragraph under the H1.
-  **This is the standard.** Match it.
-- **Tier B — 120 legacy posts**, published May 2026. No author, site-wide
-  boilerplate meta description, no `og:image`, hotlinked Amazon images, stale
-  2024 prices. Rewrite, consolidate or prune — do not match.
+## Monetisation
 
-`commerce-products` is a pool **shared** with nxt.bargains and nxt-sourcing.
-This storefront shows only products tagged `bestlooking-skin`
-(`SITE_PRODUCT_TAG` in `lib/strapi.ts`, overridable via
-`NEXT_PUBLIC_SITE_PRODUCT_TAG`).
+- **Google AdSense** — manual placements (`components/AdSlot.tsx`, slots in `lib/site.ts` `ADSENSE`).
+- **Affiliate links** (`AFFILIATE_LINKS_ENABLED`) — every outbound retailer link goes through `lib/links.ts`:
+  1. **Geniuslink** for Walmart (Impact), eBay (EPN), Target, Best Buy, Newegg — `data/geniuslink-links.json`
+     (`scripts/fetch-geniuslink-links.mjs`);
+  2. **Takeads** for other retailers — `data/takeads-links.json` (`scripts/fetch-takeads-links.mjs`,
+     `TAKEADS_ENABLED=true`);
+  3. otherwise the plain URL. Retailer links carry `rel="sponsored nofollow noopener"` (`SPONSORED_REL`).
+  Browser fallbacks (Geniuslink snippet, Takeads ConvertLink) load only with marketing-cookie consent.
+- Refresh both link maps weekly (new offers), then commit and push.
+- Legacy WordPress affiliate markup in old posts (foreign Amazon tags, Amazon images, Content Egg boxes) is always
+  stripped at render time (`lib/affiliate.ts`).
+- `/legal/disclosure` still describes Amazon Associates and does not name Geniuslink/Takeads — flagged for review.
 
-> An earlier version of this file said the product catalogue was empty and the
-> product routes rendered nothing. That was true in August 2026 and was fixed by
-> the re-import; it is no longer the case. The open work on products is
-> **monetisation** (their outbound links are unwrapped) and **originality**
-> (their bodies are verbatim manufacturer copy), not availability.
+## Scripts (run on the server, not in the build)
 
-Note that nxt-sourcing may still wrap outbound links with Geniuslink. That
-network is being retired in favour of Takeads across the other properties, so
-check before re-importing.
+| Script | Does |
+|---|---|
+| `scripts/seo-check.mjs` | Crawl the sitemap: status, canonical, one H1, JSON-LD, Review/rating checks, og:image |
+| `scripts/generate-post-cover.mjs` | Generate post covers (catalogue composites or fal.ai), saved ≤1600px |
+| `scripts/optimise-cms-uploads.mjs` | Shrink oversized images in `public/cms-uploads` (originals backed up) |
+| `scripts/fetch-geniuslink-links.mjs`, `scripts/fetch-takeads-links.mjs` | Build the affiliate link maps |
+| `scripts/fix-legacy-links.mjs`, `scripts/fix-dated-titles.mjs` | Content fixes in Strapi (dry run by default; write to Postgres, dates preserved) |
+| `scripts/fetch-iherb-products.mjs` | Scrape an iHerb category (facts vs. manufacturer prose kept apart) |
 
-## Audit
+Post and product content writes go straight to Postgres (`docker exec strapi-cms-postgres`) because a Strapi REST
+update resets `publishedAt`. Every script backs up the rows it changes under `/opt/backups/`.
 
-`full-audit-bestlooking-skin-sep-2026.md` is the working reference: findings,
-evidence and the task register (tasks live in Notion; update them rather than
-creating duplicates). Scores at the time of audit — SEO 5/10, GEO 4/10,
-AEO 6/10.
+## Environment variables
 
-Its four `/legal/*` findings carry a standing instruction: **do not fix legal
-pages by editing text.** A solicitor must review the framework, not just the
-country name.
+Listed with what breaks without them in [`NETLIFY.md`](NETLIFY.md). Runtime: `NEXT_PUBLIC_SITE_URL`,
+`NEXT_PUBLIC_STRAPI_URL`, `STRAPI_API_TOKEN`, `STRAPI_WRITE_TOKEN`, `NEXT_PUBLIC_GA_MEASUREMENT_ID`, `SMTP_HOST`,
+`SMTP_PORT` (465), `SMTP_USER`, `SMTP_PASS`, `CONTACT_TO_EMAIL`, `TAKEADS_ENABLED`,
+`NEXT_PUBLIC_TAKEADS_CONVERTLINK_URL`. Script-only keys (Anthropic, fal, Geniuslink API, Takeads API, ZenRows) live
+in the server's `.env.local` only.
 
-## Affiliate and verification
+## References
 
-- AdSense publisher id is in `app/layout.tsx`; `public/ads.txt` declares it.
-- Mitgo verification is in `metadata.verification.other`.
-- Impact.com verification is a literal `<meta name … value …>` tag in the
-  `<head>` — it uses `value`, not `content`, exactly as Impact provides it.
-- `NEXT_PUBLIC_AMAZON_AFFILIATE_TAG` back-fills a tag onto Amazon links that
-  arrive without one.
-
-## Deployment
-
-Hosted on **Vercel**, built from `main` on push. Repository:
-[`xmpcross/strapi-bestlookingskin`](https://github.com/xmpcross/strapi-bestlookingskin).
-
-Server-rendered: it reads Strapi at request time and uses `next/image` with
-remote patterns, so it needs a Next.js runtime rather than a static host. The
-retired HTML mirror made this look like a static site; it never was.
-
-### Environment variables
-
-Set in the Vercel project, not committed:
-
-```text
-NEXT_PUBLIC_STRAPI_URL           CMS read at request time
-STRAPI_API_TOKEN                 optional; /api/bls-* reads are public
-STRAPI_WRITE_TOKEN               price-drop alerts; see PRICE_ALERTS.md
-NEXT_PUBLIC_SITE_URL             canonicals, sitemap, RSS, OpenGraph
-NEXT_PUBLIC_GA_MEASUREMENT_ID    analytics, loaded only after consent
-NEXT_PUBLIC_AMAZON_AFFILIATE_TAG back-fills a tag onto untagged Amazon links
-SMTP_HOST / PORT / USER / PASS   contact form delivery
-CONTACT_TO_EMAIL                 contact form recipient
-CONTACT_FROM_EMAIL               contact form envelope sender
-```
-
-### The CMS is a runtime dependency
-
-Content is fetched per request, so **the site has no content if Strapi is
-unreachable**. That server is a separate machine from the one Vercel runs on.
+- `CLAUDE.md` — working rules for this repo.
+- `full-audit-bestlooking-skin-sep-2026.md` — 12 Sep full audit and task register, incl. the 24 Sep Search Console
+  audit outcome. Tasks live in Notion; update them rather than creating duplicates.
+- The retired `xmpcross/bestlooking.skin` repo is an HTML mirror, not a build — never deploy from it.

@@ -66,8 +66,9 @@ the audit file's register too, with its new page ID.
 ## What this is
 
 A skincare editorial and product-comparison site. Reviews, ingredient explainers,
-comparison guides and a product catalogue. Monetised by affiliate links, not ads
-(AdSense is not live yet — see **Monetisation**).
+comparison guides and a product catalogue. Monetised by Google AdSense (manual
+placements) and affiliate links through Geniuslink and Takeads (24 Sep 2026 — see
+**Monetisation** and README.md).
 
 Operated by Kritin under FXN Holdings, as part of a multi-site portfolio that
 shares one Strapi backend.
@@ -78,7 +79,7 @@ shares one Strapi backend.
 |---|---|
 | Repo | `xmpcross/strapi-bestlookingskin`, branch `main` |
 | Framework | Next.js 15, **server-rendered** (not static export) |
-| Host | Vercel |
+| Host | **Netlify** since 24 Sep 2026 (see NETLIFY.md); previously the FXN /opt server, before that Vercel |
 | CMS | Shared FXN Strapi, read at request time |
 | Media | `cms.fxnstudio.com/uploads/` |
 | Canonical host | `https://www.bestlooking.skin` — **`www`, no trailing slash** |
@@ -247,14 +248,18 @@ Read this before touching any outbound link.
 - Legacy links carry the tag `unitradeco-20`, which is **not this brand's tag**.
 - **Never add a new Amazon price or image widget.** Existing ones are being removed.
 
-### Current approach
+### Current approach (24 Sep 2026)
 
-- **Takeads** is the primary layer. Geniuslink is being retired.
-- The Takeads repoint in nxt-sourcing must land before any product re-import,
-  or new links get minted on the retiring network.
-- The 243 product pages currently link **unwrapped** to `theordinary.com`,
-  `sephora.com` etc. — under an affiliate disclosure, earning nothing. Being fixed.
-- iHerb sidebar widget is live, dated, and priced in AUD.
+- Every outbound retailer link goes through `lib/links.ts`: **Geniuslink** for
+  Walmart (Impact), eBay (EPN), Target, Best Buy, Newegg; **Takeads** for other
+  retailers; the plain URL otherwise. Link maps in `data/*.json`, refreshed by
+  `scripts/fetch-geniuslink-links.mjs` / `scripts/fetch-takeads-links.mjs`.
+- Amazon is never linked: the Geniuslink account's Amazon tag is `unitradeco-22`,
+  which is not confirmed as this brand's.
+- Retailer links carry `rel="sponsored nofollow noopener"` (`SPONSORED_REL`).
+- Hyaluronic Acid products are info-only: iHerb reference price, no comparison.
+- `/legal/disclosure` still names Amazon Associates and not Geniuslink/Takeads —
+  flagged for solicitor review, not edited.
 - `meta mitgo-verification` in the head is the Mitgo/Takeads verification tag.
   Do not remove it.
 
@@ -266,9 +271,11 @@ links, add them to Tier A.
 
 ## AdSense
 
-Not live. **Do not apply yet.** Open rejection triggers: duplicate product copy,
-the CMS placeholder leak, placeholder titles, March 2024 prices, broken links,
-off-topic content, no identifiable publisher, unfinished About page.
+**Live** (site approved; manual placements via `components/AdSlot.tsx`, auto ads
+off). Keep the conditions that got it approved: original product copy (rewritten
+Sep 2026), no CMS placeholder leaks, no placeholder titles, no stale Amazon prices,
+no broken links, on-topic content, identifiable publisher (About page, FXN Holdings,
+ABN), and ads clearly separate from affiliate buttons.
 
 Already fine: complete legal set, disclosure above the fold, real IA, HTTPS,
 mobile viewport, contact route.
