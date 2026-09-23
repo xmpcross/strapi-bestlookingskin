@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { SITE } from '@/lib/site';
+import { descriptionFromBody } from '@/lib/format';
 import { listProductCategories, listProductCategoryCounts, listProducts, mediaUrl } from '@/lib/strapi';
 import ProductCard from '@/components/ProductCard';
 import ShopFilters, { type Facet, type ShopFilterState } from '@/components/ShopFilters';
@@ -43,7 +44,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const category = await getCategory(slug);
   if (!category) return { title: 'Category not found' };
   const description =
-    category.description ||
+    descriptionFromBody(category.description) ||
     `${category.name} products covered by ${SITE.name}, with the latest price we recorded and where to buy.`;
   return {
     title: `${category.name} — Products & Prices`,
@@ -147,7 +148,13 @@ export default async function CategoryPage({
                 )}
                 <h1 className="h4 mb-0 ds-4">{category.name}</h1>
               </div>
-              {category.description && <p className="fs-7 mb-0 mt-3">{category.description}</p>}
+              {category.description && (
+                <div className="bls-category-intro mt-3">
+                  {category.description.split(/\n\s*\n/).map((para) => para.trim()).filter(Boolean).map((para) => (
+                    <p key={para.slice(0, 40)}>{para}</p>
+                  ))}
+                </div>
+              )}
               {category.children && category.children.length > 0 && (
                 <ul className="list-unstyled ps-0 d-flex flex-wrap gap-2 mt-3 mb-0">
                   {category.children.map((c) => (

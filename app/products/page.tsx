@@ -112,7 +112,11 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
               <div className="title">
                 <p className="shop-eyebrow mb-2">Product Category</p>
                 <h1 className="h4 mb-0 ds-4">{pageTitle}</h1>
-                <p className="fs-6 mb-0 mt-3">{pageDescription}</p>
+                <div className="bls-category-intro mt-3">
+                  {pageDescription.split(/\n\s*\n/).map((para) => para.trim()).filter(Boolean).map((para) => (
+                    <p key={para.slice(0, 40)}>{para}</p>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
