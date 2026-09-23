@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { GeistSans } from 'geist/font/sans';
 import '@/public/assets/css/vendors/bootstrap-grid.min.css';
 import '@/public/assets/css/main.css';
 import './magzin.css';
@@ -12,9 +11,9 @@ import CookieConsent from '@/components/CookieConsent';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import { SITE } from '@/lib/site';
 
-// Magzin template (header style 2, Home 2 / Archive 3 / Single 3). Geist is self-hosted through the
-// `geist` package — no next/font/google fetch, so the build stays offline-friendly and pageload makes
-// zero requests to fonts.gstatic.com.
+// Magzin template (header style 2, Home 2 / Archive 3 / Single 3). The site font, Outfit, is self-hosted
+// from public/fonts via @font-face in app/magzin.css — no next/font/google fetch, so the build stays
+// offline-friendly and pageload makes zero requests to fonts.gstatic.com.
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -52,8 +51,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={GeistSans.variable} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="preload" href="/fonts/Outfit-Variable-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         {/* Apply the saved light/dark theme before paint (Magzin's data-bs-theme switch). */}
         <script
           dangerouslySetInnerHTML={{
@@ -69,7 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin="anonymous"
         />
       </head>
-      <body className={GeistSans.className} data-testid="app-shell">
+      <body data-testid="app-shell">
         <div id="top" />
         <SiteHeader />
         <main>{children}</main>
