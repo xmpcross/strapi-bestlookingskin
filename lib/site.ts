@@ -61,7 +61,7 @@ export const ADSENSE = {
   slots: {
     inArticle: '1488791118',
     display: '3912783634',
-    multiplex: '',
+    multiplex: '7668106520',
   },
 };
 
