@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import LegalBusinessDetails from '@/components/LegalBusinessDetails';
+import AffiliatePrograms from '@/components/AffiliatePrograms';
+import { ADVERTISING_PARTNERS, listOf } from '@/lib/affiliate-programs';
 import LegalArticle from '@/components/LegalArticle';
 import { SITE } from '@/lib/site';
 
@@ -19,9 +21,10 @@ const MODIFIED = '2026-09-24';
  * "read our full disclosure" link pointing at a 404 -- or at Terms, which only
  * mentions "affiliates" in the corporate sense -- is worse than no link.
  *
- * Deliberately limited to what is verifiably true of this site today: affiliate
- * links including Amazon Associates, display advertising, and no paid reviews.
- * Worth a read before it stands as site policy.
+ * Deliberately limited to what is verifiably true of this site today. The
+ * affiliate programmes and the retailers behind them are not typed here: they are
+ * rendered from lib/affiliate-programs.ts (config + the committed link maps), so
+ * this page updates itself when a programme or retailer is added.
  */
 export default function Page() {
   return (
@@ -38,10 +41,12 @@ export default function Page() {
         way</strong> — the commission comes out of the retailer&rsquo;s margin, not out of your
         pocket, and nothing is added to your total.
       </p>
+      <p>We currently earn affiliate commissions through:</p>
+      <AffiliatePrograms />
       <p>
-        We participate in the Amazon Associates Programme and similar affiliate programmes operated
-        by other retailers. Where a page carries buy buttons for several retailers, some of those
-        links earn us a commission and some do not.
+        Where a page lists several retailers, some of those links earn us a commission and some do not. Links to
+        retailers are marked <code>rel=&quot;sponsored&quot;</code> for search engines. We do not currently take
+        part in the Amazon Associates programme, and we do not link to Amazon.
       </p>
 
       <h3>2. What it does not affect</h3>
@@ -60,8 +65,8 @@ export default function Page() {
 
       <h3>4. Advertising</h3>
       <p>
-        We also carry display advertising. Advertisers have no say in our editorial content and no
-        advance sight of it. How advertising cookies work is covered in our{' '}
+        We also carry display advertising through {listOf(ADVERTISING_PARTNERS.map((a) => a.name))}. Advertisers
+        have no say in our editorial content and no advance sight of it. How advertising cookies work is covered in our{' '}
         <Link href="/legal/cookies">Cookie Policy</Link>.
       </p>
 

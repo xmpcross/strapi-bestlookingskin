@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import LegalBusinessDetails from '@/components/LegalBusinessDetails';
+import { AFFILIATE_PROGRAMS, listOf } from '@/lib/affiliate-programs';
 import LegalArticle from '@/components/LegalArticle';
 import { SITE } from '@/lib/site';
 
@@ -347,10 +348,12 @@ export default function Page() {
       <h3>13. Affiliate-link disclosure</h3>
       <p>
         Some links on the Website are affiliate links. When you click through and make a qualifying
-        purchase, we may earn a commission at no additional cost to you. {SITE.name} is a participant
-        in the Amazon Services LLC Associates Program and other affiliate programs. Our editorial
-        recommendations are not influenced by these relationships, in line with the U.S. Federal
-        Trade Commission Endorsement Guides.
+        purchase, we may earn a commission at no additional cost to you. {SITE.name} earns affiliate
+        commissions through {listOf(AFFILIATE_PROGRAMS.map((p) => (p.operator !== p.name ? `${p.name} (${p.operator})` : p.name)))},
+        which may set cookies to attribute a purchase to your click (see our{' '}
+        <Link href="/legal/cookies">Cookie Policy</Link>); the full list of programmes and retailers is in our{' '}
+        <Link href="/legal/disclosure">Affiliate Disclosure</Link>. Our editorial recommendations are not
+        influenced by these relationships, in line with the U.S. Federal Trade Commission Endorsement Guides.
       </p>
 
       {/* 14. Changes */}

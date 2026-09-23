@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import LegalBusinessDetails from '@/components/LegalBusinessDetails';
+import { ADVERTISING_PARTNERS, AFFILIATE_PROGRAMS, listOf } from '@/lib/affiliate-programs';
 import LegalArticle from '@/components/LegalArticle';
 import { SITE } from '@/lib/site';
 
@@ -99,9 +100,11 @@ export default function Page() {
           considered &quot;sharing&quot; under California law.
         </li>
         <li>
-          <strong>Affiliate tracking.</strong> Some merchants (e.g. Amazon) set their own cookies to
-          attribute a purchase you make after clicking an affiliate link from {SITE.name}. These are
-          set by the merchant, not by us, and are governed by the merchant&apos;s privacy policy.
+          <strong>Affiliate tracking.</strong> When you click a retailer link from {SITE.name}, the affiliate
+          service ({listOf(AFFILIATE_PROGRAMS.map((p) => p.name))}) and the retailer may set cookies to attribute a
+          purchase to that click. Their link-conversion scripts load on this site only after you allow
+          &quot;marketing&quot; cookies. These cookies are set by those companies, not by us, and are governed by
+          their privacy policies.
         </li>
       </ol>
 
@@ -114,7 +117,31 @@ export default function Page() {
       <ol className="legal-list-alpha">
         <li>Hosting and content delivery (CDN) providers.</li>
         <li>Analytics providers (e.g. Google Analytics, Plausible, Cloudflare Web Analytics).</li>
-        <li>Affiliate-program platforms (e.g. Amazon Associates).</li>
+        <li>
+          Affiliate-link services and networks:{' '}
+          {AFFILIATE_PROGRAMS.map((p, i) => (
+            <span key={p.key}>
+              {i > 0 && ', '}
+              <a href={p.privacyUrl} target="_blank" rel="noopener noreferrer">
+                {p.name}
+              </a>
+              {p.operator !== p.name ? ` (${p.operator})` : ''}
+            </span>
+          ))}
+          .
+        </li>
+        <li>
+          Advertising:{' '}
+          {ADVERTISING_PARTNERS.map((a, i) => (
+            <span key={a.name}>
+              {i > 0 && ', '}
+              <a href={a.privacyUrl} target="_blank" rel="noopener noreferrer">
+                {a.name}
+              </a>
+            </span>
+          ))}
+          .
+        </li>
         <li>Embedded content providers (e.g. YouTube, Twitter / X, Facebook social plugins).</li>
         <li>Customer-support and email-delivery tools.</li>
       </ol>
