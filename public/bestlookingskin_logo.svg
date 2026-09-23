@@ -49,11 +49,11 @@
   <!-- Typography -->
   <g fill="currentColor" font-family="'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
     <!-- BESTLOOKING -->
-    <text x="66" y="44" font-weight="800" font-size="28" letter-spacing="-0.2">BESTLOOKING</text>
-    <!-- .SKIN accent text -->
-    <text x="274" y="44" font-weight="900" font-size="28" fill="url(#bls-glow)" letter-spacing="0">.SKIN</text>
+    <!-- One line, so .SKIN always follows the wordmark; textLength pins the width, because an <img> SVG cannot
+         load Outfit and renders in whatever system font the visitor has. -->
+    <text x="66" y="44" font-weight="800" font-size="28" letter-spacing="-0.2" textLength="276" lengthAdjust="spacingAndGlyphs">BESTLOOKING<tspan font-weight="900" fill="url(#bls-glow)" letter-spacing="0">.SKIN</tspan></text>
 
     <!-- Tagline / Sub-descriptor -->
-    <text x="67" y="58" font-weight="700" font-size="8.5" fill="url(#bls-glow)" letter-spacing="2.6" opacity="0.95">REVIEWS &amp; SCIENCE</text>
+    <text x="67" y="62" font-weight="700" font-size="13" fill="url(#bls-glow)" letter-spacing="2.2" opacity="0.95">REVIEWS &amp; SCIENCE</text>
   </g>
 </svg>
