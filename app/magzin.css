@@ -1235,3 +1235,14 @@ html .archive-sidebar .archive-side-title {
   padding-right: 4px !important;
   scrollbar-width: thin;
 }
+
+/* Text cards (card-7: home "Editor's Guides", pillar "Explore" clusters). The image kept its source shape, so a
+   4:3 cover sat taller than its 16:9 neighbours and the row went ragged. A fixed 16:9 frame, filled by
+   object-fit: cover (from .cover-image), keeps every card in a row the same height. */
+.article.card-7 .card-img .cover-image {
+  aspect-ratio: 16 / 9;
+  height: auto;
+}
+.article.card-7 .card-img {
+  min-height: 0;
+}
