@@ -49,6 +49,8 @@
  *   --out PATH       output file (default data/iherb-<category>-<date>.json)
  *   --delay MS       pause between requests (default 1500)
  *   --dry-run        discover and dedupe, fetch no product pages, write nothing
+ *   --include-existing  also fetch products already in Strapi (marked
+ *                    alreadyInStrapi: true), to refresh their facts
  *
  * COST
  *
@@ -142,6 +144,7 @@ const PAGES = Number(flag('--pages', 1)) || 1;
 const LIMIT = flag('--limit') ? Number(flag('--limit')) : Infinity;
 const WITH_DETAILS = !has('--no-details');
 const DELAY_MS = Number(flag('--delay', 1500)) || 1500;
+const INCLUDE_EXISTING = args.includes('--include-existing');
 const DRY_RUN = has('--dry-run');
 
 if (!CATEGORY_URL) {
@@ -176,13 +179,14 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  * Both flags cost extra credits, so the per-product budget is higher than a
  * plain fetch. Use --limit while testing.
  */
-async function zenrows(targetUrl, { attempt = 1 } = {}) {
+async function zenrows(targetUrl, { attempt = 1, wait = 0 } = {}) {
   const params = new URLSearchParams({
     apikey: ZENROWS_KEY,
     url: targetUrl,
     js_render: 'true',
     premium_proxy: 'true',
     proxy_country: 'au',
+    ...(wait ? { wait: String(wait) } : {}),
   });
   const res = await fetch(`https://api.zenrows.com/v1/?${params}`);
 
@@ -191,7 +195,7 @@ async function zenrows(targetUrl, { attempt = 1 } = {}) {
     const backoff = DELAY_MS * 2 ** attempt;
     console.warn(`  ZenRows ${res.status}, retrying in ${backoff}ms (attempt ${attempt + 1}/4)`);
     await sleep(backoff);
-    return zenrows(targetUrl, { attempt: attempt + 1 });
+    return zenrows(targetUrl, { attempt: attempt + 1, wait });
   }
   if (!res.ok) {
     const body = await res.text().catch(() => '');
@@ -386,6 +390,32 @@ function sectionText(html, heading) {
   return text.length > 2 ? text : null;
 }
 
+/**
+ * The "Supplement facts" table, one line per row ("Protein: 4 g (<1%*)").
+ *
+ * Its heading sits inside the table itself and the table runs well past the
+ * 6,000 characters sectionText reads, so it gets its own parser.
+ */
+function supplementFactsTable(html) {
+  const start = html.search(/<h3>\s*Supplement facts\s*<\/h3>/i);
+  if (start === -1) return null;
+  const end = html.indexOf('</table>', start);
+  if (end === -1) return null;
+  const lines = [];
+  for (const tr of html.slice(start, end).match(/<tr[\s\S]*?<\/tr>/gi) ?? []) {
+    const cells = (tr.match(/<td[\s\S]*?<\/td>/gi) ?? []).map(stripTags).filter(Boolean);
+    if (!cells.length || /^(supplement facts|amount per serving)$/i.test(cells[0])) continue;
+    lines.push(cells.length === 1 ? cells[0] : `${cells[0]}: ${cells.slice(1).join(' (')}${cells.length > 2 ? ')' : ''}`);
+  }
+  return lines.length ? lines.join('\n') : null;
+}
+
+/* The product-information block (overview, suggested use, ingredients,
+   warnings, supplement facts) renders after the rest of the page. A response
+   captured before it arrives parses as "none of these exist" -- which is how
+   the first hyaluronic-acid run came back with every one of them null. */
+const hasProductInfo = (html) => /<h2[^>]*>\s*Product information\s*<\/h2>/i.test(html);
+
 function parseProduct(html, { iherbId, url }) {
   const ld = jsonLdBlocks(html).find((x) => x && x['@type'] === 'Product');
   const specs = parseSpecs(html);
@@ -403,7 +433,8 @@ function parseProduct(html, { iherbId, url }) {
       upc: specs['UPC'] ?? null,
       packageQuantity: specs['Package quantity'] ?? null,
       dimensions: specs['Dimensions'] ?? null,
-      shippingWeight: specs['Shipping weight'] ?? null,
+      /* iHerb puts its explanatory tooltip inside the same element. */
+      shippingWeight: specs['Shipping weight']?.split(/\s+Shipping weight\b/i)[0].trim() || null,
       firstAvailable: specs['First available'] ?? null,
       price: offer.price != null ? Number(offer.price) : null,
       currency: offer.priceCurrency ?? null,
@@ -414,9 +445,10 @@ function parseProduct(html, { iherbId, url }) {
       /* Factual composition data. Publishable, and the most useful thing here
          for writing something accurate. */
       ingredients: sectionText(html, 'Other ingredients'),
-      supplementFacts: sectionText(html, 'Supplement facts'),
+      supplementFacts: supplementFactsTable(html),
       suggestedUse: sectionText(html, 'Suggested use'),
-      warnings: sectionText(html, 'Warnings'),
+      /* iHerb appends its own site-wide disclaimer to this section. */
+      warnings: sectionText(html, 'Warnings')?.split(/\s*Disclaimer\s+While iHerb/i)[0].trim() || null,
       specs,
     },
 
@@ -427,6 +459,7 @@ function parseProduct(html, { iherbId, url }) {
       overview: sectionText(html, 'Overview'),
     },
 
+    incomplete: !hasProductInfo(html),
     fetchedAt: new Date().toISOString(),
   };
 }
@@ -530,6 +563,7 @@ async function main() {
   const skipped = [];
   for (const item of byId.values()) {
     if (existing.byIherbId.has(item.iherbId)) {
+      if (INCLUDE_EXISTING) { fresh.push({ ...item, alreadyInStrapi: true }); continue; }
       skipped.push({ ...item, reason: 'iherb id already in Strapi' });
       continue;
     }
@@ -561,15 +595,25 @@ async function main() {
     for (const [i, item] of queue.entries()) {
       console.log(`[${i + 1}/${queue.length}] ${item.url}`);
       try {
-        const html = await zenrows(item.url);
+        let html = await zenrows(item.url);
+        for (let retry = 1; retry <= 2 && !hasProductInfo(html); retry += 1) {
+          console.log(`    product information not rendered yet — refetching with a ${retry * 4}s wait`);
+          await sleep(DELAY_MS);
+          html = await zenrows(item.url, { wait: retry * 4000 });
+        }
         const rec = parseProduct(html, item);
+        if (item.alreadyInStrapi) rec.facts.alreadyInStrapi = true;
+        if (rec.incomplete) console.log('    WARNING: product information block missing; ingredients/directions/warnings are empty');
 
         /* Second dedupe pass: SKU and name are only known after the fetch, and
            the same product reaches Strapi under different URLs from different
            sources. */
         const sku = rec.facts.sku ? String(rec.facts.sku).toUpperCase() : null;
         const gtin = rec.facts.upc ? String(rec.facts.upc).replace(/\D/g, '') : null;
-        if (sku && existing.bySku.has(sku)) {
+        if (item.alreadyInStrapi) {
+          records.push(rec);
+          console.log(`    (already in Strapi) ${rec.facts.name?.slice(0, 60) ?? '(no name found)'}`);
+        } else if (sku && existing.bySku.has(sku)) {
           skipped.push({ ...item, reason: `SKU ${sku} already in Strapi` });
           console.log('    skipped — SKU already in Strapi');
         } else if (gtin && existing.byGtin.has(gtin)) {
