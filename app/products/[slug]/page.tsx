@@ -3,7 +3,7 @@ import { Fragment } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getProduct, listProducts, getPriceHistory, listProductReviews, mediaUrl, type BlsProduct, listProductCategoryCounts } from '@/lib/strapi';
-import { SITE } from '@/lib/site';
+import { SITE, AFFILIATE_LINKS_ENABLED } from '@/lib/site';
 import { descriptionFromBody } from '@/lib/format';
 import ProductCard from '@/components/ProductCard';
 import ProductCarousel from '@/components/ProductCarousel';
@@ -463,7 +463,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                       </p>
                     )}
                     {bestOffer?.url && (
-                      <a href={bestOffer.url} target="_blank" rel="noopener noreferrer sponsored" className="offer-panel-buy" data-testid="offer-panel-buy">
+                      <a href={bestOffer.url} target="_blank" rel={AFFILIATE_LINKS_ENABLED ? 'noopener noreferrer sponsored' : 'noopener noreferrer nofollow'} className="offer-panel-buy" data-testid="offer-panel-buy">
                         Buy at {bestOffer.merchant}
                       </a>
                     )}
@@ -796,7 +796,7 @@ function OfferRow({
         {price !== undefined && <span className="d-block">{formatPrice(price, currency)}</span>}
         {outOfStock && <span className="d-block fs-8 shop-discount">Out of stock</span>}
       </span>
-      <a href={url} target="_blank" rel="noopener noreferrer sponsored" className="offer-cta" aria-label={`View at ${merchant}`}>
+      <a href={url} target="_blank" rel={AFFILIATE_LINKS_ENABLED ? 'noopener noreferrer sponsored' : 'noopener noreferrer nofollow'} className="offer-cta" aria-label={`View at ${merchant}`}>
         View
       </a>
     </div>

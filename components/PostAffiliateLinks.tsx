@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { CommerceProduct } from '@/lib/strapi';
+import { AFFILIATE_LINKS_ENABLED } from '@/lib/site';
 
 /**
  * End-of-article "Affiliate links" block (text links to retailers) and the post's tags.
@@ -21,11 +22,13 @@ export type AffiliateLinkMode = 'affiliate' | 'retailer';
 
 export function affiliateLinksFor(products: CommerceProduct[], mode: AffiliateLinkMode, limit = 4) {
   const links: { href: string; label: string }[] = [];
+  /* Affiliates off (lib/site.ts): no affiliate list, and retailer links use the plain product page. */
+  if (!AFFILIATE_LINKS_ENABLED && mode === 'affiliate') return links;
   const seen = new Set<string>();
   for (const product of products) {
     const offers = (product.offers ?? [])
       .filter((o) => o.availability !== 'out_of_stock' && !EXCLUDED_MERCHANTS.test(o.merchant?.slug ?? ''))
-      .map((o) => ({ offer: o, href: mode === 'affiliate' ? o.affiliateUrl : o.affiliateUrl || o.productUrl }))
+      .map((o) => ({ offer: o, href: mode === 'affiliate' ? o.affiliateUrl : (AFFILIATE_LINKS_ENABLED && o.affiliateUrl) || o.productUrl }))
       .filter((x): x is { offer: typeof x.offer; href: string } => Boolean(x.href && x.offer.merchant?.name))
       .sort((a, b) => (a.offer.price ?? Infinity) - (b.offer.price ?? Infinity));
     for (const { offer, href } of offers.slice(0, 2)) {

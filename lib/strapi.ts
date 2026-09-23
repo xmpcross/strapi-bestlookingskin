@@ -1,7 +1,8 @@
 import { readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import qs from 'qs';
-import { PILLAR_SLUGS } from '@/lib/site';
+import { AFFILIATE_LINKS_ENABLED, PILLAR_SLUGS } from '@/lib/site';
+import { stripAffiliateLinks } from '@/lib/affiliate';
 
 const BASE = (process.env.NEXT_PUBLIC_STRAPI_URL || 'https://cms.fxnstudio.com').replace(/\/$/, '');
 // commerce-products is a Strapi pool SHARED with other sites (e.g. nxt.bargains).
@@ -690,7 +691,7 @@ function localizePost<T extends BlsPost>(post: T): T {
     ...withReleaseDate(post),
     title: cleanDashes(post.title),
     excerpt: post.excerpt ? cleanDashes(post.excerpt) : post.excerpt,
-    content: cleanDashes(rewriteContentImages(post.content)),
+    content: cleanDashes(rewriteContentImages(AFFILIATE_LINKS_ENABLED ? post.content : stripAffiliateLinks(post.content))),
     coverImage: overrideCover ?? post.coverImage,
     ogImage: overrideCover ?? post.ogImage ?? overrideCover,
   };
@@ -1038,7 +1039,8 @@ function merchantSlug(offer?: CommerceOffer): string {
 }
 
 function normalizeCommerceProduct(product: CommerceProduct): BlsProduct {
-  const offers = product.offers ?? [];
+  /* Affiliates off (lib/site.ts): drop every offer's affiliate URL so all retailer links are plain product pages. */
+  const offers = (product.offers ?? []).map((offer) => (AFFILIATE_LINKS_ENABLED ? offer : { ...offer, affiliateUrl: undefined }));
   const availableOffers = offers.filter((offer) => offer.status !== 'expired' && offer.availability !== 'out_of_stock');
   const pricedOffers = availableOffers.filter((offer) => offer.price !== undefined);
   const bestOffer = [...pricedOffers].sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity))[0] ?? availableOffers[0];
@@ -1053,12 +1055,13 @@ function normalizeCommerceProduct(product: CommerceProduct): BlsProduct {
 
   return {
     ...product,
+    offers,
     brand: product.brandRef?.name || product.brand,
     keyFeatures: product.specs?.keyFeatures ?? [],
     skuOrModel: product.mpn || product.sku,
     skinTypes: product.specs?.skinTypes ?? [],
     ingredients: product.specs?.ingredients,
-    primaryAffiliateUrl: amazonOffer?.affiliateUrl || amazonOffer?.productUrl || product.specs?.primaryAffiliateUrl,
+    primaryAffiliateUrl: amazonOffer?.affiliateUrl || amazonOffer?.productUrl || (AFFILIATE_LINKS_ENABLED ? product.specs?.primaryAffiliateUrl : product.specs?.sourceUrl),
     sourceUrl: amazonOffer?.productUrl || product.specs?.sourceUrl,
     sourceMerchant: merchantSlug(amazonOffer) || undefined,
     currentPrice: amazonOffer?.price ?? bestOffer?.price,

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { SITE } from '@/lib/site';
+import { SITE, AFFILIATE_LINKS_ENABLED } from '@/lib/site';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
 
 export const metadata: Metadata = {
@@ -132,16 +132,32 @@ export default function AboutPage() {
                 <h2 className="h5 mb-0">Reader trust comes first.</h2>
               </div>
               <div className="col-lg-8 col-12 bls-prose">
-                <p>
-                  BestLooking.Skin may earn a commission when readers buy through affiliate links,
-                  including qualifying purchases as an Amazon Associate. This does not add extra cost
-                  for you, and it helps support our research, publishing, and site maintenance.
-                </p>
-                <p className="mb-0">
-                  Affiliate relationships do not change the goal of our content: to make skincare
-                  shopping easier to understand. We aim to explain why a product may be worth considering,
-                  where it may fall short, and what kind of routine it fits best.
-                </p>
+                {AFFILIATE_LINKS_ENABLED ? (
+                  <>
+                    <p>
+                      BestLooking.Skin may earn a commission when readers buy through affiliate links,
+                      including qualifying purchases as an Amazon Associate. This does not add extra cost
+                      for you, and it helps support our research, publishing, and site maintenance.
+                    </p>
+                    <p className="mb-0">
+                      Affiliate relationships do not change the goal of our content: to make skincare
+                      shopping easier to understand. We aim to explain why a product may be worth considering,
+                      where it may fall short, and what kind of routine it fits best.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p>
+                      BestLooking.Skin is supported by advertising, served by Google AdSense and labelled
+                      &ldquo;Advertisement&rdquo;. We do not currently use affiliate links, so we earn nothing when you
+                      buy a product we write about, and retailer links go straight to the retailer&rsquo;s own page.
+                    </p>
+                    <p className="mb-0">
+                      Advertisers have no say in what we write. Our goal stays the same: to make skincare shopping
+                      easier to understand, including where a product may fall short and what routine it fits best.
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           </div>

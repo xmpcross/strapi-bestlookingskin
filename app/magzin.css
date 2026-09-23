@@ -1281,3 +1281,29 @@ html .archive-sidebar .archive-side-title {
 [data-bs-theme="dark"] .sec-4-home-2 .article.card-7 .card-body .card-corner .arrow-box svg path {
   stroke: #0e0e0f;
 }
+
+/* Manually placed AdSense units (components/AdSlot.tsx). Space is reserved while the ad loads so the page does
+   not jump (CLS); a unit AdSense leaves unfilled collapses instead of leaving a gap. */
+.ad-slot {
+  margin: 36px 0;
+  text-align: center;
+}
+.ad-slot-inArticle,
+.ad-slot-display {
+  min-height: 280px;
+}
+.ad-slot-multiplex {
+  min-height: 320px;
+}
+.ad-slot:has(ins[data-ad-status='unfilled']) {
+  display: none;
+}
+.ad-slot-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tc-neutral-500);
+}

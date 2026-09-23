@@ -4,7 +4,8 @@ import type { Metadata } from 'next';
 import '../../article.css';
 import '../../top-rated.css';
 import { getPost, listPostSummaries, listProductsForPost, getAdjacentPosts, mediaUrl, type BlsPostSummary } from '@/lib/strapi';
-import { PILLAR_SLUGS, SECTIONS, SITE, publisherJsonLd } from '@/lib/site';
+import { AFFILIATE_LINKS_ENABLED, PILLAR_SLUGS, SECTIONS, SITE, publisherJsonLd } from '@/lib/site';
+import AdSlot from '@/components/AdSlot';
 import { fmtDate, primaryCategorySlug, postPath, descriptionFromBody } from '@/lib/format';
 import { withHeadingIds, decodeEntities } from '@/lib/toc';
 import { cleanProductRoundupHtml } from '@/lib/legacy-product-roundup';
@@ -372,10 +373,15 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
       from = leadCut;
     }
     bodyParts.push(<ArticleContents key="contents" toc={toc} />);
+    /* In-article ads (ADSENSE.slots.inArticle): after the first section, and about 60% down on posts with four or
+       more sections. Never above the contents box or the direct answer, never two in a row. */
+    const adAt = new Set<number>(boundaries.length ? [0] : []);
+    if (boundaries.length >= 4) adAt.add(Math.floor(boundaries.length * 0.6));
     boundaries.forEach((cut, bi) => {
       const html = bodyMain.slice(from, cut);
       if (html.trim()) bodyParts.push(<PostContent key={`part-${bi}`} html={html} />);
       from = cut;
+      if (adAt.has(bi)) bodyParts.push(<AdSlot key={`ad-${bi}`} kind="inArticle" />);
       inserts.forEach((node, i) => {
         if (slotOf(i) === bi) bodyParts.push(<div key={`insert-${i}`} className="post-insert">{node}</div>);
       });
@@ -459,10 +465,12 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
             </div>
             <div className="post-layout-main">
               {/* Disclosure above the article, not after it. */}
-              <p className="affiliate-note fs-7 text-600 px-3 py-2 mb-4">
-                <strong className="text-dark">Heads up:</strong> when you buy through links on this page we may earn a commission, at no extra cost to you. It never changes which products
-                we recommend or what we say about them. <Link href="/legal/disclosure" className="text-dark text-decoration-underline">Read our full disclosure</Link>.
-              </p>
+              {AFFILIATE_LINKS_ENABLED && (
+                <p className="affiliate-note fs-7 text-600 px-3 py-2 mb-4">
+                  <strong className="text-dark">Heads up:</strong> when you buy through links on this page we may earn a commission, at no extra cost to you. It never changes which products
+                  we recommend or what we say about them. <Link href="/legal/disclosure" className="text-dark text-decoration-underline">Read our full disclosure</Link>.
+                </p>
+              )}
 
               <div id="article-body" className="post-body">
                 {bodyParts}
@@ -478,6 +486,8 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
               />
 
               <PostAffiliateLinks links={buyLinks.links} mode={buyLinks.mode} tags={tagsFromKeywords(post.seoKeywords)} />
+              {/* End of article: multiplex (related-content style) unit. */}
+              <AdSlot kind="multiplex" />
 
               {/* End of article: previous / next only. The tags-and-share row and the author bio card were removed at
                   the owner's request; sharing lives in the left rail, the byline in the top section. */}
@@ -519,6 +529,8 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
                   </div>
                 </div>
               )}
+              {/* Sidebar display unit, high in the column so it is seen while the article is read. */}
+              <AdSlot kind="display" className="mb-5" />
               {topics.length > 0 && (
                 <div className="mb-5">
                   <SidebarTitle>Topics</SidebarTitle>

@@ -40,14 +40,6 @@ export const metadata: Metadata = {
       'application/rss+xml': [{ url: '/feed.xml', title: `${SITE.name} RSS` }],
     },
   },
-  verification: {
-    other: {
-      // Mitgo (Takeads' parent) site verification. Lives here rather than in
-      // hand-edited HTML so it survives every rebuild — the previous copy was
-      // written into the exported artifact and would have been lost.
-      'mitgo-verification': '0bd5a870-e07e-4d99-bd70-2897813fd88b',
-    },
-  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -61,9 +53,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: "try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-bs-theme',t)}catch(e){}",
           }}
         />
-        {/* Impact.com site verification — verbatim <meta name=… value=…> tag.
-            Using `value` (not Next's metadata `content`) exactly as Impact provides. */}
-        <meta {...({ name: 'impact-site-verification', value: '5018c6dc-98d5-4dd1-84ac-32c80d7fd16f' } as Record<string, string>)} />
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2867376862905050"

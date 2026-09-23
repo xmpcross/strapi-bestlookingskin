@@ -9,6 +9,7 @@ import { ListCard, RowCard, SectionTitle, TextCard, TileCard } from '@/component
 import SidebarTitle from '@/components/magzin/SidebarTitle';
 import Breadcrumb from '@/components/magzin/Breadcrumb';
 import Pagination from '@/components/magzin/Pagination';
+import AdSlot from '@/components/AdSlot';
 import CategoryListWidget from '@/components/magzin/CategoryListWidget';
 import FeaturedPostsSlider from '@/components/FeaturedPostsSlider';
 import PillarBanner from '@/components/pillar/PillarBanner';
@@ -229,6 +230,11 @@ export default async function CategoryPage({ params, searchParams }: { params: P
         </section>
       )}
 
+      {/* Display unit between the top grid and the rest of the archive. */}
+      <div className="container">
+        <AdSlot kind="display" />
+      </div>
+
       {/* Strip above the list block: three row cards (thumbnail, title, date, read time). */}
       {strip.length > 0 && (
         <section className="archive-strip pt-3 pb-70" data-testid="archive-strip">
@@ -272,6 +278,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
             </div>
 
             <aside className="col-lg-4 col-12 archive-sidebar" aria-label="Archive sidebar">
+              <AdSlot kind="display" className="mb-5" />
               {latest.length > 0 && (
                 <div className="mb-5">
                   <SidebarTitle>Latest guides</SidebarTitle>

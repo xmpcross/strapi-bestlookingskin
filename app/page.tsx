@@ -7,6 +7,7 @@ import EmailSignup from '@/components/magzin/EmailSignup';
 import { CategoryChip, FeatureCard, ListCard, OverlapCard, RowCard, SectionTitle, TextCard, TileCard } from '@/components/magzin/cards';
 import SidebarTitle from '@/components/magzin/SidebarTitle';
 import FeaturedPostsSlider from '@/components/FeaturedPostsSlider';
+import AdSlot from '@/components/AdSlot';
 
 export const revalidate = 60;
 
@@ -142,6 +143,11 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* Display unit after the topic chips, before the newsletter. */}
+      <div className="container">
+        <AdSlot kind="display" />
+      </div>
+
       {/* 3. Newsletter (official Magzin home 2 block: white panel, dot pattern top right, star bottom left) */}
       <section className="home-newsletter">
         <div className="container">
@@ -240,6 +246,11 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+
+      {/* Display unit before the last block. */}
+      <div className="container">
+        <AdSlot kind="display" />
+      </div>
 
       {/* 7. Latest guides (last on the page): Magzin home 3 "Latest" layout. Six card-9 list cards on the left; the
              sidebar carries more guides, topics with post counts and a cover slider. The template's

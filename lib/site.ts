@@ -10,7 +10,6 @@ export const SITE = {
      no picture, and their twitter:card silently downgraded to `summary`.
      1200x630 — the size every platform crops from. */
   ogImage: '/og-default.jpg',
-  amazonAffiliateTag: process.env.NEXT_PUBLIC_AMAZON_AFFILIATE_TAG || '',
   /* The business behind the site: shown in the footer, on /about and /contact, in the legal pages, and as the
      publisher in structured data. BestLooking.Skin is the trading name; FXN Holdings is the business. */
   business: {
@@ -35,6 +34,34 @@ export const SITE = {
     /* X and WhatsApp removed for now. The WhatsApp entry was wa.me/15551234567 --
        a placeholder number, which would have sent anyone who tapped it to a
        stranger or nowhere. Re-add either with a real destination. */
+  },
+};
+
+/**
+ * Affiliate programs are switched off (Sep 2026): the site earns from Google AdSense instead. While false:
+ * - catalogue offers drop their affiliateUrl, so every retailer link is the plain product page (lib/strapi.ts);
+ * - post and pillar content has Amazon and affiliate-network links unwrapped to plain text, "Buy now" buttons,
+ *   Amazon-hosted images and the old Content Egg price boxes removed, at render time (lib/affiliate.ts) -- the
+ *   stored content in Strapi is untouched, so turning this back on restores it;
+ * - the "we may earn a commission" notes are hidden.
+ */
+export const AFFILIATE_LINKS_ENABLED = false;
+
+/**
+ * Google AdSense, placed manually (Auto ads are off in the AdSense account). The loader script is in
+ * app/layout.tsx; each placement is an <AdSlot kind=... /> (components/AdSlot.tsx) that renders nothing until its
+ * slot id is filled in here. Create the four units in AdSense (Ads > By ad unit) and paste their data-ad-slot ids:
+ *   inArticle  In-article ad        post and pillar bodies, between sections
+ *   display    Display ad, responsive  sidebars and between home/archive blocks
+ *   multiplex  Multiplex ad        end of posts and pillars
+ * Slot ids are public (they appear in the page), so they live in code rather than .env.
+ */
+export const ADSENSE = {
+  client: 'ca-pub-2867376862905050',
+  slots: {
+    inArticle: '',
+    display: '',
+    multiplex: '',
   },
 };
 

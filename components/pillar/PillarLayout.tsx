@@ -6,6 +6,8 @@ import Breadcrumb from '@/components/magzin/Breadcrumb';
 import { RowCard, TextCard } from '@/components/magzin/cards';
 import type { PostCardData } from '@/lib/post-card';
 import ChapterNav from './ChapterNav';
+import AdSlot from '@/components/AdSlot';
+import { AFFILIATE_LINKS_ENABLED } from '@/lib/site';
 
 export type PillarChapter = { id: string; text: string; html: string };
 
@@ -142,10 +144,12 @@ export default function PillarLayout({
           </aside>
 
           <div className="pillar-main">
-            <p className="affiliate-note fs-7 text-600 px-3 py-2 mb-4">
-              <strong className="text-dark">Heads up:</strong> when you buy through links on this page we may earn a commission, at no extra cost to you. It never changes which products
-              we recommend or what we say about them. <Link href="/legal/disclosure" className="text-dark text-decoration-underline">Read our full disclosure</Link>.
-            </p>
+            {AFFILIATE_LINKS_ENABLED && (
+              <p className="affiliate-note fs-7 text-600 px-3 py-2 mb-4">
+                <strong className="text-dark">Heads up:</strong> when you buy through links on this page we may earn a commission, at no extra cost to you. It never changes which products
+                we recommend or what we say about them. <Link href="/legal/disclosure" className="text-dark text-decoration-underline">Read our full disclosure</Link>.
+              </p>
+            )}
 
             <div id="pillar-body" className="pillar-body">
               {introHtml.trim() && (
@@ -154,10 +158,14 @@ export default function PillarLayout({
                 </div>
               )}
               {chapters.map((c, i) => (
-                <section key={c.id} className="pillar-chapter" aria-labelledby={c.id}>
-                  <span className="pillar-chapter-label">Chapter {String(i + 1).padStart(2, '0')}</span>
-                  <PostContent html={c.html} />
-                </section>
+                <div key={c.id}>
+                  <section className="pillar-chapter" aria-labelledby={c.id}>
+                    <span className="pillar-chapter-label">Chapter {String(i + 1).padStart(2, '0')}</span>
+                    <PostContent html={c.html} />
+                  </section>
+                  {/* In-article ads after chapters 2 and 5, not after the last chapter. */}
+                  {(i === 1 || i === 4) && i < chapters.length - 1 && <AdSlot kind="inArticle" />}
+                </div>
               ))}
               {faqHtml.trim() && (
                 <section className="pillar-faq">
@@ -165,6 +173,8 @@ export default function PillarLayout({
                 </section>
               )}
             </div>
+
+            <AdSlot kind="multiplex" />
 
             {author && (
               <aside className="pillar-author" aria-label="About the author">

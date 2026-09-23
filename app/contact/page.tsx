@@ -61,7 +61,9 @@ export default function ContactPage() {
                   ))}
                 </address>
                 <p className="mb-0">
-                  {SITE.business.tradingName} is a trading name of {SITE.business.legalName}, ABN {SITE.business.abnDisplay}.
+                  {SITE.business.tradingName} is a trading name of {SITE.business.legalName}.
+                  <br />
+                  ABN {SITE.business.abnDisplay}
                 </p>
               </div>
             </div>
