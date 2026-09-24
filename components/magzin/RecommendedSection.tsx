@@ -25,56 +25,14 @@ export default function RecommendedSection({
         <div className="row">
           <div className="col-12">
             <div className="d-flex align-items-center justify-content-between gap-3">
-              <h4 className="mb-0 ds-4">{title}</h4>
-              <div className="justify-content-between align-items-center gap-3 d-none d-md-flex">
+              <h2 className="mb-0 recommended-title">{title}</h2>
+              <div className="d-none d-md-flex align-items-center">
                 <Link href={viewMoreHref} className="view-more">
                   <span className="circle" aria-hidden="true">
                     <span className="icon arrow" />
                   </span>
                   <span className="button-text">View More</span>
                 </Link>
-                <div className="block-author d-none d-lg-flex align-items-center">
-                  <div className="avatar avatar-64 rounded-circle overflow-hidden border-3 border-white z-5">
-                    <Image
-                      src="/assets/imgs/template/author/author-11.png"
-                      alt="Contributor"
-                      width={64}
-                      height={64}
-                    />
-                  </div>
-                  <div className="avatar avatar-64 rounded-circle overflow-hidden border-3 border-white z-4">
-                    <Image
-                      src="/assets/imgs/template/author/author-12.png"
-                      alt="Contributor"
-                      width={64}
-                      height={64}
-                    />
-                  </div>
-                  <div className="avatar avatar-64 rounded-circle overflow-hidden border-3 border-white z-3">
-                    <Image
-                      src="/assets/imgs/template/author/author-13.png"
-                      alt="Contributor"
-                      width={64}
-                      height={64}
-                    />
-                  </div>
-                  <div className="avatar avatar-64 rounded-circle overflow-hidden border-3 border-white z-1">
-                    <Image
-                      src="/assets/imgs/template/author/author-14.png"
-                      alt="Contributor"
-                      width={64}
-                      height={64}
-                    />
-                  </div>
-                  <div className="avatar avatar-64 rounded-circle overflow-hidden border-3 border-white z-0">
-                    <Image
-                      src="/assets/imgs/template/author/author-15.png"
-                      alt="Contributor"
-                      width={64}
-                      height={64}
-                    />
-                  </div>
-                </div>
               </div>
             </div>
           </div>

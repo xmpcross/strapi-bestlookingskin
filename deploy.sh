@@ -73,7 +73,7 @@ rm -rf .next
 CMS_FALLBACK_RE='\[strapi\].*unavailable|\[Strapi Fetch (Error|Warning)\]'
 BUILD_LOG="$(mktemp -t bestlooking-build-XXXXXX.log)"
 
-if ! yarn build 2>&1 | tee "$BUILD_LOG"; then
+if ! npm run build 2>&1 | tee "$BUILD_LOG"; then
   echo "build failed -- restarting the old build so the site is not left down" >&2
   sudo systemctl start bestlooking-skin.service || true
   echo "log kept at $BUILD_LOG" >&2

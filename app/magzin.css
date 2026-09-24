@@ -1322,6 +1322,11 @@ html .archive-sidebar .archive-side-title {
   background-repeat: no-repeat;
   background-size: cover;
 }
+.sec-7-home-2 .recommended-title {
+  font-size: 25px !important;
+  font-weight: 700 !important;
+  line-height: 1.25;
+}
 .card-recommend a:first-child {
   display: block;
   overflow: hidden;
@@ -1350,9 +1355,6 @@ html .archive-sidebar .archive-side-title {
 }
 .card-recommend:hover .card-title h6 {
   color: var(--tc-neutral-600);
-}
-[data-bs-theme="dark"] .block-author .avatar {
-  border-color: #1a1b1c !important;
 }
 [data-bs-theme="dark"] .sec-7-home-2 {
   background-image: none !important;
