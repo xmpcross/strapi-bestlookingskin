@@ -1389,6 +1389,29 @@ export async function listProductsForHub(hub: string, limit = 3): Promise<Commer
 }
 
 /**
+ * Catalogue products by slug, in the order asked for; unknown or unlisted slugs are dropped.
+ *
+ * Backs the ::product:<slug>:: boxes the AI writer places in post bodies (lib/product-boxes.ts). Goes through
+ * commerceFetch, so the site scope and listability rules apply: a product that has left this storefront drops out
+ * of the article instead of rendering a dead box.
+ */
+export async function listProductsBySlugs(slugs: string[]): Promise<CommerceProduct[]> {
+  const wanted = [...new Set(slugs)].slice(0, 12);
+  if (!wanted.length) return [];
+  try {
+    const res = await commerceFetch<ListResponse<CommerceProduct>>('commerce-products', {
+      filters: { slug: { $in: wanted } },
+      populate: PRODUCT_POPULATE,
+      pagination: { page: 1, pageSize: wanted.length },
+    });
+    const bySlug = new Map((res.data ?? []).map((p) => [p.slug, p]));
+    return wanted.map((s) => bySlug.get(s)).filter((p): p is CommerceProduct => Boolean(p));
+  } catch {
+    return [];
+  }
+}
+
+/**
  * Products named in the post's own title, falling back to its category.
  *
  * "CeraVe Moisturizing Cream vs Vanicream" should show those two products, not

@@ -4,7 +4,8 @@ import type { Metadata } from 'next';
 import { absoluteUrl, seoTitle } from '@/lib/seo';
 import '../../article.css';
 import '../../top-rated.css';
-import { getPost, listPostSummaries, listProductsForPost, getAdjacentPosts, mediaUrl, type BlsPostSummary } from '@/lib/strapi';
+import { getPost, listPostSummaries, listProductsForPost, listProductsBySlugs, getAdjacentPosts, mediaUrl, type BlsPostSummary } from '@/lib/strapi';
+import { productSlugsIn, renderProductBoxes } from '@/lib/product-boxes';
 import { AFFILIATE_LINKS_ENABLED, PILLAR_SLUGS, SECTIONS, SITE, publisherJsonLd } from '@/lib/site';
 import AdSlot from '@/components/AdSlot';
 import { fmtDate, primaryCategorySlug, postPath, descriptionFromBody } from '@/lib/format';
@@ -164,7 +165,12 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
      are stripped first. Keyed on the post type and the markup, not the category, so it follows a post into a hub. */
   const isTopRated = post.postType === 'top-rated' && /cegg5-container|gspb_/.test(post.content ?? '');
   /* Markdown bodies (articles pushed from app.fxnseo.com) become HTML first, so the rest of this pipeline applies. */
-  const bodySource = isMarkdownBody(post.content) ? markdownToHtml(post.content ?? '') : (post.content ?? '');
+  const bodyHtmlSource = isMarkdownBody(post.content) ? markdownToHtml(post.content ?? '') : (post.content ?? '');
+  /* ::product:<slug>:: markers (placed by the AI writer) become inline product boxes; see lib/product-boxes.ts. */
+  const boxProducts = await listProductsBySlugs(productSlugsIn(bodyHtmlSource));
+  const bodySource = renderProductBoxes(bodyHtmlSource, boxProducts);
+  /* Generated posts carry their own "Where to buy" section at the end of the body. */
+  const hasOwnWhereToBuy = /\bid=["']where-to-buy["']/i.test(bodySource);
   const postBodyRaw = (isTopRated ? cleanProductRoundupHtml(bodySource) : bodySource)
     // Collapse "<wbr>/<wbr>" sequences to a single "<wbr>" (drops the slash).
     .replace(/<wbr\s*\/?>\s*\/\s*<wbr\s*\/?>/gi, '<wbr>')
@@ -317,6 +323,8 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
   /* "Affiliate links" when the products' offers resolve to Geniuslink / Takeads links (lib/links.ts); otherwise the
      same retailers are listed under "Where to buy" as plain links. */
   const buyLinks = (() => {
+    /* The post's own "Where to buy" section already lists the retailers: no second list after the article. */
+    if (hasOwnWhereToBuy) return { mode: 'retailer' as const, links: [] };
     const affiliate = affiliateLinksFor(inlineProducts, 'affiliate');
     return affiliate.length ? { mode: 'affiliate' as const, links: affiliate } : { mode: 'retailer' as const, links: affiliateLinksFor(inlineProducts, 'retailer') };
   })();
@@ -362,7 +370,8 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
   const inserts = [
     figure(0),
     readAlsoRows.length === 2 ? <ReadAlso rows={readAlsoRows} /> : null,
-    inlineProducts.length >= 2 ? <InlineProducts products={inlineProducts} /> : null,
+    /* Posts with their own product boxes do not also get the automatic related-products row. */
+    !boxProducts.length && inlineProducts.length >= 2 ? <InlineProducts products={inlineProducts} /> : null,
     pullQuote ? <PullQuote text={pullQuote} /> : null,
     figure(1),
   ].filter(Boolean) as React.ReactNode[];

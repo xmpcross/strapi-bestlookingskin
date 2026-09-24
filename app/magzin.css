@@ -1361,3 +1361,108 @@ html .archive-sidebar .archive-side-title {
   background-color: #1a1b1c;
 }
 
+
+/* ---- Inline product boxes (::product:<slug>:: markers, lib/product-boxes.ts) ---- */
+.post-product-box {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin: 28px 0;
+  padding: 18px;
+  border: 1px solid var(--tc-neutral-200);
+  border-radius: 16px;
+  background: var(--tc-system-white);
+}
+.post-product-box .ppb-media {
+  flex: 0 0 140px;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+.post-product-box .ppb-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 10px;
+  margin: 0;
+}
+.post-product-box .ppb-body {
+  min-width: 0;
+  flex: 1;
+}
+.post-product-box .ppb-brand {
+  margin: 0 0 2px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--tc-neutral-600);
+}
+.post-product-box .ppb-name {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+  font-weight: var(--tc-fw-semi-bold);
+  line-height: 1.35;
+}
+.post-product-box .ppb-name a {
+  color: var(--tc-neutral-900);
+  text-decoration: none;
+}
+.post-product-box .ppb-features {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--tc-neutral-700);
+}
+.post-product-box .ppb-features li + li {
+  margin-top: 2px;
+}
+.post-product-box .ppb-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.post-product-box .ppb-buy,
+.post-product-box .ppb-more {
+  display: inline-block;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: var(--tc-fw-semi-bold);
+  text-decoration: none;
+}
+.post-product-box .ppb-buy {
+  background: var(--tc-neutral-900);
+  color: var(--tc-system-white);
+}
+.post-product-box .ppb-buy:hover {
+  background: var(--tc-neutral-700);
+}
+.post-product-box .ppb-more {
+  border: 1px solid var(--tc-neutral-300);
+  color: var(--tc-neutral-900);
+}
+@media (max-width: 575.98px) {
+  .post-product-box {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .post-product-box .ppb-media {
+    flex-basis: auto;
+    width: 160px;
+    margin: 0 auto;
+  }
+}
+
+/* ---- "Where to buy" section the AI writer appends to the post body ---- */
+.post-body .where-to-buy {
+  padding-left: 18px;
+}
+.post-body .where-to-buy li,
+.post-body .where-to-buy li a {
+  font-size: 1rem;
+}
+.post-body .where-to-buy li + li {
+  margin-top: 6px;
+}
