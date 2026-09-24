@@ -169,7 +169,7 @@ export default async function HomePage() {
         <div className="container">
           <div className="newsletter-box mx-auto position-relative overflow-hidden text-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="newsletter-dots dark-mode-invert" src="/assets/imgs/template/decorate-1.png" alt="" aria-hidden />
+            <img className="newsletter-dots dark-mode-invert" src="/assets/imgs/template/decorate-1.png" alt="Decorative background dots" aria-hidden />
             <svg className="newsletter-star dark-mode-invert" xmlns="http://www.w3.org/2000/svg" width={39} height={39} viewBox="0 0 24 24" fill="none" aria-hidden>
               <path d="M0.582044 11.7285C8.79451 13.4712 10.252 14.8614 12.125 22.7372C13.8067 14.8768 15.2308 13.4992 23.4018 11.8279C15.1894 10.0852 13.7319 8.69503 11.8589 0.81924C10.1769 8.67956 8.75306 10.0571 0.582044 11.7285Z" fill="#0E0E0F" />
             </svg>
