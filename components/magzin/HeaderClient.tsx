@@ -120,7 +120,7 @@ export default function HeaderClient({
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img className="logo-light" src="/bestlookingskin_logo.svg" width={175} height={36} alt={SITE.name} />
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img className="logo-dark" src="/bestlookingskin_logo-light.svg" width={175} height={36} alt="" aria-hidden="true" />
+                  <img className="logo-dark" src="/bestlookingskin_logo-light.svg" width={175} height={36} alt={SITE.name} aria-hidden="true" />
                 </Link>
               </div>
               <div className="navbar-collapse d-none d-lg-block">{menu}</div>
@@ -208,7 +208,7 @@ export default function HeaderClient({
                         <div className="article card-10 style-1 search-pick" key={p.href}>
                           <Link href={p.href} className="card-img" tabIndex={-1} aria-hidden>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img className="w-100" src={p.image} alt="" width={108} height={83} loading="lazy" />
+                            <img className="w-100" src={p.image} alt={p.title || 'Recommended guide thumbnail'} width={108} height={83} loading="lazy" />
                           </Link>
                           <div className="card-body">
                             <Link href={p.href}>

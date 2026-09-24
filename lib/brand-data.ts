@@ -134,6 +134,16 @@ export const BRAND_DIRECTORY: Record<string, BrandMeta> = {
     origin: 'United Kingdom',
     description: 'Dedicated to ending the cycle of over-exfoliation and compromised skin barriers, Byoma formulates barrier-repairing skincare anchored by a science-backed Tri-Ceramide Complex (ceramides, cholesterol, and fatty acids). Packaged in bright, recyclable modular bottles with transparent active ingredient percentages, Byoma provides gentle, non-comedogenic hydration and soothing care for everyday barrier maintenance, leaving skin balanced, calm, and resilient.',
   },
+  'California Gold Nutrition': {
+    name: 'California Gold Nutrition',
+    slug: 'california-gold-nutrition',
+    category: 'Daily Essentials',
+    logo: '/brand-logos/california-gold-nutrition.png',
+    tagline: 'Premium wellness, collagen, and nutritional beauty',
+    website: 'https://iherb.com',
+    origin: 'United States',
+    description: "California Gold Nutrition is iHerb's proprietary premium wellness and nutritional brand, known for high-potency, third-party tested supplements, collagen peptides, and dietary formulas. With hydrolyzed marine collagen powders, hyaluronic acid complex capsules, and essential antioxidants, California Gold Nutrition supports skin elasticity, deep cellular hydration, and structural joint and dermal wellness from within.",
+  },
   'Caudalie': {
     name: 'Caudalie',
     slug: 'Caudalie',
@@ -361,6 +371,16 @@ export const BRAND_DIRECTORY: Record<string, BrandMeta> = {
     website: 'https://innisfree.com',
     origin: 'South Korea',
     description: 'Sourcing its botanicals from the pristine volcanic island of Jeju, South Korea, Innisfree is a pioneer in eco-conscious K-beauty. Formulating with organically grown green tea seed extracts, volcanic clusters, and soothing cica, Innisfree delivers balancing hydration, pore-purifying care, and revitalizing radiance tailored for modern, eco-minded lifestyles.',
+  },
+  'K2O by Kylie Jenner': {
+    name: 'K2O by Kylie Jenner',
+    slug: 'k2o-by-kylie-jenner',
+    category: 'Luxury & Prestige',
+    logo: '/brand-logos/k2o-by-kylie-jenner.png',
+    tagline: 'Beverage and wellness hydration by Kylie Jenner',
+    website: 'https://kyliecosmetics.com',
+    origin: 'United States',
+    description: 'K2O by Kylie Jenner brings clean hydration and wellness to modern lifestyle care. Designed to complement daily beauty and self-care regimens, K2O focuses on nourishing, refreshing essentials crafted with premium ingredients.',
   },
   "Kiehl's": {
     name: "Kiehl's",
@@ -977,15 +997,33 @@ export const BRAND_CATEGORIES: BrandCategory[] = [
   'Daily Essentials',
 ];
 
+export const KNOWN_BRAND_LOGOS = new Set([
+  'anua.png', 'aveeno.png', 'avene.png', 'banila-co.png', 'beauty-of-joseon.png', 'belif.png',
+  'best-naturals.png', 'bioderma.png', 'biossance.png', 'bubble-skincare.png', 'byoma.png',
+  'california-gold-nutrition.png', 'caudalie.png', 'cerave.png', 'cetaphil.png', 'clinique.png',
+  'cosrx.png', 'dermalogica.png', 'dickinson-s.png', 'differin.png', 'doctor-s.png', 'dr.png',
+  'drunk-elephant.png', 'e-l-f.png', 'elf.png', 'estee-lauder.png', 'farmacy.png',
+  'first-aid-beauty.png', 'fresh.png', 'garnier.png', 'glow-recipe.png', 'good-molecules.png',
+  'hada-labo.png', 'innisfree.png', 'k2o-by-kylie-jenner.png', 'kiehl-s.png', 'l-oreal.png',
+  'la-roche-posay.png', 'laneige.png', 'mario-badescu.png', 'medik8.png', 'micro-ingredients.png',
+  'murad.png', 'naturium.png', 'neutrogena.png', 'no7.png', 'now-foods.png', 'olay.png',
+  'origins.png', 'paula-s-choice.png', 'peter.png', 'pixi.png', 'pyunkang-yul.png', 'roc.png',
+  'round-lab.png', 'shiseido.png', 'simple.png', 'skin1004.png', 'skinceuticals.png',
+  'skinfix.png', 'solgar.png', 'some-by-mi.png', 'st-ives.png', 'summer-fridays.png',
+  'tatcha.png', 'thayers.png', 'the-inkey-list.png', 'the-ordinary.png', 'torriden.png',
+  'vanicream.png', 'versed.png', 'vichy.png', 'youth-to-the-people.png'
+]);
+
 export function getBrandMeta(brandName: string): BrandMeta {
   const trimmed = brandName?.trim() || '';
   const filename = trimmed.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.png';
+  const hasLogo = KNOWN_BRAND_LOGOS.has(filename);
 
   let meta: BrandMeta = {
     name: trimmed,
     slug: trimmed,
     category: 'Daily Essentials',
-    logo: `/brand-logos/${filename}`,
+    logo: hasLogo ? `/brand-logos/${filename}` : '',
     tagline: `Skincare products from ${trimmed}`,
   };
 

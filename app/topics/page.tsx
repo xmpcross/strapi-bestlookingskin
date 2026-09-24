@@ -160,7 +160,7 @@ export default async function TopicsPage({ searchParams }: { searchParams: Promi
                           <Link href={postPath(p)} className="d-flex gap-3 align-items-center text-decoration-none">
                             {cover && (
                               // eslint-disable-next-line @next/next/no-img-element
-                              <img src={cover} alt="" width={64} height={48} loading="lazy" />
+                              <img src={cover} alt={p.title || 'Pillar guide thumbnail'} width={64} height={48} loading="lazy" />
                             )}
                             <span className="fs-7 fw-semi-bold text-dark">{p.title}</span>
                           </Link>
@@ -181,7 +181,7 @@ export default async function TopicsPage({ searchParams }: { searchParams: Promi
                       <div className="article card-10 style-2 sidebar-trending" key={card.key}>
                         <Link href={card.href} className="card-img" tabIndex={-1} aria-hidden>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img className="w-100" src={card.image as string} alt="" width={108} height={83} loading="lazy" />
+                          <img className="w-100" src={card.image as string} alt={card.title || 'Latest guide thumbnail'} width={108} height={83} loading="lazy" />
                         </Link>
                         <div className="card-body">
                           <Link href={card.href}>
@@ -241,7 +241,7 @@ export default async function TopicsPage({ searchParams }: { searchParams: Promi
                               <span className="topic-card-media">
                                 {t?.image ? (
                                   // eslint-disable-next-line @next/next/no-img-element
-                                  <img src={t.image} alt="" loading="lazy" />
+                                  <img src={t.image} alt={item.label ? `${item.label} topic thumbnail` : 'Topic thumbnail'} loading="lazy" />
                                 ) : null}
                               </span>
                               <span className="topic-card-body">

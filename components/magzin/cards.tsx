@@ -35,7 +35,7 @@ const Badge = ({ card, className = '' }: { card: PostCardData; className?: strin
 export const Avatar = ({ name, src, size = 41 }: { name: string; src: string | null; size?: number }) =>
   src ? (
     // eslint-disable-next-line @next/next/no-img-element
-    <img className="avatar avatar-md rounded-circle" src={src} alt="" width={size} height={size} />
+    <img className="avatar avatar-md rounded-circle" src={src} alt={`${name}'s avatar`} width={size} height={size} />
   ) : (
     <span className="avatar avatar-md rounded-circle d-inline-flex align-items-center justify-content-center bg-2 fs-8 fw-semi-bold text-dark" style={{ width: size, height: size }} aria-hidden>
       {name

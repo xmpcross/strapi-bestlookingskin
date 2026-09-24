@@ -102,7 +102,7 @@ export default async function SiteFooter() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img className="logo-light" src="/bestlookingskin_logo.svg" width={170} height={35} alt={SITE.name} />
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img className="logo-dark" src="/bestlookingskin_logo-light.svg" width={170} height={35} alt="" aria-hidden="true" />
+                  <img className="logo-dark" src="/bestlookingskin_logo-light.svg" width={170} height={35} alt={SITE.name} aria-hidden="true" />
                 </Link>
               </div>
               <p className="text-dark mt-4 footer-description">

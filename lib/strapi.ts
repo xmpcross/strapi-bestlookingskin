@@ -312,22 +312,43 @@ const LOCAL_UPLOADS = '/cms-uploads';
 function toLocalUploadUrl(url: string): string {
   if (!url) return url;
   if (url.startsWith('/uploads/')) return `${BASE}${url}`;
+  const devMatch = url.match(/^https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?\/uploads\/(.*)$/i);
+  if (devMatch) {
+    return `${LOCAL_UPLOADS}/${devMatch[1]}`;
+  }
+  const httpCmsMatch = url.match(/^http:\/\/cms\.fxnstudio\.com\/uploads\/(.*)$/i);
+  if (httpCmsMatch) {
+    return `${LOCAL_UPLOADS}/${httpCmsMatch[1]}`;
+  }
   return url;
 }
 
 export function mediaUrl(img: StrapiImage): string | null {
   if (!img?.url) return null;
   if (img.url.startsWith('/cms-uploads/') || img.url.startsWith('/assets/')) return img.url;
-  const absolute = img.url.startsWith('http') ? img.url : `${BASE}${img.url}`;
+  const cleanedUrl = img.url.replace(/^https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?/i, '');
+  if (cleanedUrl.startsWith('/uploads/')) {
+    return `${LOCAL_UPLOADS}${cleanedUrl.replace(/^\/uploads/, '')}`;
+  }
+  const absolute = cleanedUrl.startsWith('http') ? cleanedUrl : `${BASE}${cleanedUrl}`;
   return toLocalUploadUrl(absolute);
 }
 
 /** Rewrite every `<img src="...cms.fxnstudio.com/uploads/...">` (and the
- *  relative `/uploads/...` form) inside raw HTML so post bodies pull the
- *  locally cached image instead of round-tripping through the CMS host. */
+ *  relative `/uploads/...` form, or any legacy `127.0.0.1:8888/uploads/...`
+ *  form) inside raw HTML so post bodies pull the locally cached image instead
+ *  of round-tripping through the CMS host or causing mixed content. */
 function rewriteContentImages(html: string | undefined): string {
   if (!html) return '';
   return html
+    .replace(
+      /(<img\b[^>]*?\bsrc=["'])https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?\/uploads\//gi,
+      `$1${LOCAL_UPLOADS}/`,
+    )
+    .replace(
+      /(<img\b[^>]*?\bsrc=["'])https?:\/\/cms\.fxnstudio\.com\/uploads\//gi,
+      `$1${LOCAL_UPLOADS}/`,
+    )
     .replace(
       new RegExp(`(<img\\b[^>]*?\\bsrc=["'])${BASE}/uploads/`, 'gi'),
       `$1${LOCAL_UPLOADS}/`,
@@ -335,7 +356,36 @@ function rewriteContentImages(html: string | undefined): string {
     .replace(
       /(<img\b[^>]*?\bsrc=["'])\/uploads\//gi,
       `$1${LOCAL_UPLOADS}/`,
+    )
+    .replace(
+      /(<img\b[^>]*?\bsrc=["'])http:\/\/([^"']+)/gi,
+      (match, p1, p2) => {
+        if (/^(?:127\.0\.0\.1|localhost)(?::\d+)?/i.test(p2)) {
+          const parts = p2.split('/');
+          return `${p1}${LOCAL_UPLOADS}/${parts[parts.length - 1]}`;
+        }
+        return `${p1}https://${p2}`;
+      },
     );
+}
+
+/**
+ * Normalizes internal links in post bodies:
+ * 1. Rewrites absolute bestlooking.skin links to root-relative paths (`href="https://www.bestlooking.skin/..." -> href="/..."`).
+ * 2. Strips trailing slashes from internal paths to prevent 301/308 redirects (e.g. `/routines/daily-vs-weekly/` -> `/routines/daily-vs-weekly`).
+ * 3. Rewrites legacy `/top-rated/...` to `/top-rated-products/...`.
+ */
+function normalizeInternalLinks(html: string | undefined): string {
+  if (!html) return '';
+  return html.replace(/href=(["'])(?:https?:\/\/(?:www\.)?bestlooking\.skin)?(\/[^"'#?]*)(\?[^"'#]*)?(#[^"']*)?\1/gi, (match, q, path, query, hash) => {
+    let cleanPath = path;
+    if (cleanPath.length > 1 && cleanPath.endsWith('/')) {
+      cleanPath = cleanPath.slice(0, -1);
+    }
+    cleanPath = cleanPath.replace(/^\/top-rated\b/, '/top-rated-products');
+    const fullHref = `${cleanPath}${query || ''}${hash || ''}`;
+    return `href=${q}${fullHref}${q}`;
+  });
 }
 
 /** Replace double-encoded / literal en-dashes with a plain hyphen, across
@@ -730,7 +780,7 @@ function localizePost<T extends BlsPost>(post: T): T {
     title: cleanDashes(post.title),
     excerpt: post.excerpt ? cleanDashes(post.excerpt) : post.excerpt,
     /* Legacy WordPress affiliate markup always goes; the remaining retailer links are monetised when affiliates are on. */
-    content: cleanDashes(rewriteContentImages(AFFILIATE_LINKS_ENABLED ? monetizeContentLinks(stripAffiliateLinks(post.content)) : stripAffiliateLinks(post.content))),
+    content: cleanDashes(normalizeInternalLinks(rewriteContentImages(AFFILIATE_LINKS_ENABLED ? monetizeContentLinks(stripAffiliateLinks(post.content)) : stripAffiliateLinks(post.content)))),
     coverImage: overrideCover ?? post.coverImage,
     ogImage: overrideCover ?? post.ogImage ?? overrideCover,
   };

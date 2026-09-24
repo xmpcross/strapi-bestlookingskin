@@ -11,7 +11,7 @@ function Card({ post, side }: { post: BlsPost; side: 'prev' | 'next' }) {
     <Link href={postPath(post)} className={`d-flex align-items-center gap-3 ${side === 'next' ? 'flex-sm-row-reverse text-sm-end' : ''}`}>
       {img ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={img} alt="" className="rounded-8" style={{ width: 64, height: 64, objectFit: 'cover', flexShrink: 0 }} loading="lazy" />
+        <img src={img} alt={post.title || `${side === 'prev' ? 'Previous' : 'Next'} article`} className="rounded-8" style={{ width: 64, height: 64, objectFit: 'cover', flexShrink: 0 }} loading="lazy" />
       ) : (
         <span className="rounded-8 bg-100" style={{ width: 64, height: 64, flexShrink: 0 }} />
       )}

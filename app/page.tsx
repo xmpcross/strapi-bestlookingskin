@@ -297,7 +297,7 @@ export default async function HomePage() {
                           <div className="article card-10 style-2 sidebar-trending" key={card.key}>
                             <Link href={card.href} className="card-img" tabIndex={-1} aria-hidden>
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              {card.image ? <img className="w-100" src={card.image} alt="" width={108} height={83} loading="lazy" /> : null}
+                              {card.image ? <img className="w-100" src={card.image} alt={card.title || 'Skincare guide thumbnail'} width={108} height={83} loading="lazy" /> : null}
                             </Link>
                             <div className="card-body">
                               <Link href={card.href}>

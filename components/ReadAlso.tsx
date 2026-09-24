@@ -18,7 +18,7 @@ export default function ReadAlso({ rows, title = 'Read also' }: { rows: ReadAlso
           <div className="article card-10 style-1 flex-fill" key={row.href}>
             <Link href={row.href} className="card-img">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="w-100 rounded-8" src={row.img as string} alt="" loading="lazy" width={80} height={80} />
+              <img className="w-100 rounded-8" src={row.img as string} alt={row.title || 'Related article thumbnail'} loading="lazy" width={80} height={80} />
             </Link>
             <div className="card-body">
               <Link href={row.href}>

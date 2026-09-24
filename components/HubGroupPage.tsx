@@ -70,7 +70,7 @@ export default async function HubGroupPage({ slug }: { slug: string }) {
                     <span className="topic-card-media">
                       {card?.image ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={card.image} alt="" loading="lazy" />
+                        <img src={card.image} alt={h.label ? `${h.label} hub thumbnail` : (card.title || 'Hub thumbnail')} loading="lazy" />
                       ) : null}
                     </span>
                     <span className="topic-card-body">

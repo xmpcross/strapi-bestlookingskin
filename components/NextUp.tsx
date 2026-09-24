@@ -35,7 +35,7 @@ export default function NextUp({
               <li key={p.key}>
                 <Link href={p.href} className="next-up-card">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={p.image as string} alt="" width={48} height={48} loading="lazy" />
+                  <img src={p.image as string} alt={p.title || 'Next article thumbnail'} width={48} height={48} loading="lazy" />
                   <span>{p.title}</span>
                 </Link>
               </li>

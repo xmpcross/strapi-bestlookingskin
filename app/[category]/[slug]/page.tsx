@@ -528,7 +528,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
                       <div className="article card-10 style-2 sidebar-trending" key={row.href}>
                         <Link href={row.href} className="card-img">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          {row.img ? <img className="w-100" src={row.img} alt="" width={108} height={83} loading="lazy" /> : null}
+                          {row.img ? <img className="w-100" src={row.img} alt={row.title || 'Latest guide thumbnail'} width={108} height={83} loading="lazy" /> : null}
                         </Link>
                         <div className="card-body">
                           <Link href={row.href}>

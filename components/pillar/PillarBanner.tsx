@@ -39,7 +39,7 @@ export default function PillarBanner({ card, hubName }: { card: PostCardData; hu
           {card.image && (
             <div className="pillar-banner-media">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={card.image} alt="" width={640} height={400} loading="eager" />
+              <img src={card.image} alt={card.title || 'Pillar guide banner'} width={640} height={400} loading="eager" />
             </div>
           )}
         </Link>

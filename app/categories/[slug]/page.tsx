@@ -250,7 +250,7 @@ export default async function CategoryPage({
                       <div className="article card-10 style-2 sidebar-trending" key={card.key}>
                         <Link href={card.href} className="card-img" tabIndex={-1} aria-hidden>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img className="w-100" src={card.image as string} alt="" width={108} height={83} loading="lazy" />
+                          <img className="w-100" src={card.image as string} alt={card.title || 'Category guide thumbnail'} width={108} height={83} loading="lazy" />
                         </Link>
                         <div className="card-body">
                           <Link href={card.href}>
