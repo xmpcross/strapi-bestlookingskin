@@ -48,6 +48,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Impact.com site verification. Written verbatim with `value`, as Impact provides it;
+            the metadata API would rewrite `value` to `content`. */}
+        <meta {...({ name: 'impact-site-verification', value: '71c391bc-1dbc-4a2d-a4d7-ad77213d334f' } as Record<string, string>)} />
         <link rel="preload" href="/fonts/Inter-Variable-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         {/* Apply the saved light/dark theme before paint (Magzin's data-bs-theme switch). */}
         <script
