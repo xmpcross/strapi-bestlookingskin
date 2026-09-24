@@ -51,7 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Impact.com site verification. Written verbatim with `value`, as Impact provides it;
             the metadata API would rewrite `value` to `content`. */}
         <meta {...({ name: 'impact-site-verification', value: '71c391bc-1dbc-4a2d-a4d7-ad77213d334f' } as Record<string, string>)} />
-        <meta {...({ name: 'impact-site-verification', value: '1ed37485-e879-4738-9ed0-246e80ea8e77' } as Record<string, string>)} />
+        <meta {...({ name: 'impact-site-verification', value: 'f9327fb6-7aa8-49ef-bc48-68d6c073d872' } as Record<string, string>)} />
         <link rel="preload" href="/fonts/Inter-Variable-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         {/* Apply the saved light/dark theme before paint (Magzin's data-bs-theme switch). */}
         <script
