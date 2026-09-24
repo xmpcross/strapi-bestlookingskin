@@ -60,6 +60,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2867376862905050"
           crossOrigin="anonymous"
         />
+        <script
+          async
+          src="https://analytics.ahrefs.com/analytics.js"
+          data-key="xYkdnOIzip7zvZyecNubIA"
+        />
       </head>
       <body data-testid="app-shell">
         <div id="top" />
