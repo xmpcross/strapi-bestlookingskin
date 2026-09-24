@@ -117,6 +117,9 @@ for _ in $(seq 1 20); do
       echo "build served a stylesheet that does not exist -- site would render unstyled" >&2
       exit 1
     fi
+    if [ -f "/opt/seranking/.venv/bin/python3" ] && [ -f "scripts/seranking-audit.py" ]; then
+      /opt/seranking/.venv/bin/python3 scripts/seranking-audit.py recheck >/dev/null 2>&1 && echo "SE Ranking audit triggered (Audit ID: 414154)" || true
+    fi
     echo "deployed: $(git log --oneline -1)"
     exit 0
   fi
