@@ -662,6 +662,34 @@ export const POST_COVER_OVERRIDES: Record<string, StrapiImage> = {
     height: 832,
     size: 45,
   },
+  'how-to-incorporate-anti-wrinkle-cream-into-your-skincare-routine': {
+    url: '/cms-uploads/how_to_incorporate_anti_wrinkle_cream_into_your_skincare_routine_gemini.jpg',
+    alternativeText: 'How to Incorporate Anti-Wrinkle Cream into Your Skincare Routine: Luxury amber jar of anti-wrinkle cream with velvety rich cream and ceramic spatula',
+    width: 1200,
+    height: 896,
+    size: 121,
+  },
+  'combination-skin-routine': {
+    url: '/cms-uploads/combination_skin_routine_gemini.jpg',
+    alternativeText: 'Skincare Routine for Combination Skin: AM and PM Steps - balancing toner, niacinamide serum, and hydrating water-gel cream',
+    width: 1200,
+    height: 896,
+    size: 116,
+  },
+  'daily-vs-weekly-skincare-routine': {
+    url: '/cms-uploads/daily_vs_weekly_skincare_routine_gemini.jpg',
+    alternativeText: 'Daily vs Weekly Skincare Routine: What to Do and How Often - daily cleanser and mineral SPF alongside weekly exfoliating serum and clay mask ritual',
+    width: 1200,
+    height: 896,
+    size: 147,
+  },
+  'how-long-does-skincare-take-to-work': {
+    url: '/cms-uploads/how_long_does_skincare_take_to_work_gemini.jpg',
+    alternativeText: 'How Long Does Skincare Take to Work? Timeline by Product Type - hyaluronic acid, vitamin C, retinol serums with hourglass timer',
+    width: 1200,
+    height: 896,
+    size: 136,
+  },
 };
 
 /**

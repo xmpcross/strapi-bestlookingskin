@@ -99,13 +99,13 @@
     "source": "fal-ai/flux-pro/v1.1-ultra"
   },
   "combination-skin-routine": {
-    "url": "/cms-uploads/combination_skin_routine_cover.jpg",
-    "alternativeText": "Skincare Routine for Combination Skin: AM and PM Steps",
-    "width": 1600,
-    "height": 1211,
-    "size": 169,
-    "generatedAt": "2026-09-23T13:44:55.778Z",
-    "source": "existing file"
+    "url": "/cms-uploads/combination_skin_routine_gemini.jpg",
+    "alternativeText": "Skincare Routine for Combination Skin: AM and PM Steps - balancing toner, niacinamide serum, and hydrating water-gel cream",
+    "width": 1200,
+    "height": 896,
+    "size": 116,
+    "generatedAt": "2026-09-24T00:27:00.000Z",
+    "source": "gemini-imagen-3"
   },
   "combine-aloe-vera-gel-skincare": {
     "url": "/cms-uploads/combine_aloe_vera_gel_skincare_cover.jpg",
@@ -135,13 +135,13 @@
     "source": "fal-ai/flux-pro/v1.1-ultra"
   },
   "daily-vs-weekly-skincare-routine": {
-    "url": "/cms-uploads/daily_vs_weekly_skincare_routine_cover.jpg",
-    "alternativeText": "Daily vs Weekly Skincare Routine: What to Do and How Often",
-    "width": 1600,
-    "height": 1211,
-    "size": 123,
-    "generatedAt": "2026-09-23T13:42:36.670Z",
-    "source": "fal-ai/flux-pro/v1.1-ultra"
+    "url": "/cms-uploads/daily_vs_weekly_skincare_routine_gemini.jpg",
+    "alternativeText": "Daily vs Weekly Skincare Routine: What to Do and How Often - daily cleanser and mineral SPF alongside weekly exfoliating serum and clay mask ritual",
+    "width": 1200,
+    "height": 896,
+    "size": 147,
+    "generatedAt": "2026-09-24T00:27:00.000Z",
+    "source": "gemini-imagen-3"
   },
   "debunking-myths-clean-beauty": {
     "url": "/cms-uploads/debunking_myths_clean_beauty_cover.jpg",
@@ -207,13 +207,13 @@
     "source": "existing file"
   },
   "how-long-does-skincare-take-to-work": {
-    "url": "/cms-uploads/how_long_does_skincare_take_to_work_cover.jpg",
-    "alternativeText": "How Long Does Skincare Take to Work? Timeline by Product Type",
-    "width": 1600,
-    "height": 1211,
-    "size": 141,
-    "generatedAt": "2026-09-23T13:44:55.787Z",
-    "source": "existing file"
+    "url": "/cms-uploads/how_long_does_skincare_take_to_work_gemini.jpg",
+    "alternativeText": "How Long Does Skincare Take to Work? Timeline by Product Type - hyaluronic acid, vitamin C, retinol serums with hourglass timer",
+    "width": 1200,
+    "height": 896,
+    "size": 136,
+    "generatedAt": "2026-09-24T00:27:00.000Z",
+    "source": "gemini-imagen-3"
   },
   "how-to-adjust-your-skincare-routine-for-sensitive-skin-when-using-a-new-face-wash": {
     "url": "/cms-uploads/how_to_adjust_your_skincare_routine_for_sensitive_skin_when_using_a_new_face_wash_cover.jpg",
@@ -261,7 +261,7 @@
     "source": "fal-ai/flux-pro/v1.1-ultra · butter"
   },
   "how-to-incorporate-anti-wrinkle-cream-into-your-skincare-routine": {
-    "url": "/cms-uploads/how_to_incorporate_anti_wrinkle_cream_into_your_skincare_routine_cover.jpg",
+    "url": "/cms-uploads/how_to_incorporate_anti_wrinkle_cream_into_your_skincare_routine_gemini.jpg",
     "alternativeText": "How to incorporate anti-wrinkle cream into your skincare routine: Luxury amber jar of anti-wrinkle cream with velvety rich cream and ceramic spatula",
     "width": 1200,
     "height": 896,
