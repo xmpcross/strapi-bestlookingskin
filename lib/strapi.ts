@@ -312,57 +312,44 @@ const LOCAL_UPLOADS = '/cms-uploads';
 function toLocalUploadUrl(url: string): string {
   if (!url) return url;
   if (url.startsWith('/uploads/')) return `${BASE}${url}`;
-  const devMatch = url.match(/^https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?\/uploads\/(.*)$/i);
-  if (devMatch) {
-    return `${LOCAL_UPLOADS}/${devMatch[1]}`;
-  }
-  const httpCmsMatch = url.match(/^http:\/\/cms\.fxnstudio\.com\/uploads\/(.*)$/i);
-  if (httpCmsMatch) {
-    return `${LOCAL_UPLOADS}/${httpCmsMatch[1]}`;
-  }
   return url;
 }
 
 export function mediaUrl(img: StrapiImage): string | null {
   if (!img?.url) return null;
   if (img.url.startsWith('/cms-uploads/') || img.url.startsWith('/assets/')) return img.url;
-  const cleanedUrl = img.url.replace(/^https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?/i, '');
-  if (cleanedUrl.startsWith('/uploads/')) {
-    return `${LOCAL_UPLOADS}${cleanedUrl.replace(/^\/uploads/, '')}`;
-  }
-  const absolute = cleanedUrl.startsWith('http') ? cleanedUrl : `${BASE}${cleanedUrl}`;
+  // If an image URL has legacy local dev host (127.0.0.1 / localhost), rewrite to production Strapi BASE
+  const cleaned = img.url.replace(/^https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?/i, BASE);
+  const absolute = cleaned.startsWith('http') ? cleaned : `${BASE}${cleaned}`;
   return toLocalUploadUrl(absolute);
 }
 
-/** Rewrite every `<img src="...cms.fxnstudio.com/uploads/...">` (and the
- *  relative `/uploads/...` form, or any legacy `127.0.0.1:8888/uploads/...`
- *  form) inside raw HTML so post bodies pull the locally cached image instead
- *  of round-tripping through the CMS host or causing mixed content. */
+/** Rewrite every `<img src="...uploads/...">` inside raw HTML to HTTPS Strapi URL
+ *  or local uploads, ensuring legacy 127.0.0.1:8888 or HTTP URLs are upgraded to HTTPS. */
 function rewriteContentImages(html: string | undefined): string {
   if (!html) return '';
   return html
+    // 1. Rewrite local dev 127.0.0.1 or localhost uploads to production BASE (HTTPS)
     .replace(
       /(<img\b[^>]*?\bsrc=["'])https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?\/uploads\//gi,
-      `$1${LOCAL_UPLOADS}/`,
+      `$1${BASE}/uploads/`,
     )
+    // 2. Rewrite HTTP cms.fxnstudio.com to HTTPS
     .replace(
-      /(<img\b[^>]*?\bsrc=["'])https?:\/\/cms\.fxnstudio\.com\/uploads\//gi,
-      `$1${LOCAL_UPLOADS}/`,
+      /(<img\b[^>]*?\bsrc=["'])http:\/\/cms\.fxnstudio\.com\/uploads\//gi,
+      `$1${BASE}/uploads/`,
     )
-    .replace(
-      new RegExp(`(<img\\b[^>]*?\\bsrc=["'])${BASE}/uploads/`, 'gi'),
-      `$1${LOCAL_UPLOADS}/`,
-    )
+    // 3. Keep relative /uploads/ pointing to BASE (HTTPS)
     .replace(
       /(<img\b[^>]*?\bsrc=["'])\/uploads\//gi,
-      `$1${LOCAL_UPLOADS}/`,
+      `$1${BASE}/uploads/`,
     )
+    // 4. Upgrade any hotlinked HTTP image to HTTPS to prevent mixed content
     .replace(
       /(<img\b[^>]*?\bsrc=["'])http:\/\/([^"']+)/gi,
       (match, p1, p2) => {
         if (/^(?:127\.0\.0\.1|localhost)(?::\d+)?/i.test(p2)) {
-          const parts = p2.split('/');
-          return `${p1}${LOCAL_UPLOADS}/${parts[parts.length - 1]}`;
+          return `${p1}${BASE}/uploads/${p2.split('/').pop()}`;
         }
         return `${p1}https://${p2}`;
       },
