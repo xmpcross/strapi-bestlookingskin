@@ -18,6 +18,8 @@ export function createMailTransport() {
     port,
     secure: port === 465,
     requireTLS: port !== 465, // never send form contents in clear text on 587
+    // EHLO name. The default is the host's own name (nxt.deals), which Google's relay rejects with 421.
+    name: 'www.bestlooking.skin',
     ...(user && pass ? { auth: { user, pass } } : {}),
   });
 }
