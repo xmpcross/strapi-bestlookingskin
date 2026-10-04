@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
+import { MAIL_FROM, MAIL_TO, createMailTransport } from '@/lib/mail';
 
-const CONTACT_EMAIL = process.env.CONTACT_TO_EMAIL || 'notifications@bestlooking.skin';
+const CONTACT_EMAIL = MAIL_TO;
 
 type ContactPayload = {
   name?: string;
@@ -37,12 +37,6 @@ function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-function getRequiredEnv(name: string) {
-  const value = process.env[name];
-  if (!value) throw new Error(`Missing ${name}`);
-  return value;
-}
-
 export async function POST(request: Request) {
   let payload: ContactPayload;
 
@@ -68,21 +62,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    const port = Number(process.env.SMTP_PORT || 587);
-    const transporter = nodemailer.createTransport({
-      host: getRequiredEnv('SMTP_HOST'),
-      port,
-      secure: port === 465,
-      auth: {
-        user: getRequiredEnv('SMTP_USER'),
-        pass: getRequiredEnv('SMTP_PASS'),
-      },
-    });
+    const transporter = createMailTransport();
 
     await transporter.sendMail({
-      /* Sent through the Stalwart server (mail.fxnstudio.com) as its own authenticated account, so the From
-         address is that account's, never the visitor's; replies go to the visitor through Reply-To. */
-      from: { name: 'BestLooking.Skin contact form', address: process.env.CONTACT_FROM_EMAIL || getRequiredEnv('SMTP_USER') },
+      /* From is always our own address, never the visitor's; replies go to the visitor through Reply-To. */
+      from: { name: 'BestLooking.Skin contact form', address: MAIL_FROM },
       to: CONTACT_EMAIL,
       replyTo: email,
       subject: `[BestLooking.Skin] ${subject}`,

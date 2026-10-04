@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
+import { MAIL_FROM, MAIL_TO, createMailTransport } from '@/lib/mail';
 
 /**
  * Comment submissions.
@@ -19,12 +19,6 @@ type Payload = { name?: string; email?: string; message?: string; postUrl?: stri
 
 const clean = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 const looksEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
-
-function env(name: string) {
-  const v = process.env[name];
-  if (!v) throw new Error(`${name} is not configured`);
-  return v;
-}
 
 export async function POST(request: Request) {
   let payload: Payload;
@@ -48,16 +42,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    const transporter = nodemailer.createTransport({
-      host: env('SMTP_HOST'),
-      port: Number(process.env.SMTP_PORT || 587),
-      secure: Number(process.env.SMTP_PORT || 587) === 465,
-      auth: { user: env('SMTP_USER'), pass: env('SMTP_PASS') },
-    });
+    const transporter = createMailTransport();
 
     await transporter.sendMail({
-      from: process.env.CONTACT_FROM_EMAIL || process.env.SMTP_USER,
-      to: process.env.CONTACT_TO_EMAIL || process.env.SMTP_USER,
+      from: MAIL_FROM,
+      to: MAIL_TO,
       replyTo: `${name} <${email}>`,
       subject: `New comment on: ${postTitle || postUrl || 'a post'}`,
       text: [
