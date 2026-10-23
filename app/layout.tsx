@@ -67,7 +67,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script
           async
           src="https://analytics.ahrefs.com/analytics.js"
-          data-key="xYkdnOIzip7zvZyecNubIA"
+          data-key="bLNrldx9JINozTSLevDMNQ"
         />
       </head>
       <body data-testid="app-shell">
