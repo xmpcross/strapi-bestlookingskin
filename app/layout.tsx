@@ -4,6 +4,7 @@ import '@/public/assets/css/main.css';
 import './magzin.css';
 import './magzin-shop.css';
 import './magzin-pages.css';
+import ChromeGate, { MainGate } from '@/components/blush/ChromeGate';
 import SiteHeader from '@/components/magzin/SiteHeader';
 import SiteFooter from '@/components/magzin/SiteFooter';
 import BackToTop from '@/components/magzin/BackToTop';
@@ -72,10 +73,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body data-testid="app-shell">
         <div id="top" />
-        <SiteHeader />
-        <main>{children}</main>
-        <SiteFooter />
-        <BackToTop />
+        <ChromeGate>
+          <SiteHeader />
+        </ChromeGate>
+        <MainGate>{children}</MainGate>
+        <ChromeGate>
+          <SiteFooter />
+          <BackToTop />
+        </ChromeGate>
         <CookieConsent />
         <GoogleAnalytics />
         {/* Geniuslink first, so it claims its links before Takeads takes the rest. */}

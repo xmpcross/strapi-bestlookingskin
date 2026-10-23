@@ -12,25 +12,24 @@ import { fmtDate, primaryCategorySlug, postPath, descriptionFromBody } from '@/l
 import { withHeadingIds, decodeEntities } from '@/lib/toc';
 import { cleanProductRoundupHtml } from '@/lib/legacy-product-roundup';
 import { isMarkdownBody, markdownToHtml } from '@/lib/markdown';
-import { getTopicGroups } from '@/lib/nav';
 import { toCard } from '@/lib/post-card';
 import PostContent from '@/components/PostContent';
+import { b } from '@/lib/blush';
+import BlushShell from '@/components/blush/BlushShell';
+import { PostCard, SectionHeader } from '@/components/blush/cards';
+import { ArticleTitle, CoverBar, Crumbs, LatestSide } from '@/components/blush/article';
+import { ArticleToc, ShareIcons } from '@/components/blush/ArticleClient';
+import '../../blush.css';
+import '../../blush-extra.css';
 import PillarLayout from '@/components/pillar/PillarLayout';
 import '../../pillar.css';
-import ArticleContents from '@/components/ArticleContents';
-import ShareRail from '@/components/ShareRail';
 import NextUp from '@/components/NextUp';
-import FeaturedPostsSlider from '@/components/FeaturedPostsSlider';
-import SidebarTitle from '@/components/magzin/SidebarTitle';
 import PostAffiliateLinks, { affiliateLinksFor, tagsFromKeywords } from '@/components/PostAffiliateLinks';
-import AuthorAvatar from '@/components/AuthorAvatar';
 import PullQuote from '@/components/PullQuote';
 import ReadAlso from '@/components/ReadAlso';
 import InlineProducts from '@/components/InlineProducts';
 import PostFooterNav from '@/components/PostFooterNav';
 import CommentForm from '@/components/CommentForm';
-import Breadcrumb from '@/components/magzin/Breadcrumb';
-import { TileCard } from '@/components/magzin/cards';
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -124,14 +123,13 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
   }
 
   // Related posts (same category, excluding this one), recent guides across the site, and the topic hubs.
-  const [related, recentPosts, topicGroups] = await Promise.all([
+  const [related, recentPosts] = await Promise.all([
     listPostSummaries({ category, pageSize: 9, withCover: true })
       .then((r) => r.data.filter((p) => p.id !== post.id).slice(0, 8))
       .catch(() => [] as BlsPostSummary[]),
     listPostSummaries({ pageSize: 24, authored: true, withCover: true })
       .then((r) => r.data.filter((p) => p.id !== post.id))
       .catch(() => [] as BlsPostSummary[]),
-    getTopicGroups(),
   ]);
 
   const toRow = (p: BlsPostSummary) => ({
@@ -142,19 +140,6 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
     minutes: p.author ? p.readingTimeMinutes : null,
   });
   const recentRows = recentPosts.slice(0, 5).map(toRow);
-  /* Sidebar "Featured Posts" slider: three authored guides with a working cover that are not already in the
-     "Latest guides" list below it, other topics first. The CMS has no featured flag, so nothing here claims an
-     editorial pick beyond being shown. */
-  const featuredPosts = (() => {
-    const shown = new Set(recentRows.slice(0, 3).map((r) => r.href));
-    const pool = recentPosts.slice(3).map(toCard).filter((c) => c.image && !shown.has(c.href));
-    const otherTopics = pool.filter((c) => !c.href.startsWith(`/${category}/`));
-    return [...otherTopics, ...pool.filter((c) => c.href.startsWith(`/${category}/`))]
-      .slice(0, 3)
-      .map((c) => ({ href: c.href, title: c.title, image: c.image as string, imageAlt: c.imageAlt, author: c.author?.name ?? null, date: c.date }));
-  })();
-  const topics = topicGroups.flatMap((g) => g.items).filter((t) => t.href !== `/${category}`);
-
   const cover = mediaUrl(post.coverImage ?? null);
   const cat = post.categories?.[0];
 
@@ -265,8 +250,9 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
     const pillarJsonLd = { ...articleJsonLdBase(post, cover, category), '@type': 'Article' };
     const others = recentPosts.filter((p) => primaryCategorySlug(p) !== category).map(toCard).slice(0, 3);
     return (
-      <>
+      <BlushShell>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pillarJsonLd) }} />
+        <main id="content">
         <PillarLayout
           title={post.title}
           excerpt={post.excerpt}
@@ -286,7 +272,8 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
           moreGuides={others}
           url={`${SITE.url}/${category}/${post.slug}`}
         />
-      </>
+        </main>
+      </BlushShell>
     );
   }
 
@@ -389,7 +376,6 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
       bodyParts.push(<PostContent key="lead" html={bodyMain.slice(0, leadCut)} />);
       from = leadCut;
     }
-    bodyParts.push(<ArticleContents key="contents" toc={toc} />);
     /* Imported WordPress posts wrap the whole body in layout divs, so there are no top-level section breaks to put
        an ad between (and splitting nested markup would unbalance it). They get one in-article unit here instead,
        after the contents box and before the body. */
@@ -413,8 +399,13 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
     if (faqSection) bodyParts.push(<PostContent key="faq" html={faqSection} />);
   }
 
+  const articleUrl = `${SITE.url}/${category}/${post.slug}`;
+  const tocItems = toc.filter((t) => t.level === 2).map((t) => ({ id: t.id, text: t.text }));
+  const sideRows = recentPosts.slice(0, 6).map(toRow);
+  const keepReading = related.slice(0, 4).map(toCard);
+
   return (
-    <>
+    <BlushShell>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
       {/* Vendor stylesheets used by the imported product-comparison blocks (Content Egg + scoped Bootstrap,
           both scoped under .cegg5-container). Loaded for this article only. */}
@@ -425,75 +416,46 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
         </>
       )}
 
-      <article className={`sec-1-single-3 pb-70${isTopRated ? ' top-rated-post' : ''}`} data-testid={`post-${post.slug}`} data-category={category} data-post-type={post.postType}>
-        {/* Top section in two columns, 40% / 60%: title and description on the left, the featured image on the right. */}
-        <div className="position-relative block-banner">
-          <div className="container">
-            <Breadcrumb items={[{ label: catName, href: `/${category}` }, { label: post.title }]} />
-            <div className="row g-5 align-items-center post-hero-row">
-              <div className={cover ? 'col-12 post-hero-text' : 'col-lg-8'}>
-                <div className="card-title post-hero">
-                  <div className="article card-info d-flex flex-wrap align-items-center gap-2 mt-2">
-                    <Link href={`/${category}`} className={`badge ${toCard(post).badgeTone} fs-8`}>
-                      {catName}
-                    </Link>
-                    {post.postType && post.postType !== 'other' && <span className="badge bg-100 fs-8 text-capitalize">{post.postType.replace(/-/g, ' ')}</span>}
-                    {post.author && post.readingTimeMinutes ? (
-                      <ul className="d-flex align-items-center text-600 m-0 ps-3">
-                        <li>
-                          <p className="fs-8 m-0">{post.readingTimeMinutes} min read</p>
-                        </li>
-                      </ul>
-                    ) : null}
-                  </div>
-                  <h1 className="h3 mt-4 mb-0">{post.title}</h1>
-                  {post.excerpt && <p className="post-standfirst text-600 mt-3 mb-0">{post.excerpt}</p>}
-                  {/* Byline under the description (moved from above the H1 at the owner's request). */}
-                  <div className="d-flex flex-wrap align-items-center gap-2 pt-4">
-                    {post.author && (
-                      <Link href={`/authors/${post.author.slug}`} className="author d-flex align-items-center gap-2">
-                        <AuthorAvatar name={post.author.name} src={post.author.avatarUrl} size={36} />
-                        <span className="fs-7 text-dark fw-regular">{post.author.name}</span>
-                      </Link>
-                    )}
-                    <ul className="d-flex align-items-center gap-4 text-600 m-0 ps-3">
-                      <li>
-                        <time className="fs-8" dateTime={post.publishedAt}>
-                          {fmtDate(post.publishedAt)}
-                        </time>
-                      </li>
-                    </ul>
-                  </div>
+      <main id="content" data-testid={`post-${post.slug}`}>
+        <article className={isTopRated ? 'top-rated-post' : undefined} data-category={category} data-post-type={post.postType}>
+          {/* The title block, in a section of its own straight under the header. */}
+          <section className={b('post-titlebar')} aria-label="Article title">
+            <div className={b('container')}>
+              <header className={b('posthero')}>
+                <div className={b('container-reading')}>
+                  <Crumbs items={[{ label: catName, href: `/${category}` }, { label: post.title }]} />
+                  <ArticleTitle
+                    title={post.title}
+                    excerpt={post.excerpt}
+                    category={{ name: catName, href: `/${category}` }}
+                    author={post.author ? { name: post.author.name, slug: post.author.slug, avatarUrl: post.author.avatarUrl ?? undefined } : null}
+                    publishedAt={post.publishedAt}
+                    dateLabel={fmtDate(post.publishedAt)}
+                    minutes={post.author ? (post.readingTimeMinutes ?? null) : null}
+                  />
                 </div>
-              </div>
-              {cover && (
-                <div className="col-12 post-hero-media">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img className="rounded-16 w-100 cover-image post-cover" src={cover} alt={post.coverImage?.alternativeText || post.title} width={660} height={495} fetchPriority="high" />
-                </div>
-              )}
+              </header>
             </div>
-          </div>
-        </div>
+          </section>
 
-        <div className="container">
-          {/* Three columns from lg up: share rail, article, sidebar. Widths adjust in app/magzin.css (.post-layout). */}
-          <div className="post-layout mt-4">
-            <div className="post-layout-rail d-none d-lg-block">
-              <div className="post-sticky">
-                <ShareRail url={`${SITE.url}/${category}/${post.slug}`} title={post.title} minutes={post.author ? post.readingTimeMinutes : null} />
-              </div>
-            </div>
-            <div className="post-layout-main">
+          {cover && <CoverBar src={cover} alt={post.coverImage?.alternativeText || post.title} />}
+
+          {/* Three columns from lg up: contents, the story, then share and the latest guides. */}
+          <div className={b('container post-layout')}>
+            <aside className={b('post-toc')}>
+              <ArticleToc items={tocItems} />
+            </aside>
+
+            <div className={b('post-main')}>
               {/* Disclosure above the article, not after it. */}
               {AFFILIATE_LINKS_ENABLED && (
-                <p className="affiliate-note fs-7 text-600 px-3 py-2 mb-4">
-                  <strong className="text-dark">Heads up:</strong> when you buy through links on this page we may earn a commission, at no extra cost to you. It never changes which products
-                  we recommend or what we say about them. <Link href="/legal/disclosure" className="text-dark text-decoration-underline">Read our full disclosure</Link>.
+                <p className="bl-affiliate-note">
+                  <strong>Heads up:</strong> when you buy through links on this page we may earn a commission, at no extra cost to you. It never changes which products we recommend or what we say about
+                  them. <Link href="/legal/disclosure">Read our full disclosure</Link>.
                 </p>
               )}
 
-              <div id="article-body" className="post-body">
+              <div id="article-body" className={b('prose post-body')}>
                 {bodyParts}
               </div>
 
@@ -502,7 +464,7 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
                 category={{ name: catName, href: `/${category}` }}
                 updatedAt={post.updatedAt}
                 updatedLabel={fmtDate(post.updatedAt)}
-                url={`${SITE.url}/${category}/${post.slug}`}
+                url={articleUrl}
                 title={post.title}
               />
 
@@ -510,89 +472,32 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
               {/* End of article: multiplex (related-content style) unit. */}
               <AdSlot kind="multiplex" />
 
-              {/* End of article: previous / next only. The tags-and-share row and the author bio card were removed at
-                  the owner's request; sharing lives in the left rail, the byline in the top section. */}
-              <PostFooterNav title={post.title} url={`${SITE.url}/${category}/${post.slug}`} tags={[]} prev={prevPost} next={nextPost} showMeta={false} />
+              {/* End of article: previous / next only. */}
+              <PostFooterNav title={post.title} url={articleUrl} tags={[]} prev={prevPost} next={nextPost} showMeta={false} />
 
-              <CommentForm postTitle={post.title} postUrl={`${SITE.url}/${category}/${post.slug}`} />
+              <CommentForm postTitle={post.title} postUrl={articleUrl} />
             </div>
 
-            <aside className="post-layout-side" aria-label="Article sidebar">
-              {recentRows.length > 0 && (
-                <div className="mb-5">
-                  {/* Magzin "Weekly trending" block (card-10 style-2). Headed "Latest guides": the list is the newest
-                      guides, and the site has no traffic data to call anything trending. */}
-                  <SidebarTitle>Latest guides</SidebarTitle>
-                  <div className="d-flex flex-column gap-3">
-                    {recentRows.slice(0, 3).map((row) => (
-                      <div className="article card-10 style-2 sidebar-trending" key={row.href}>
-                        <Link href={row.href} className="card-img">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          {row.img ? <img className="w-100" src={row.img} alt={row.title || 'Latest guide thumbnail'} width={108} height={83} loading="lazy" /> : null}
-                        </Link>
-                        <div className="card-body">
-                          <Link href={row.href}>
-                            <span className="h6 fs-6 mb-2 text-truncate-2">{row.title}</span>
-                          </Link>
-                          <div className="d-flex align-items-center text-600">
-                            <span className="fs-8">{row.date}</span>
-                            {row.minutes ? (
-                              <ul className="ps-4 m-0">
-                                <li>
-                                  <span className="fs-8">{row.minutes} min read</span>
-                                </li>
-                              </ul>
-                            ) : null}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+            <aside className={b('post-side')} aria-label="Article sidebar">
+              <ShareIcons url={articleUrl} title={post.title} />
+              <LatestSide rows={sideRows} />
               {/* Sidebar display unit, high in the column so it is seen while the article is read. */}
-              <AdSlot kind="display" className="mb-5" />
-              {topics.length > 0 && (
-                <div className="mb-5">
-                  <SidebarTitle>Topics</SidebarTitle>
-                  <ul className="list-unstyled d-flex flex-wrap gap-2 ps-0">
-                    {topics.map((t) => (
-                      <li key={t.href}>
-                        <Link href={t.href} className="tag-item">
-                          <span>{t.label}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {featuredPosts.length > 0 && (
-                <div className="mb-5 featured-posts-sticky" data-testid="featured-posts">
-                  <SidebarTitle>Featured Posts</SidebarTitle>
-                  <FeaturedPostsSlider posts={featuredPosts} />
-                </div>
-              )}
+              <AdSlot kind="display" />
             </aside>
           </div>
-        </div>
-      </article>
+        </article>
 
-      {related.length > 0 && (
-        <section className="related-post sec-padding bg-white" data-testid="more-in-category">
-          <div className="container">
-            <div className="row g-4">
-              <div className="col-12">
-                <h2 className="h5 mb-0">More in {catName}</h2>
-              </div>
-              {related.map((p) => (
-                <div className="col-6 col-md-4 col-lg-3" key={p.id}>
-                  <TileCard card={toCard(p)} />
-                </div>
+        {keepReading.length > 0 && (
+          <section className={b('container section section-top')} aria-labelledby="bl-keep-reading" data-testid="more-in-category">
+            <SectionHeader title="Keep reading" id="bl-keep-reading" href={`/${category}`} linkLabel={`More in ${catName}`} />
+            <div className={b('grid-cards grid-cards--4')}>
+              {keepReading.map((card) => (
+                <PostCard key={card.key} card={card} />
               ))}
             </div>
-          </div>
-        </section>
-      )}
-    </>
+          </section>
+        )}
+      </main>
+    </BlushShell>
   );
 }

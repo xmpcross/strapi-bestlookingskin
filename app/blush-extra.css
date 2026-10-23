@@ -1,0 +1,117 @@
+/* Hand-written additions to the generated Blush stylesheet (app/blush.css). All scoped under .blush. */
+
+/* The footer has link columns only (the live site's footer has no signup column). */
+.blush .bl-site-footer__columns--nav {
+  grid-template-columns: 1fr;
+}
+
+/* Utilities the theme took from Tailwind. */
+.blush .bl-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.blush .bl-line-clamp-3,
+.blush .bl-line-clamp-4 {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+}
+
+.blush .bl-line-clamp-3 {
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.blush .bl-line-clamp-4 {
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+}
+
+/* A bright cover photograph must not swallow the lead headline: a firmer fade than the theme's. */
+.blush .bl-cover__lead-scrim {
+  background: linear-gradient(to top, rgb(14 9 10 / 0.9) 0%, rgb(14 9 10 / 0.72) 38%, rgb(14 9 10 / 0.18) 74%, rgb(14 9 10 / 0) 100%);
+}
+
+/* Breadcrumb trail above the article title. */
+.blush .bl-crumbs {
+  margin-bottom: 0.25rem;
+}
+
+.blush .bl-crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  margin: 0;
+  padding: 1.25rem 0 0;
+  list-style: none;
+  color: var(--muted-foreground);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.blush .bl-crumbs li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.blush .bl-crumbs a:hover {
+  color: var(--accent);
+}
+
+.blush .bl-crumbs li[aria-current='page'] span {
+  max-width: 60vw;
+  overflow: hidden;
+  color: var(--foreground);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The affiliate disclosure above the article body. */
+.blush .bl-affiliate-note {
+  margin: 0 0 1.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-img);
+  background: var(--surface);
+  padding: 0.75rem 1rem;
+  color: var(--muted-foreground);
+  font-size: var(--fs-s);
+  line-height: 1.55;
+}
+
+.blush .bl-affiliate-note strong,
+.blush .bl-affiliate-note a {
+  color: var(--foreground);
+}
+
+.blush .bl-affiliate-note a {
+  text-decoration: underline;
+}
+
+/* One column below the desktop breakpoint, and the column may shrink: an article can hold wide embedded
+   content (tables, imported product blocks) that must scroll or wrap inside it, not widen the page. */
+@media (max-width: 63.99rem) {
+  .blush .bl-post-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.blush .bl-post-main {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.blush .bl-post-main img,
+.blush .bl-post-main iframe,
+.blush .bl-post-main video {
+  max-width: 100%;
+}
